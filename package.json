@@ -1,0 +1,34 @@
+{
+  "name": "wallet",
+  "version": "0.0.1",
+  "description": "Elastos Wallet Plugin",
+  "cordova": {
+    "id": "elastos-trinity-plugins-wallet",
+    "platforms": [
+      "android",
+      "ios"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/elastos/Elastos.Trinity.Plugins.Wallet.git"
+  },
+  "keywords": [
+    "cordova",
+    "wallet",
+    "elastos",
+    "ecosystem:cordova",
+    "cordova-android",
+    "cordova-ios",
+    "cordova-browser"
+  ],
+  "author": "Dongxiao Chen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/elastos/Elastos.Trinity.Plugins.Wallet/issues"
+  },
+  "homepage": "https://github.com/elastos/Elastos.Trinity.Plugins.Wallet#README.md",
+  "scripts": {
+    "gen-docs": "jsdoc2md www/wallet.js > README.md"
+  }
+}

@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='utf-8'?>
+<plugin id="elastos-trinity-plugins-wallet" version="0.0.1" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
+    <name>Wallet</name>
+    <js-module name="Wallet" src="www/wallet.js">
+        <clobbers target="wallet" />
+    </js-module>
+
+	<platform name="android">
+		<config-file target="config.xml" parent="/*">
+			<feature name="Wallet">
+				<param name="android-package" value="org.elastos.trinity.plugins.wallet.Wallet" />
+			</feature>
+		</config-file>
+        <source-file src="src/android/Wallet.java" target-dir="src/org/elastos/trinity/plugins/wallet" />
+        <framework src="src/android/wallet.gradle" custom="true" type="gradleReference"/>
+        <resource-file src="src/android/libs/org.elastos.wallet-debug.aar" target="libs/org.elastos.wallet-debug.aar"/>
+	</platform>
+</plugin>
+
