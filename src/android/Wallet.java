@@ -37,7 +37,7 @@ import org.elastos.spvcore.IDidManager;
 import org.elastos.spvcore.IDid;
 import org.elastos.spvcore.IIdManagerCallback;
 import org.elastos.spvcore.WalletException;
-import org.elastos.trinity.dapprt.TrinityPlugin;
+import org.elastos.trinity.runtime.TrinityPlugin;
 //import org.elastos.wallet.util.LogUtil;
 
 import org.apache.cordova.CordovaInterface;
