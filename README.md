@@ -14,9 +14,7 @@ function onDeviceReady() {
 
 ## Installation
 
-```bash
-    cordova plugin add elastos-trinity-plugins-wallet
-```
+    The plugins field of dapp manifest.json adds Wallet values, such as "plugins": ["XXXX", "Wallet", "XXXX"]
 
 ## Supported Platforms
 
