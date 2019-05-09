@@ -22,9 +22,7 @@
   
   package org.elastos.trinity.plugins.wallet;
 
-import android.util.JsonReader;
 
-import org.elastos.spvcore.ElastosWalletUtils;
 import org.elastos.spvcore.IMasterWallet;
 import org.elastos.spvcore.ISubWallet;
 import org.elastos.spvcore.IMainchainSubWallet;
@@ -38,10 +36,9 @@ import org.elastos.spvcore.IDid;
 import org.elastos.spvcore.IIdManagerCallback;
 import org.elastos.spvcore.WalletException;
 import org.elastos.trinity.runtime.TrinityPlugin;
-//import org.elastos.wallet.util.LogUtil;
+
 
 import org.apache.cordova.CordovaInterface;
-import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.PluginResult;
@@ -50,13 +47,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.Iterator;
 import android.util.Log;
 
 
@@ -175,15 +171,7 @@ public class Wallet extends TrinityPlugin {
 	@Override
 	public void initialize(CordovaInterface cordova, CordovaWebView webView) {
 		super.initialize(cordova, webView);
-
-//		mRootPath = MyUtil.getRootPath();
-		mRootPath = cordova.getActivity().getFilesDir() + "/data/wallet/";
-		File dir = new File(mRootPath);
-		if (!dir.exists()) {
-			dir.mkdirs();
-		}
-		ElastosWalletUtils.InitConfig(cordova.getActivity(), mRootPath);
-//		mDIDManagerSupervisor = new DIDManagerSupervisor(mRootPath);
+		mRootPath = getConfigPath() + "spv";
 		mMasterWalletManager = new MasterWalletManager(mRootPath);
 	}
 
@@ -3173,4 +3161,3 @@ public class Wallet extends TrinityPlugin {
 	}
 
 }
-

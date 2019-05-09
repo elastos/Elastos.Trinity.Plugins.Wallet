@@ -15,5 +15,26 @@
         <framework src="src/android/wallet.gradle" custom="true" type="gradleReference"/>
         <resource-file src="src/android/libs/org.elastos.wallet-debug.aar" target="libs/org.elastos.wallet-debug.aar"/>
 	</platform>
+    <platform name="ios">
+        <config-file target="config.xml" parent="/*">
+            <feature name="Wallet">
+                <param name="ios-package" value="Wallet" />
+            </feature>
+        </config-file>
+        <source-file src="src/ios/Wallet.mm" />
+        <source-file src="src/ios/ELWalletManager.mm" />
+        <header-file src="src/ios/ELWalletManager.h" />
+        <header-file src="src/ios/libspvsdk/include/IIdAgent.h" />
+        <header-file src="src/ios/libspvsdk/include/IMasterWalletManager.h" />
+        <header-file src="src/ios/libspvsdk/include/MasterWalletManager.h" />
+        <header-file src="src/ios/libspvsdk/include/IIdChainSubWallet.h" />
+        <header-file src="src/ios/libspvsdk/include/ISidechainSubWallet.h" />
+        <header-file src="src/ios/libspvsdk/include/IMainchainSubWallet.h" />
+        <header-file src="src/ios/libspvsdk/include/ISubWallet.h" />
+        <header-file src="src/ios/libspvsdk/include/IMasterWallet.h" />
+        <header-file src="src/ios/libspvsdk/include/ISubWalletCallback.h" />
+        <header-file src="src/ios/libspvsdk/include/nlohmann/json.hpp" />
+        <source-file src="src/ios/libspvsdk/libs/libspvsdk.a" framework="true" />
+    </platform>
 </plugin>
 
