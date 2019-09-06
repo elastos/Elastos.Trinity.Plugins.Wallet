@@ -2,357 +2,342 @@ var exec = require('cordova/exec');
 
 var walletFunc = function() {};
 
+function _exec(success, error, obj, fun, args) {
+    function _onSuccess(ret) {
+        if (success) {
+            if (typeof(ret) == "string") {
+                ret = JSON.parse(ret);
+            }
+            success(ret);
+        }
+    };
+    exec(_onSuccess, error, obj, fun, args)
+}
 
-walletFunc.prototype.print = function(arg0, success, error) {
-    exec(success, error, "Wallet", "print", arg0);
+walletFunc.prototype.print = function(args, success, error) {
+    exec(success, error, "Wallet", "print", args);
 };
 
 
-walletFunc.prototype.recoverWallet = function(arg0, success, error) {
-    exec(success, error, "Wallet", "recoverWallet", arg0);
+walletFunc.prototype.recoverWallet = function(args, success, error) {
+    exec(success, error, "Wallet", "recoverWallet", args);
 };
 
-walletFunc.prototype.createWallet = function(arg0, success, error) {
-    exec(success, error, "Wallet", "createWallet", arg0);
+walletFunc.prototype.createWallet = function(args, success, error) {
+    exec(success, error, "Wallet", "createWallet", args);
 };
 
-walletFunc.prototype.start = function(arg0, success, error) {
-    exec(success, error, "Wallet", "start", arg0);
+walletFunc.prototype.start = function(args, success, error) {
+    exec(success, error, "Wallet", "start", args);
 };
 
-walletFunc.prototype.stop = function(arg0, success, error) {
-    exec(success, error, "Wallet", "stop", arg0);
+walletFunc.prototype.stop = function(args, success, error) {
+    exec(success, error, "Wallet", "stop", args);
 };
 
-walletFunc.prototype.createSubWallet = function(arg0, success, error) {
-    exec(success, error, "Wallet", "createSubWallet", arg0);
+walletFunc.prototype.createSubWallet = function(args, success, error) {
+    exec(success, error, "Wallet", "createSubWallet", args);
 };
 
-walletFunc.prototype.recoverSubWallet = function(arg0, success, error) {
-    exec(success, error, "Wallet", "createSubWallet", arg0);
+walletFunc.prototype.recoverSubWallet = function(args, success, error) {
+    exec(success, error, "Wallet", "createSubWallet", args);
 };
 
 
-walletFunc.prototype.createMasterWallet = function(arg0, success, error) {
-    exec(success, error, "Wallet", "createMasterWallet", arg0);
+walletFunc.prototype.createMasterWallet = function(args, success, error) {
+    exec(success, error, "Wallet", "createMasterWallet", args);
 };
 
-walletFunc.prototype.importWalletWithKeystore = function(arg0, success, error) {
-    exec(success, error, "Wallet", "importWalletWithKeystore", arg0);
+walletFunc.prototype.importWalletWithKeystore = function(args, success, error) {
+    exec(success, error, "Wallet", "importWalletWithKeystore", args);
 };
 
-walletFunc.prototype.importWalletWithMnemonic = function(arg0, success, error) {
-    exec(success, error, "Wallet", "importWalletWithMnemonic", arg0);
+walletFunc.prototype.importWalletWithMnemonic = function(args, success, error) {
+    exec(success, error, "Wallet", "importWalletWithMnemonic", args);
 };
 
-walletFunc.prototype.exportWalletWithKeystore = function(arg0, success, error) {
-    exec(success, error, "Wallet", "exportWalletWithKeystore", arg0);
+walletFunc.prototype.exportWalletWithKeystore = function(args, success, error) {
+    exec(success, error, "Wallet", "exportWalletWithKeystore", args);
 };
-walletFunc.prototype.exportWalletWithMnemonic = function(arg0, success, error) {
-    exec(success, error, "Wallet", "exportWalletWithMnemonic", arg0);
+walletFunc.prototype.exportWalletWithMnemonic = function(args, success, error) {
+    exec(success, error, "Wallet", "exportWalletWithMnemonic", args);
 };
 
-walletFunc.prototype.getBalanceInfo = function(arg0, success, error) {
-    exec(success, error, "Wallet", "getBalanceInfo", arg0);
+walletFunc.prototype.getBalanceInfo = function(args, success, error) {
+    exec(success, error, "Wallet", "getBalanceInfo", args);
 };
 
-walletFunc.prototype.getBalance = function(arg0, success, error) {
-    exec(success, error, "Wallet", "getBalance", arg0);
+walletFunc.prototype.getBalance = function(args, success, error) {
+    exec(success, error, "Wallet", "getBalance", args);
 };
 
-walletFunc.prototype.createAddress = function(arg0, success, error) {
-    exec(success, error, "Wallet", "createAddress", arg0);
+walletFunc.prototype.createAddress = function(args, success, error) {
+    exec(success, error, "Wallet", "createAddress", args);
 };
 
-walletFunc.prototype.getAllAddress = function(arg0, success, error) {
-    exec(success, error, "Wallet", "getAllAddress", arg0);
+walletFunc.prototype.getAllAddress = function(args, success, error) {
+    _exec(success, error, "Wallet", "getAllAddress", args);
 };
-walletFunc.prototype.getBalanceWithAddress = function(arg0, success, error) {
-    exec(success, error, "Wallet", "getBalanceWithAddress", arg0);
+walletFunc.prototype.getBalanceWithAddress = function(args, success, error) {
+    exec(success, error, "Wallet", "getBalanceWithAddress", args);
 };
 
-walletFunc.prototype.generateMultiSignTransaction = function(arg0, success, error) {
-    exec(success, error, "Wallet", "generateMultiSignTransaction", arg0);
+walletFunc.prototype.generateMultiSignTransaction = function(args, success, error) {
+    exec(success, error, "Wallet", "generateMultiSignTransaction", args);
 };
-walletFunc.prototype.createMultiSignAddress = function(arg0, success, error) {
-    exec(success, error, "Wallet", "createMultiSignAddress", arg0);
+walletFunc.prototype.createMultiSignAddress = function(args, success, error) {
+    exec(success, error, "Wallet", "createMultiSignAddress", args);
 };
-walletFunc.prototype.getAllTransaction = function(arg0, success, error) {
-    exec(success, error, "Wallet", "getAllTransaction", arg0);
+walletFunc.prototype.getAllTransaction = function(args, success, error) {
+    _exec(success, error, "Wallet", "getAllTransaction", args);
 };
-walletFunc.prototype.sign = function(arg0, success, error) {
-    exec(success, error, "Wallet", "sign", arg0);
+walletFunc.prototype.sign = function(args, success, error) {
+    exec(success, error, "Wallet", "sign", args);
 };
-walletFunc.prototype.checkSign = function(arg0, success, error) {
-    exec(success, error, "Wallet", "checkSign", arg0);
+walletFunc.prototype.checkSign = function(args, success, error) {
+    exec(success, error, "Wallet", "checkSign", args);
 };
 
-walletFunc.prototype.deriveIdAndKeyForPurpose = function(arg0, success, error) {
-    exec(success, error, "Wallet", "deriveIdAndKeyForPurpose", arg0);
+walletFunc.prototype.deriveIdAndKeyForPurpose = function(args, success, error) {
+    exec(success, error, "Wallet", "deriveIdAndKeyForPurpose", args);
 };
 
-walletFunc.prototype.getAllMasterWallets = function(arg0, success, error) {
-    exec(success, error, "Wallet", "getAllMasterWallets", arg0);
-
+walletFunc.prototype.getAllMasterWallets = function(args, success, error) {
+    _exec(success, error, "Wallet", "getAllMasterWallets", args);
 };
 
-walletFunc.prototype.getBalanceInfo = function(arg0, success, error) {
-    exec(success, error, "Wallet", "getBalanceInfo", arg0);
+walletFunc.prototype.getBalanceInfo = function(args, success, error) {
+    exec(success, error, "Wallet", "getBalanceInfo", args);
 
 };
-
-
-walletFunc.prototype.registerWalletListener = function(arg0, success, error) {
-    exec(success, error, "Wallet", "registerWalletListener", arg0);
 
-};
 
+walletFunc.prototype.registerWalletListener = function(args, success, error) {
+    exec(success, error, "Wallet", "registerWalletListener", args);
 
-walletFunc.prototype.isAddressValid = function(arg0, success, error) {
-    exec(success, error, "Wallet", "isAddressValid", arg0);
 };
 
-walletFunc.prototype.generateMnemonic = function(arg0, success, error) {
-    exec(success, error, "Wallet", "generateMnemonic", arg0);
-};
 
-walletFunc.prototype.saveConfigs = function(arg0, success, error) {
-    exec(success, error, "Wallet", "saveConfigs", arg0);
+walletFunc.prototype.isAddressValid = function(args, success, error) {
+    exec(success, error, "Wallet", "isAddressValid", args);
 };
 
-walletFunc.prototype.getWalletId = function(arg0, sucess, error) {
-    exec(sucess, error, "Wallet", "getWalletId", arg0);
+walletFunc.prototype.generateMnemonic = function(args, success, error) {
+    exec(success, error, "Wallet", "generateMnemonic", args);
 };
 
-walletFunc.prototype.getAllChainIds = function(arg0, sucess, error) {
-    exec(sucess, error, "Wallet", "getAllChainIds", arg0);
+walletFunc.prototype.getWalletId = function(args, success, error) {
+    exec(success, error, "Wallet", "getWalletId", args);
 };
 
-walletFunc.prototype.getSupportedChains = function(arg0, sucess, error) {
-    exec(sucess, error, "Wallet", "getSupportedChains", arg0);
+walletFunc.prototype.getAllChainIds = function(args, success, error) {
+    exec(success, error, "Wallet", "getAllChainIds", args);
 };
 
-walletFunc.prototype.getAllSubWallets = function(arg0, sucess, error) {
-    exec(sucess, error, "Wallet", "getAllSubWallets", arg0);
+walletFunc.prototype.getSupportedChains = function(args, success, error) {
+    exec(success, error, "Wallet", "getSupportedChains", args);
 };
 
-walletFunc.prototype.changePassword = function(arg0, sucess, error) {
-    exec(sucess, error, "Wallet", "changePassword", arg0);
+walletFunc.prototype.getAllSubWallets = function(args, success, error) {
+    _exec(success, error, "Wallet", "getAllSubWallets", args);
 };
 
-walletFunc.prototype.sendRawTransaction = function(arg0, sucess, error) {
-    exec(sucess, error, "Wallet", "sendRawTransaction", arg0);
+walletFunc.prototype.changePassword = function(args, success, error) {
+    exec(success, error, "Wallet", "changePassword", args);
 };
 
-walletFunc.prototype.calculateTransactionFee = function(arg0, sucess, error) {
-    exec(sucess, error, "Wallet", "calculateTransactionFee", arg0);
+walletFunc.prototype.sendRawTransaction = function(args, success, error) {
+    exec(success, error, "Wallet", "sendRawTransaction", args);
 };
 
-walletFunc.prototype.createTransaction = function(arg0, sucess, error) {
-    exec(sucess, error, "Wallet", "createTransaction", arg0);
+walletFunc.prototype.createTransaction = function(args, success, error) {
+    exec(success, error, "Wallet", "createTransaction", args);
 };
 
-
-walletFunc.prototype.createDID = function(arg0, sucess, error) {
-    exec(sucess, error, "Wallet", "createDID", arg0);
-};
 
-walletFunc.prototype.getDIDList = function(arg0, sucess, error) {
-    exec(sucess, error, "Wallet", "getDIDList", arg0);
+walletFunc.prototype.createDID = function(args, success, error) {
+    exec(success, error, "Wallet", "createDID", args);
 };
 
-walletFunc.prototype.destoryDID = function(arg0, sucess, error) {
-    exec(sucess, error, "Wallet", "destoryDID", arg0);
+walletFunc.prototype.getDIDList = function(args, success, error) {
+    exec(success, error, "Wallet", "getDIDList", args);
 };
 
-walletFunc.prototype.didSetValue = function(arg0, sucess, error) {
-    exec(sucess, error, "Wallet", "didSetValue", arg0);
+walletFunc.prototype.destoryDID = function(args, success, error) {
+    exec(success, error, "Wallet", "destoryDID", args);
 };
 
-walletFunc.prototype.didGetValue = function(arg0, sucess, error) {
-    exec(sucess, error, "Wallet", "didGetValue", arg0);
+walletFunc.prototype.didSetValue = function(args, success, error) {
+    exec(success, error, "Wallet", "didSetValue", args);
 };
 
-walletFunc.prototype.didGetHistoryValue = function(arg0, sucess, error) {
-    exec(sucess, error, "Wallet", "didGetHistoryValue", arg0);
+walletFunc.prototype.didGetValue = function(args, success, error) {
+    exec(success, error, "Wallet", "didGetValue", args);
 };
 
-
-walletFunc.prototype.didGetAllKeys = function(arg0, sucess, error) {
-    exec(sucess, error, "Wallet", "didGetAllKeys", arg0);
+walletFunc.prototype.didGetHistoryValue = function(args, success, error) {
+    exec(success, error, "Wallet", "didGetHistoryValue", args);
 };
 
 
-walletFunc.prototype.didSign = function(arg0, sucess, error) {
-    exec(sucess, error, "Wallet", "didSign", arg0);
+walletFunc.prototype.didGetAllKeys = function(args, success, error) {
+    exec(success, error, "Wallet", "didGetAllKeys", args);
 };
 
-walletFunc.prototype.didCheckSign = function(arg0, sucess, error) {
-    exec(sucess, error, "Wallet", "didCheckSign", arg0);
-};
 
-walletFunc.prototype.didGetPublicKey = function(arg0, sucess, error) {
-    exec(sucess, error, "Wallet", "didGetPublicKey", arg0);
+walletFunc.prototype.didSign = function(args, success, error) {
+    exec(success, error, "Wallet", "didSign", args);
 };
 
-walletFunc.prototype.destroyWallet = function(arg0, sucess, error) {
-    exec(sucess, error, "Wallet", "destroyWallet", arg0);
+walletFunc.prototype.didCheckSign = function(args, success, error) {
+    exec(success, error, "Wallet", "didCheckSign", args);
 };
 
-walletFunc.prototype.createIdTransaction = function(arg0, sucess, error) {
-    exec(sucess, error, "Wallet", "createIdTransaction", arg0);
+walletFunc.prototype.didGetPublicKey = function(args, success, error) {
+    exec(success, error, "Wallet", "didGetPublicKey", args);
 };
 
-walletFunc.prototype.createDepositTransaction = function(arg0, sucess, error) {
-    exec(sucess, error, "Wallet", "createDepositTransaction", arg0);
+walletFunc.prototype.destroyWallet = function(args, success, error) {
+    exec(success, error, "Wallet", "destroyWallet", args);
 };
 
-walletFunc.prototype.createWithdrawTransaction = function(arg0, sucess, error) {
-    exec(sucess, error, "Wallet", "createWithdrawTransaction", arg0);
+walletFunc.prototype.createIdTransaction = function(args, success, error) {
+    exec(success, error, "Wallet", "createIdTransaction", args);
 };
 
-walletFunc.prototype.getGenesisAddress = function(arg0, sucess, error) {
-    exec(sucess, error, "Wallet", "getGenesisAddress", arg0);
+walletFunc.prototype.createDepositTransaction = function(args, success, error) {
+    exec(success, error, "Wallet", "createDepositTransaction", args);
 };
-
 
-walletFunc.prototype.didGenerateProgram = function(arg0, sucess, error) {
-    exec(sucess, error, "Wallet", "didGenerateProgram", arg0);
+walletFunc.prototype.createWithdrawTransaction = function(args, success, error) {
+    exec(success, error, "Wallet", "createWithdrawTransaction", args);
 };
 
-walletFunc.prototype.getAllCreatedSubWallets = function(arg0, sucess, error) {
-    exec(sucess, error, "Wallet", "getAllCreatedSubWallets", arg0);
+walletFunc.prototype.getGenesisAddress = function(args, success, error) {
+    exec(success, error, "Wallet", "getGenesisAddress", args);
 };
 
-walletFunc.prototype.registerIdListener = function(arg0, success, error) {
-    exec(success, error, "Wallet", "registerIdListener", arg0);
 
+walletFunc.prototype.didGenerateProgram = function(args, success, error) {
+    exec(success, error, "Wallet", "didGenerateProgram", args);
 };
 
-walletFunc.prototype.createMultiSignMasterWalletWithPrivKey = function(arg0, success, error) {
-    exec(success, error, "Wallet", "createMultiSignMasterWalletWithPrivKey", arg0);
-
+walletFunc.prototype.getAllCreatedSubWallets = function(args, success, error) {
+    exec(success, error, "Wallet", "getAllCreatedSubWallets", args);
 };
 
-walletFunc.prototype.createMultiSignMasterWallet = function(arg0, success, error) {
-    exec(success, error, "Wallet", "createMultiSignMasterWallet", arg0);
+walletFunc.prototype.registerIdListener = function(args, success, error) {
+    exec(success, error, "Wallet", "registerIdListener", args);
 
 };
 
+walletFunc.prototype.createMultiSignMasterWalletWithPrivKey = function(args, success, error) {
+    exec(success, error, "Wallet", "createMultiSignMasterWalletWithPrivKey", args);
 
-walletFunc.prototype.getMasterWalletBasicInfo = function(arg0, success, error) {
-    exec(success, error, "Wallet", "getMasterWalletBasicInfo", arg0);
 };
 
-walletFunc.prototype.createMultiSignTransaction = function(arg0, success, error) {
-    exec(success, error, "Wallet", "createMultiSignTransaction", arg0);
-};
+walletFunc.prototype.createMultiSignMasterWallet = function(args, success, error) {
+    exec(success, error, "Wallet", "createMultiSignMasterWallet", args);
 
-walletFunc.prototype.updateTransactionFee = function(arg0, success, error) {
-    exec(success, error, "Wallet", "updateTransactionFee", arg0);
 };
 
-walletFunc.prototype.signTransaction = function(arg0, success, error) {
-    exec(success, error, "Wallet", "signTransaction", arg0);
-};
 
-walletFunc.prototype.publishTransaction = function(arg0, success, error) {
-    exec(success, error, "Wallet", "publishTransaction", arg0);
+walletFunc.prototype.getMasterWalletBasicInfo = function(args, success, error) {
+    _exec(success, error, "Wallet", "getMasterWalletBasicInfo", args);
 };
 
-walletFunc.prototype.getMasterWalletPublicKey = function(arg0, success, error) {
-    exec(success, error, "Wallet", "getMasterWalletPublicKey", arg0);
+walletFunc.prototype.signTransaction = function(args, success, error) {
+    exec(success, error, "Wallet", "signTransaction", args);
 };
 
-walletFunc.prototype.getSubWalletPublicKey = function(arg0, success, error) {
-    exec(success, error, "Wallet", "getSubWalletPublicKey", arg0);
+walletFunc.prototype.publishTransaction = function(args, success, error) {
+    _exec(success, error, "Wallet", "publishTransaction", args);
 };
 
-walletFunc.prototype.createMultiSignMasterWalletWithMnemonic = function(arg0, success, error) {
-    exec(success, error, "Wallet", "createMultiSignMasterWalletWithMnemonic", arg0);
+walletFunc.prototype.getMasterWalletPublicKey = function(args, success, error) {
+    exec(success, error, "Wallet", "getMasterWalletPublicKey", args);
 };
-
 
-walletFunc.prototype.encodeTransactionToString = function(arg0, success, error) {
-    exec(success, error, "Wallet", "encodeTransactionToString", arg0);
+walletFunc.prototype.getSubWalletPublicKey = function(args, success, error) {
+    exec(success, error, "Wallet", "getSubWalletPublicKey", args);
 };
 
-walletFunc.prototype.decodeTransactionFromString = function(arg0, success, error) {
-    exec(success, error, "Wallet", "decodeTransactionFromString", arg0);
+walletFunc.prototype.createMultiSignMasterWalletWithMnemonic = function(args, success, error) {
+    exec(success, error, "Wallet", "createMultiSignMasterWalletWithMnemonic", args);
 };
 
-walletFunc.prototype.removeWalletListener = function(arg0, success, error) {
-    exec(success, error, "Wallet", "removeWalletListener", arg0);
+walletFunc.prototype.removeWalletListener = function(args, success, error) {
+    exec(success, error, "Wallet", "removeWalletListener", args);
 };
 
-walletFunc.prototype.disposeNative = function(arg0, success, error) {
-    exec(success, error, "Wallet", "disposeNative", arg0);
+walletFunc.prototype.disposeNative = function(args, success, error) {
+    exec(success, error, "Wallet", "disposeNative", args);
 };
 
-walletFunc.prototype.getMultiSignPubKeyWithMnemonic = function(arg0, success, error) {
-    exec(success, error, "Wallet", "getMultiSignPubKeyWithMnemonic", arg0);
+walletFunc.prototype.getMultiSignPubKeyWithMnemonic = function(args, success, error) {
+    exec(success, error, "Wallet", "getMultiSignPubKeyWithMnemonic", args);
 };
 
-walletFunc.prototype.getMultiSignPubKeyWithPrivKey = function(arg0, success, error) {
-    exec(success, error, "Wallet", "getMultiSignPubKeyWithPrivKey", arg0);
+walletFunc.prototype.getMultiSignPubKeyWithPrivKey = function(args, success, error) {
+    exec(success, error, "Wallet", "getMultiSignPubKeyWithPrivKey", args);
 };
 
-walletFunc.prototype.getTransactionSignedSigners = function(arg0, success, error) {
-    exec(success, error, "Wallet", "getTransactionSignedSigners", arg0);
+walletFunc.prototype.getTransactionSignedSigners = function(args, success, error) {
+    _exec(success, error, "Wallet", "getTransactionSignedSigners", args);
 };
 
-walletFunc.prototype.importWalletWithOldKeystore = function(arg0, success, error) {
-    exec(success, error, "Wallet", "importWalletWithOldKeystore", arg0);
+walletFunc.prototype.importWalletWithOldKeystore = function(args, success, error) {
+    exec(success, error, "Wallet", "importWalletWithOldKeystore", args);
 };
 
-walletFunc.prototype.getVersion = function(arg0, success, error) {
-    exec(success, error, "Wallet", "getVersion", arg0);
+walletFunc.prototype.getVersion = function(args, success, error) {
+    exec(success, error, "Wallet", "getVersion", args);
 };
 
-walletFunc.prototype.destroySubWallet = function(arg0, success, error) {
-    exec(success, error, "Wallet", "destroySubWallet", arg0);
+walletFunc.prototype.destroySubWallet = function(args, success, error) {
+    exec(success, error, "Wallet", "destroySubWallet", args);
 };
 
-walletFunc.prototype.getVotedProducerList = function(arg0, success, error) {
-    exec(success, error, "Wallet", "getVotedProducerList", arg0);
+walletFunc.prototype.getVotedProducerList = function(args, success, error) {
+    exec(success, error, "Wallet", "getVotedProducerList", args);
 };
 
-walletFunc.prototype.createVoteProducerTransaction = function(arg0, success, error) {
-    exec(success, error, "Wallet", "createVoteProducerTransaction", arg0);
+walletFunc.prototype.createVoteProducerTransaction = function(args, success, error) {
+    exec(success, error, "Wallet", "createVoteProducerTransaction", args);
 };
 
-walletFunc.prototype.createCancelProducerTransaction = function(arg0, success, error) {
-    exec(success, error, "Wallet", "createCancelProducerTransaction", arg0);
+walletFunc.prototype.createCancelProducerTransaction = function(args, success, error) {
+    exec(success, error, "Wallet", "createCancelProducerTransaction", args);
 };
 
-walletFunc.prototype.getRegisteredProducerInfo = function(arg0, success, error) {
-    exec(success, error, "Wallet", "getRegisteredProducerInfo", arg0);
+walletFunc.prototype.getRegisteredProducerInfo = function(args, success, error) {
+    exec(success, error, "Wallet", "getRegisteredProducerInfo", args);
 };
 
-walletFunc.prototype.createRegisterProducerTransaction = function(arg0, success, error) {
-    exec(success, error, "Wallet", "createRegisterProducerTransaction", arg0);
+walletFunc.prototype.createRegisterProducerTransaction = function(args, success, error) {
+    exec(success, error, "Wallet", "createRegisterProducerTransaction", args);
 };
 
 
-walletFunc.prototype.generateProducerPayload = function(arg0, success, error) {
-    exec(success, error, "Wallet", "generateProducerPayload", arg0);
+walletFunc.prototype.generateProducerPayload = function(args, success, error) {
+    exec(success, error, "Wallet", "generateProducerPayload", args);
 };
 
-walletFunc.prototype.generateCancelProducerPayload = function(arg0, success, error) {
-    exec(success, error, "Wallet", "generateCancelProducerPayload", arg0);
+walletFunc.prototype.generateCancelProducerPayload = function(args, success, error) {
+    exec(success, error, "Wallet", "generateCancelProducerPayload", args);
 };
 
-walletFunc.prototype.getPublicKeyForVote = function(arg0, success, error) {
-    exec(success, error, "Wallet", "getPublicKeyForVote", arg0);
+walletFunc.prototype.getPublicKeyForVote = function(args, success, error) {
+    exec(success, error, "Wallet", "getPublicKeyForVote", args);
 };
 
-walletFunc.prototype.createRetrieveDepositTransaction = function(arg0, success, error) {
-    exec(success, error, "Wallet", "createRetrieveDepositTransaction", arg0);
+walletFunc.prototype.createRetrieveDepositTransaction = function(args, success, error) {
+    exec(success, error, "Wallet", "createRetrieveDepositTransaction", args);
 };
 
 
-walletFunc.prototype.createUpdateProducerTransaction = function(arg0, success, error) {
-    exec(success, error, "Wallet", "createUpdateProducerTransaction", arg0);
+walletFunc.prototype.createUpdateProducerTransaction = function(args, success, error) {
+    exec(success, error, "Wallet", "createUpdateProducerTransaction", args);
 };
 
 var WALLETFUNC = new walletFunc();

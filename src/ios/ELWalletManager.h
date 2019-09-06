@@ -29,7 +29,7 @@
 #import "MasterWalletManager.h"
 #import "ISidechainSubWallet.h"
 #import "IMainchainSubWallet.h"
-#import "IIdChainSubWallet.h"
+#import "IIDChainSubWallet.h"
 //#import "IDidManager.h"
 //#import "idid.h"
 #import <string.h>
@@ -49,7 +49,7 @@ typedef Elastos::ElaWallet::ISubWalletCallback ISubWalletCallback;
 typedef Elastos::ElaWallet::ISidechainSubWallet ISidechainSubWallet;
 typedef Elastos::ElaWallet::IMainchainSubWallet IMainchainSubWallet;
 typedef std::vector<ISubWalletCallback *> ISubWalletCallbackVector;
-typedef Elastos::ElaWallet::IIdChainSubWallet IIdChainSubWallet;
+typedef Elastos::ElaWallet::IIDChainSubWallet IIDChainSubWallet;
 
 //typedef Elastos::DID::IDIDManager IDidManager;
 //typedef Elastos::DID::IDID IDID;
@@ -65,13 +65,13 @@ typedef Elastos::ElaWallet::IIdChainSubWallet IIdChainSubWallet;
     MasterWalletManager *mMasterWalletManager;// = null;
     // IDidManager mDidManager = null;
     NSString *mRootPath;// = null;
-    
+
     NSString *keySuccess;//   = "success";
     NSString *keyError;//     = "error";
     NSString *keyCode;//      = "code";
     NSString *keyMessage;//   = "message";
     NSString *keyException;// = "exception";
-    
+
     int errCodeParseJsonInAction;//          = 10000;
     int errCodeInvalidArg      ;//           = 10001;
     int errCodeInvalidMasterWallet ;//       = 10002;
@@ -86,13 +86,13 @@ typedef Elastos::ElaWallet::IIdChainSubWallet IIdChainSubWallet;
     int errCodeInvalidDIDManager      ;//    = 10011;
     int errCodeInvalidDID               ;//  = 10012;
     int errCodeActionNotFound           ;//  = 10013;
-    
+
     int errCodeWalletException         ;//   = 20000;
-    
+
     ISubWalletVector *isubWalletVector;
     ISubWalletCallbackVector *isubWalletCallBackVector;
-    
-    
+
+
 //    Map<String, IDidManager> mDIDManagerMap = new HashMap<String, IDidManager>();
 }
 - (void)pluginInitialize:(NSString *)path;
@@ -126,15 +126,9 @@ typedef Elastos::ElaWallet::IIdChainSubWallet IIdChainSubWallet;
 - (CDVPluginResult *)createDepositTransaction:(CDVInvokedUrlCommand *)command;
 - (CDVPluginResult *)destroyWallet:(CDVInvokedUrlCommand *)command;
 - (CDVPluginResult *)createTransaction:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)calculateTransactionFee:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)updateTransactionFee:(CDVInvokedUrlCommand *)command;
 - (CDVPluginResult *)signTransaction:(CDVInvokedUrlCommand *)command;
 - (CDVPluginResult *)publishTransaction:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)saveConfigs:(CDVInvokedUrlCommand *)command;
 - (CDVPluginResult *)importWalletWithOldKeystore:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)encodeTransactionToString:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)decodeTransactionFromString:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)createMultiSignTransaction:(CDVInvokedUrlCommand *)command;
 - (CDVPluginResult *)getTransactionSignedSigners:(CDVInvokedUrlCommand *)command;
 - (CDVPluginResult *)getSubWalletPublicKey:(CDVInvokedUrlCommand *)command;
 - (CDVPluginResult *)removeWalletListener:(CDVInvokedUrlCommand *)command;

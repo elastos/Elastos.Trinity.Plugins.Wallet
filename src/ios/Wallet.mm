@@ -32,14 +32,14 @@
 
 
 @interface Wallet : TrinityPlugin {
-    
+
     ELWalletManager *walletManager;
     NSString *keySuccess;//   = "success";
     NSString *keyError;//     = "error";
     NSString *keyCode;//      = "code";
     NSString *keyMessage;//   = "message";
     NSString *keyException;// = "exception";
-    
+
     int errCodeParseJsonInAction;//          = 10000;
     int errCodeInvalidArg      ;//           = 10001;
     int errCodeInvalidMasterWallet ;//       = 10002;
@@ -54,7 +54,7 @@
     int errCodeInvalidDIDManager      ;//    = 10011;
     int errCodeInvalidDID               ;//  = 10012;
     int errCodeActionNotFound           ;//  = 10013;
-    
+
     int errCodeWalletException         ;//   = 20000;
 }
 
@@ -87,15 +87,9 @@
 - (void)createDepositTransaction:(CDVInvokedUrlCommand *)command;
 - (void)destroyWallet:(CDVInvokedUrlCommand *)command;
 - (void)createTransaction:(CDVInvokedUrlCommand *)command;
-- (void)calculateTransactionFee:(CDVInvokedUrlCommand *)command;
-- (void)updateTransactionFee:(CDVInvokedUrlCommand *)command;
 - (void)signTransaction:(CDVInvokedUrlCommand *)command;
 - (void)publishTransaction:(CDVInvokedUrlCommand *)command;
-- (void)saveConfigs:(CDVInvokedUrlCommand *)command;
 - (void)importWalletWithOldKeystore:(CDVInvokedUrlCommand *)command;
-- (void)encodeTransactionToString:(CDVInvokedUrlCommand *)command;
-- (void)decodeTransactionFromString:(CDVInvokedUrlCommand *)command;
-- (void)createMultiSignTransaction:(CDVInvokedUrlCommand *)command;
 - (void)getTransactionSignedSigners:(CDVInvokedUrlCommand *)command;
 - (void)getSubWalletPublicKey:(CDVInvokedUrlCommand *)command;
 - (void)removeWalletListener:(CDVInvokedUrlCommand *)command;
@@ -135,21 +129,21 @@
 - (CDVPluginResult *)execMethmod:(NSString *)method :(CDVInvokedUrlCommand *)command msg:(NSString *)exceptionMsg
 {
     CDVPluginResult *pluginResult = nil;
-    
+
     try {
-        
+
         SEL selector = NSSelectorFromString(method);
         IMP imp = [walletManager methodForSelector:selector];
         CDVPluginResult* (*func)(id, SEL,CDVInvokedUrlCommand *) = (CDVPluginResult* (*)(id, SEL, CDVInvokedUrlCommand *))imp;
         pluginResult = func(walletManager,selector,command);
-        
+
     }catch (Json::exception &e) {
-        
+
         NSString *msg = @"json format error";
         pluginResult = [self jsonExceptionProcess:command :&e msg:msg];
-        
+
     }catch (std::exception &e) {
-        
+
         NSString *msg = exceptionMsg;
         pluginResult = [self exceptionProcess:command :&e msg:msg];
     }
@@ -159,7 +153,7 @@
 {
     NSMutableString *string = [[NSMutableString alloc] init];
     for (int i = 0; i < msgArray.count; i++) {
-        
+
         NSString *str = [msgArray objectAtIndex:i];
         [string appendString:str];
     }
@@ -183,7 +177,7 @@
     [msgArray addObject:[self formatWalletNameWithString:masterWalletID other:chainID]];
     [msgArray addObject:end];
     NSString *msg = [self formatMsg:msgArray];
-    
+
     return msg;
 }
 
@@ -194,7 +188,7 @@
     [msgArray addObject:[self formatWalletName:masterWalletID]];
     [msgArray addObject:end];
     NSString *msg = [self formatMsg:msgArray];
-    
+
     return msg;
 }
 
@@ -238,7 +232,7 @@
     if(error)
     {
         NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];
-        
+
         [dic setValue:[NSNumber numberWithLong:errCodeWalletException] forKey:keyCode];
         [dic setValue:msg forKey:keyMessage];
         [dic setValue:jsonString forKey:keyException];
@@ -249,7 +243,7 @@
     NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];
     long exceptionCode = [[json objectForKey:@"Code"] longValue];
     NSString *exceptionMsg = [json objectForKey:@"Message"] ;
-    
+
     [dic setValue:[NSNumber numberWithLong:exceptionCode] forKey:keyCode];
     [dic setValue:[NSString stringWithFormat:@"%@:%@", msg, exceptionMsg] forKey:keyMessage];
     id data = [json objectForKey:@"Data"];
@@ -275,7 +269,7 @@
     //    str = [str stringByReplacingOccurrencesOfString:@"\"" withString:@""];
     //    str = [str stringByTrimmingCharactersInSet:[NSCharacterSet controlCharacterSet]];
     NSString *beginStr = [str substringWithRange:NSMakeRange(0, 1)];
-    
+
     NSString *result = str;
     if([beginStr isEqualToString:@"\""])
     {
@@ -302,19 +296,19 @@
     [dic setValue:value forKey:key];
     NSDictionary *resDic = dic;
     return resDic;
-    
+
 }
 #pragma mark -
 
 - (void)pluginInitialize
 {
-    
+
     keySuccess   = @"success";
     keyError     = @"error";
     keyCode      = @"code";
     keyMessage   = @"message";
     keyException = @"exception";
-    
+
     errCodeParseJsonInAction          = 10000;
     errCodeInvalidArg                 = 10001;
     errCodeInvalidMasterWallet        = 10002;
@@ -329,9 +323,9 @@
     errCodeInvalidDIDManager          = 10011;
     errCodeInvalidDID                 = 10012;
     errCodeActionNotFound             = 10013;
-    
+
     errCodeWalletException            = 30000;
-    
+
     walletManager = [[ELWalletManager alloc] init];
     NSString *path = [self getConfigPath];
     path =[path stringByAppendingPathComponent:@"spv"];
@@ -366,7 +360,7 @@
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 - (void)generateMnemonic:(CDVInvokedUrlCommand*)command
 {
@@ -380,7 +374,7 @@
 }
 - (void)createSubWallet:(CDVInvokedUrlCommand*)command
 {
-    
+
     int idx = 0;
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
@@ -396,17 +390,17 @@
     int idx = 0;
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletID:@"Get" masterId:masterWalletID end:@"all subwallets"];
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
-- (void)registerWalletListener:(CDVInvokedUrlCommand*)command 
+- (void)registerWalletListener:(CDVInvokedUrlCommand*)command
 {
     [walletManager registerWalletListener:command :self.commandDelegate];
 //    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 - (void)getBalance:(CDVInvokedUrlCommand *)command
 {
@@ -418,19 +412,19 @@
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 - (void)getSupportedChains:(CDVInvokedUrlCommand *)command
 {
     int idx = 0;
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletID:@"" masterId:masterWalletID end:@"get support chain"];
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 
 - (void)getMasterWalletBasicInfo:(CDVInvokedUrlCommand *)command
@@ -438,12 +432,12 @@
     int idx = 0;
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletID:@"Get" masterId:masterWalletID end:@"basic info"];
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 
 - (void)getAllTransaction:(CDVInvokedUrlCommand *)command
@@ -456,7 +450,7 @@
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 
 - (void)createAddress:(CDVInvokedUrlCommand *)command
@@ -469,7 +463,7 @@
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 
 - (void)getGenesisAddress:(CDVInvokedUrlCommand *)command
@@ -482,7 +476,7 @@
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 
 - (void)getMasterWalletPublicKey:(CDVInvokedUrlCommand *)command
@@ -490,12 +484,12 @@
     int idx = 0;
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletID:@"Get" masterId:masterWalletID end:@" public key"];
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 
 - (void)exportWalletWithKeystore:(CDVInvokedUrlCommand *)command
@@ -503,12 +497,12 @@
     int idx = 0;
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletID:@"Export" masterId:masterWalletID end:@" to keystore"];
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 
 - (void)exportWalletWithMnemonic:(CDVInvokedUrlCommand *)command
@@ -516,12 +510,12 @@
     int idx = 0;
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletID:@"Export" masterId:masterWalletID end:@" to mnemonic"];
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 
 - (void)changePassword:(CDVInvokedUrlCommand *)command
@@ -529,12 +523,12 @@
     int idx = 0;
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletID:@"" masterId:masterWalletID end:@" change password"];
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 - (void)importWalletWithKeystore:(CDVInvokedUrlCommand *)command
 {
@@ -542,7 +536,7 @@
     NSArray *args = command.arguments;
     String masterWalletID  = [self cstringWithString:args[idx++]];
     NSString *msg = [self formatMsgWithMasterWalletID:@"Import " masterId:masterWalletID end:@" with keystore"];
-   
+
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -553,23 +547,23 @@
     int idx = 0;
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletID:@"Import" masterId:masterWalletID end:@" with mnemonic"];
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 
 - (void)getMultiSignPubKeyWithMnemonic:(CDVInvokedUrlCommand *)command
 {
-    
+
     NSString *msg = @"Get multi sign public key with mnemonic";
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
-    
+
+
 }
 
 - (void)createMultiSignMasterWalletWithMnemonic:(CDVInvokedUrlCommand *)command
@@ -577,12 +571,12 @@
     int idx = 0;
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletID:@"Create multi sign" masterId:masterWalletID end:@" with mnemonic"];
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 
 - (void)createMultiSignMasterWallet:(CDVInvokedUrlCommand *)command
@@ -590,17 +584,17 @@
     int idx = 0;
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletID:@"Create multi sign" masterId:masterWalletID end:@""];
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 
 - (void)getMultiSignPubKeyWithPrivKey:(CDVInvokedUrlCommand *)command
 {
-    
+
     NSString *msg = @"Get multi sign public key with private key";
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
@@ -612,12 +606,12 @@
     int idx = 0;
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletID:@"Create multi sign" masterId:masterWalletID end:@" with private key"];
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 
 - (void)getAllAddress:(CDVInvokedUrlCommand *)command
@@ -630,7 +624,7 @@
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 
 - (void)isAddressValid:(CDVInvokedUrlCommand *)command
@@ -638,12 +632,12 @@
     int idx = 0;
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletID:@"Check address valid of " masterId:masterWalletID end:@""];
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 
 - (void)createDepositTransaction:(CDVInvokedUrlCommand *)command
@@ -664,7 +658,7 @@
     int idx = 0;
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletID:@"Destroy " masterId:masterWalletID end:@""];
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
@@ -682,33 +676,7 @@
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
-}
 
-- (void)calculateTransactionFee:(CDVInvokedUrlCommand *)command
-{
-    int idx = 0;
-    NSArray *array = command.arguments;
-    String masterWalletID = [self cstringWithString:array[idx++]];
-    String chainID = [self cstringWithString:array[idx++]];
-    NSString *msg = [self formatMsgWithMasterWalletIDAndChainID:@"Calculate" masterId:masterWalletID chainID:chainID end:@" tx fee"];
-    CDVPluginResult *pluginResult = nil;
-    pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
-}
-
-- (void)updateTransactionFee:(CDVInvokedUrlCommand *)command
-{
-    int idx = 0;
-    NSArray *array = command.arguments;
-    String masterWalletID = [self cstringWithString:array[idx++]];
-    String chainID = [self cstringWithString:array[idx++]];
-    NSString *msg = [self formatMsgWithMasterWalletIDAndChainID:@"Update" masterId:masterWalletID chainID:chainID end:@" tx fee"];
-    CDVPluginResult *pluginResult = nil;
-    pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
 }
 
 - (void)signTransaction:(CDVInvokedUrlCommand *)command
@@ -721,7 +689,7 @@
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 
 - (void)publishTransaction:(CDVInvokedUrlCommand *)command
@@ -734,39 +702,39 @@
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
-- (void)saveConfigs:(CDVInvokedUrlCommand *)command
-{
-  
-    NSString *msg = @"Master wallet manager save configuration files";
-    CDVPluginResult *pluginResult = nil;
-    pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
-}
+// - (void)saveConfigs:(CDVInvokedUrlCommand *)command
+// {
+
+//     NSString *msg = @"Master wallet manager save configuration files";
+//     CDVPluginResult *pluginResult = nil;
+//     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
+//     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+
+// }
 
 - (void)importWalletWithOldKeystore:(CDVInvokedUrlCommand *)command
 {
     int idx = 0;
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletID:@"Import " masterId:masterWalletID end:@" with old keystore"];
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 
 - (void)encodeTransactionToString:(CDVInvokedUrlCommand *)command
 {
-   
+
     NSString *msg = @"Encode tx to cipher string";
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 
 - (void)decodeTransactionFromString:(CDVInvokedUrlCommand *)command
@@ -775,19 +743,6 @@
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-}
-
-- (void)createMultiSignTransaction:(CDVInvokedUrlCommand *)command
-{
-    int idx = 0;
-    NSArray *array = command.arguments;
-    String masterWalletID = [self cstringWithString:array[idx++]];
-    String chainID = [self cstringWithString:array[idx++]];
-    NSString *msg = [self formatMsgWithMasterWalletIDAndChainID:@"Create " masterId:masterWalletID chainID:chainID end:@" multi sign tx"];
-    CDVPluginResult *pluginResult = nil;
-    pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
 }
 
 - (void)getTransactionSignedSigners:(CDVInvokedUrlCommand *)command
@@ -800,7 +755,7 @@
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 
 - (void)getSubWalletPublicKey:(CDVInvokedUrlCommand *)command
@@ -813,7 +768,7 @@
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 
 
@@ -827,7 +782,7 @@
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 
 - (void)createIdTransaction:(CDVInvokedUrlCommand *)command
@@ -840,7 +795,7 @@
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 
 
@@ -849,12 +804,12 @@
     int idx = 0;
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletID:@"" masterId:masterWalletID end:@" create DID"];
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 
 - (void)didGenerateProgram:(CDVInvokedUrlCommand *)command
@@ -862,12 +817,12 @@
     int idx = 0;
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletID:@"" masterId:masterWalletID end:@" DID generate program"];
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 
 - (void)getDIDList:(CDVInvokedUrlCommand *)command
@@ -875,28 +830,28 @@
     int idx = 0;
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletID:@"" masterId:masterWalletID end:@" get DID list"];
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 
 - (void)destoryDID:(CDVInvokedUrlCommand *)command
 {
     int idx = 0;
     NSArray *args = command.arguments;
-    
+
     String masterWalletID  = [self cstringWithString:args[idx++]];
     String didName        = [self cstringWithString:args[idx++]];
     NSString *end = [NSString stringWithFormat:@" destroy DID %@", [self stringWithCString:didName]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletID:@"" masterId:masterWalletID end:end];
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 
 - (void)didSetValue:(CDVInvokedUrlCommand *)command
@@ -904,12 +859,12 @@
     int idx = 0;
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletID:@"" masterId:masterWalletID end:@" DID set value"];
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 
 - (void)didGetValue:(CDVInvokedUrlCommand *)command
@@ -919,9 +874,9 @@
     String masterWalletID  = [self cstringWithString:array[idx++]];
     String didName        = [self cstringWithString:array[idx++]];
     String keyPath        = [self cstringWithString:array[idx++]];
-    
+
     NSString *end = [NSString stringWithFormat:@"DID get value of \'%@\'", [self stringWithCString:keyPath]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletID:@"" masterId:masterWalletID end:end];
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
@@ -936,33 +891,33 @@
     String masterWalletID  = [self cstringWithString:array[idx++]];
     String didName        = [self cstringWithString:array[idx++]];
     String keyPath        = [self cstringWithString:array[idx++]];
-    
+
     NSString *end = [NSString stringWithFormat:@"DID get history value by \'%@\'", [self stringWithCString:keyPath]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletID:@"" masterId:masterWalletID end:end];
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 
 - (void)didGetAllKeys:(CDVInvokedUrlCommand *)command
 {
     int idx = 0;
     NSArray *args = command.arguments;
-    
+
     String masterWalletID  = [self cstringWithString:args[idx++]];
     String didName        = [self cstringWithString:args[idx++]];
     int    start          = [args[idx++] intValue];
     int    count          = [args[idx++] intValue];
-    
+
     NSString *end = [NSString stringWithFormat:@"DID get %d keys from %d", count, start];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletID:@"" masterId:masterWalletID end:end];
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 
 - (void)didSign:(CDVInvokedUrlCommand *)command
@@ -970,12 +925,12 @@
     int idx = 0;
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletID:@"" masterId:masterWalletID end:@" DID sign"];
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 
 - (void)didCheckSign:(CDVInvokedUrlCommand *)command
@@ -983,12 +938,12 @@
     int idx = 0;
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletID:@"" masterId:masterWalletID end:@" DID verify sign"];
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 
 - (void)didGetPublicKey:(CDVInvokedUrlCommand *)command
@@ -996,12 +951,12 @@
     int idx = 0;
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletID:@"" masterId:masterWalletID end:@" DID get public key"];
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 
 
@@ -1010,12 +965,12 @@
     int idx = 0;
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletID:@"" masterId:masterWalletID end:@" DID register listener"];
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
 //    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 
 - (void)createWithdrawTransaction:(CDVInvokedUrlCommand *)command
@@ -1028,7 +983,7 @@
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 
 - (void)getMasterWallet:(CDVInvokedUrlCommand *)command
@@ -1036,7 +991,7 @@
     int idx = 0;
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletID:@"Get " masterId:masterWalletID end:@""];
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
@@ -1048,7 +1003,7 @@
 {
 //    CDVPluginResult *pluginResult = [walletManager destroySubWallet:command];
 //    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
     int idx = 0;
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
@@ -1059,7 +1014,7 @@
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
+
 }
 
 - (void)getVersion:(CDVInvokedUrlCommand *)command
@@ -1075,9 +1030,9 @@
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
     String chainID = [self cstringWithString:array[idx++]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletIDAndChainID:@"" masterId:masterWalletID chainID:chainID end:@" generate producer payload"];
-    
+
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -1089,9 +1044,9 @@
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
     String chainID = [self cstringWithString:array[idx++]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletIDAndChainID:@"" masterId:masterWalletID chainID:chainID end:@" generate cancel producer payload"];
-    
+
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -1103,9 +1058,9 @@
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
     String chainID = [self cstringWithString:array[idx++]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletIDAndChainID:@"" masterId:masterWalletID chainID:chainID end:@" create register producer tx"];
-    
+
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -1117,9 +1072,9 @@
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
     String chainID = [self cstringWithString:array[idx++]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletIDAndChainID:@"" masterId:masterWalletID chainID:chainID end:@" create update producer tx"];
-    
+
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -1131,9 +1086,9 @@
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
     String chainID = [self cstringWithString:array[idx++]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletIDAndChainID:@"" masterId:masterWalletID chainID:chainID end:@" create cancel producer tx"];
-    
+
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -1145,9 +1100,9 @@
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
     String chainID = [self cstringWithString:array[idx++]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletIDAndChainID:@"" masterId:masterWalletID chainID:chainID end:@" create retrieve deposit tx"];
-    
+
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -1159,9 +1114,9 @@
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
     String chainID = [self cstringWithString:array[idx++]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletIDAndChainID:@"" masterId:masterWalletID chainID:chainID end:@" get public key for vote"];
-    
+
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -1173,9 +1128,9 @@
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
     String chainID = [self cstringWithString:array[idx++]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletIDAndChainID:@"" masterId:masterWalletID chainID:chainID end:@" create vote producer tx"];
-    
+
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -1187,9 +1142,9 @@
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
     String chainID = [self cstringWithString:array[idx++]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletIDAndChainID:@"" masterId:masterWalletID chainID:chainID end:@" get voted producer list"];
-    
+
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -1201,9 +1156,9 @@
     NSArray *array = command.arguments;
     String masterWalletID = [self cstringWithString:array[idx++]];
     String chainID = [self cstringWithString:array[idx++]];
-    
+
     NSString *msg = [self formatMsgWithMasterWalletIDAndChainID:@"" masterId:masterWalletID chainID:chainID end:@" get registerd producer info"];
-    
+
     CDVPluginResult *pluginResult = nil;
     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];

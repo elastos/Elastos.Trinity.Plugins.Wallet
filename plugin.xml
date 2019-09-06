@@ -25,15 +25,16 @@
         <source-file src="src/ios/ELWalletManager.mm" />
         <header-file src="src/ios/ELWalletManager.h" />
         <header-file src="src/ios/libspvsdk/include/IIdAgent.h" />
-        <header-file src="src/ios/libspvsdk/include/IMasterWalletManager.h" />
-        <header-file src="src/ios/libspvsdk/include/MasterWalletManager.h" />
-        <header-file src="src/ios/libspvsdk/include/IIdChainSubWallet.h" />
-        <header-file src="src/ios/libspvsdk/include/ISidechainSubWallet.h" />
+        <header-file src="src/ios/libspvsdk/include/IIDChainSubWallet.h" />
         <header-file src="src/ios/libspvsdk/include/IMainchainSubWallet.h" />
-        <header-file src="src/ios/libspvsdk/include/ISubWallet.h" />
         <header-file src="src/ios/libspvsdk/include/IMasterWallet.h" />
+        <header-file src="src/ios/libspvsdk/include/IMasterWalletManager.h" />
+        <header-file src="src/ios/libspvsdk/include/ISidechainSubWallet.h" />
+        <header-file src="src/ios/libspvsdk/include/ISubWallet.h" />
         <header-file src="src/ios/libspvsdk/include/ISubWalletCallback.h" />
+        <header-file src="src/ios/libspvsdk/include/ITokenchainSubWallet.h" />
         <header-file src="src/ios/libspvsdk/include/nlohmann/json.hpp" />
+        <header-file src="src/ios/libspvsdk/include/MasterWalletManager.h" />
         <source-file src="src/ios/libspvsdk/libs/libspvsdk.a" framework="true" />
     </platform>
 </plugin>
