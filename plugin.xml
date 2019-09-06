@@ -24,7 +24,7 @@
         <source-file src="src/ios/Wallet.mm" />
         <source-file src="src/ios/ELWalletManager.mm" />
         <header-file src="src/ios/ELWalletManager.h" />
-        <header-file src="src/ios/libspvsdk/include/IIdAgent.h" />
+        <header-file src="src/ios/libspvsdk/include/IIDAgent.h" />
         <header-file src="src/ios/libspvsdk/include/IIDChainSubWallet.h" />
         <header-file src="src/ios/libspvsdk/include/IMainchainSubWallet.h" />
         <header-file src="src/ios/libspvsdk/include/IMasterWallet.h" />
