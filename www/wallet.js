@@ -226,11 +226,6 @@ walletFunc.prototype.getAllCreatedSubWallets = function(args, success, error) {
     exec(success, error, "Wallet", "getAllCreatedSubWallets", args);
 };
 
-walletFunc.prototype.registerIdListener = function(args, success, error) {
-    exec(success, error, "Wallet", "registerIdListener", args);
-
-};
-
 walletFunc.prototype.createMultiSignMasterWalletWithPrivKey = function(args, success, error) {
     exec(success, error, "Wallet", "createMultiSignMasterWalletWithPrivKey", args);
 
