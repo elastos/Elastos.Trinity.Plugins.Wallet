@@ -175,49 +175,7 @@
 		  mMasterWalletManager = new MasterWalletManager(mRootPath);
 	  }
 
-	  private boolean createDIDManager(IMasterWallet masterWallet) {
-		  try {
-			  //			String masterWalletID = masterWallet.GetID();
-			  //			JSONObject basicInfo = new JSONObject(masterWallet.GetBasicInfo());
-			  //			String accountType = basicInfo.getJSONObject("Account").getString("Type");
-			  //			if (! accountType.equals("Standard")) {
-			  //				Log.w(TAG, "Master wallet '" + masterWalletID + "' is not standard account, can't create DID manager");
-			  //				return false;
-			  //			}
-			  //
-			  //			if (null != getDIDManager(masterWalletID)) {
-			  //				Log.w(TAG, "Master wallet '" + masterWalletID + "' already contain DID manager");
-			  //				return false;
-			  //			}
-			  //
-			  //			Log.i(TAG, "Master wallet '" + masterWallet.GetID() + "' create DID manager with root path '" + mRootPath + "'");
-			  //			IDidManager DIDManager = mDIDManagerSupervisor.CreateDIDManager(masterWallet, mRootPath);
-			  //			putDIDManager(masterWalletID, DIDManager);
-			  return true;
-		  } catch (Exception e) {
-			  e.printStackTrace();
-			  Log.e(TAG, "DID manager initialize exception");
-		  }
 
-		  return false;
-	  }
-
-	  private void destroyIDManager(IMasterWallet masterWallet) {
-		  try {
-			  //			String masterWalletID = masterWallet.GetID();
-			  //
-			  //			IDidManager DIDManager = getDIDManager(masterWalletID);
-			  //			if (null == DIDManager) {
-			  //				return;
-			  //			}
-			  //			mDIDManagerMap.remove(masterWalletID);
-			  //
-			  //			mDIDManagerSupervisor.DestroyDIDManager(DIDManager);
-		  } catch (Exception e) {
-			  e.printStackTrace();
-			  Log.e(TAG, "DID manager destroy exception");
-		  }
-	  }
 
 	  private String formatWalletName(String masterWalletID) {
 		  return masterWalletID;
@@ -227,23 +185,7 @@
 		  return masterWalletID + ":" + chainID;
 	  }
 
-	  private IDidManager getDIDManager(String masterWalletID) {
-		  return mDIDManagerMap.get(masterWalletID);
-	  }
-
-	  private void putDIDManager(String masterWalletID, IDidManager DIDManager) {
-		  mDIDManagerMap.put(masterWalletID, DIDManager);
-	  }
-
-	  //   private JSONObject mkJson(String key, Object value) throws JSONException {
-	  // 	  JSONObject jsonObject = new JSONObject();
-	  // 	  jsonObject.put(key, value);
-
-	  // 	  return jsonObject;
-	  //   }
-
 	  private boolean parametersCheck(JSONArray args) throws JSONException {
-		  Log.i(TAG, "args = " + args);
 		  for (int i = 0; i < args.length(); i++) {
 			  if (args.isNull(i)) {
 				  Log.e(TAG, "arg[" + i + "] = " + args.get(i) + " should not be null");
@@ -530,43 +472,6 @@
 					  this.getGenesisAddress(args, cc);
 					  break;
 
-				  //did
-				  case "createDID":
-					  this.createDID(args, cc);
-					  break;
-				  case "didGenerateProgram":
-					  this.didGenerateProgram(args, cc);
-					  break;
-				  case "getDIDList":
-					  this.getDIDList(args, cc);
-					  break;
-				  case "destoryDID":
-					  this.destoryDID(args, cc);
-					  break;
-				  case "didSetValue":
-					  this.didSetValue(args, cc);
-					  break;
-				  case "didGetValue":
-					  this.didGetValue(args, cc);
-					  break;
-				  case "didGetHistoryValue":
-					  this.didGetHistoryValue(args, cc);
-					  break;
-				  case "didGetAllKeys":
-					  this.didGetAllKeys(args, cc);
-					  break;
-				  case "didSign":
-					  this.didSign(args, cc);
-					  break;
-				  case "didCheckSign":
-					  this.didCheckSign(args, cc);
-					  break;
-				  case "didGetPublicKey":
-					  this.didGetPublicKey(args, cc);
-					  break;
-				  case "registerIdListener":
-					  this.registerIdListener(args, cc);
-					  break;
 				  default:
 					  errorProcess(cc, errCodeActionNotFound, "Action '" + action + "' not found, please check!");
 					  return false;
@@ -874,7 +779,6 @@
 				  errorProcess(cc, errCodeCreateMasterWallet, "Create " + formatWalletName(masterWalletID));
 				  return;
 			  }
-			  createDIDManager(masterWallet);
 
 			  cc.success(masterWallet.GetBasicInfo());
 		  } catch (WalletException e) {
@@ -906,8 +810,6 @@
 				  return;
 			  }
 
-			  createDIDManager(masterWallet);
-
 			  cc.success(masterWallet.GetBasicInfo());
 		  } catch (WalletException e) {
 			  exceptionProcess(e, cc, "Create multi sign " + formatWalletName(masterWalletID));
@@ -937,8 +839,6 @@
 				  errorProcess(cc, errCodeCreateMasterWallet, "Create multi sign " + formatWalletName(masterWalletID) + " with private key");
 				  return;
 			  }
-
-			  createDIDManager(masterWallet);
 
 			  cc.success(masterWallet.GetBasicInfo());
 		  } catch (WalletException e) {
@@ -976,8 +876,6 @@
 				  errorProcess(cc, errCodeCreateMasterWallet, "Create multi sign " + formatWalletName(masterWalletID) + " with mnemonic");
 				  return;
 			  }
-
-			  createDIDManager(masterWallet);
 
 			  cc.success(masterWallet.GetBasicInfo());
 		  } catch (WalletException e) {
@@ -1041,10 +939,6 @@
 
 			  ArrayList<ISubWallet> subWallets = masterWallet.GetAllSubWallets();
 
-			  IDidManager DIDManager = getDIDManager(masterWalletID);
-			  if (DIDManager != null) {
-				  // TODO destroy did manager
-			  }
 			  mMasterWalletManager.DestroyWallet(masterWalletID);
 
 			  for (int i = 0; subWallets != null && i < subWallets.size(); i++) {
@@ -1084,8 +978,6 @@
 				  return;
 			  }
 
-			  createDIDManager(masterWallet);
-
 			  cc.success(masterWallet.GetBasicInfo());
 		  } catch (WalletException e) {
 			  exceptionProcess(e, cc, "Import " + formatWalletName(masterWalletID) + " with keystore");
@@ -1116,8 +1008,6 @@
 				  errorProcess(cc, errCodeImportFromKeyStore, "Import " + formatWalletName(masterWalletID) + " with keystore");
 				  return;
 			  }
-
-			  createDIDManager(masterWallet);
 
 			  cc.success(masterWallet.GetBasicInfo());
 		  } catch (WalletException e) {
@@ -1151,8 +1041,6 @@
 				  errorProcess(cc, errCodeImportFromMnemonic, "Import " + formatWalletName(masterWalletID) + " with mnemonic");
 				  return;
 			  }
-
-			  createDIDManager(masterWallet);
 
 			  cc.success(masterWallet.GetBasicInfo());
 		  } catch (WalletException e) {
@@ -2508,411 +2396,6 @@
 		  } else {
 			  //			LogUtil.i(TAG, text);
 			  cc.success(parseOneParam("text", text));
-		  }
-	  }
-
-
-	  //IDIDManager
-	  // args[0]: String masterWalletID
-	  // args[1]: String password
-	  public void createDID(JSONArray args, CallbackContext cc) throws JSONException {
-		  int idx = 0;
-
-		  String masterWalletID = args.getString(idx++);
-		  String password       = args.getString(idx++);
-
-		  if (args.length() != idx) {
-			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-			  return;
-		  }
-
-		  try {
-			  IDidManager DIDManager = getDIDManager(masterWalletID);
-			  if (DIDManager == null) {
-				  errorProcess(cc, errCodeInvalidDIDManager, formatWalletName(masterWalletID) + " do not contain DID manager");
-				  return;
-			  }
-
-			  IDid did = DIDManager.CreateDID(args.getString(0));
-			  cc.success(did.GetDIDName());
-		  } catch (WalletException e) {
-			  exceptionProcess(e, cc, formatWalletName(masterWalletID) + " create DID");
-		  }
-	  }
-
-	  // args[0]: String masterWalletID
-	  public void getDIDList(JSONArray args, CallbackContext cc) throws JSONException {
-		  int idx = 0;
-
-		  String masterWalletID = args.getString(idx++);
-		  String password       = args.getString(idx++);
-
-		  if (args.length() != idx) {
-			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-			  return;
-		  }
-
-		  try {
-			  IDidManager DIDManager = getDIDManager(masterWalletID);
-			  if (DIDManager == null) {
-				  errorProcess(cc, errCodeInvalidDIDManager, formatWalletName(masterWalletID) + " do not contain DID manager");
-				  return;
-			  }
-
-			  cc.success(DIDManager.GetDIDList());
-		  } catch (WalletException e) {
-			  exceptionProcess(e, cc, formatWalletName(masterWalletID) + " get DID list");
-		  }
-	  }
-
-	  // args[0]: String masterWalletID
-	  // args[1]: String didName
-	  public void destoryDID(JSONArray args, CallbackContext cc) throws JSONException {
-		  int idx = 0;
-
-		  String masterWalletID = args.getString(idx++);
-		  String didName      = args.getString(idx++);
-
-		  if (args.length() != idx) {
-			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-			  return;
-		  }
-
-		  try {
-			  IDidManager DIDManager = getDIDManager(masterWalletID);
-			  if (DIDManager == null) {
-				  errorProcess(cc, errCodeInvalidDIDManager, formatWalletName(masterWalletID) + " do not contain DID manager");
-				  return;
-			  }
-
-			  DIDManager.DestoryDID(didName);
-			  cc.success("Destroy DID " + didName + " successfully");
-		  } catch (WalletException e) {
-			  exceptionProcess(e, cc, formatWalletName(masterWalletID) + " destroy DID " + didName);
-		  }
-	  }
-
-	  //IDID
-	  // args[0]: String masterWalletID
-	  // args[1]: String didName
-	  // args[2]: String keyPath
-	  // args[3]: String valueJson
-	  public void didSetValue(JSONArray args, CallbackContext cc) throws JSONException {
-		  int idx = 0;
-
-		  String masterWalletID = args.getString(idx++);
-		  String didName        = args.getString(idx++);
-		  String keyPath        = args.getString(idx++);
-		  String valueJson      = args.getString(idx++);
-
-		  if (args.length() != idx) {
-			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-			  return;
-		  }
-
-		  try {
-			  IDidManager DIDManager = getDIDManager(masterWalletID);
-			  if (DIDManager == null) {
-				  errorProcess(cc, errCodeInvalidDIDManager, formatWalletName(masterWalletID) + " do not contain DID manager");
-				  return;
-			  }
-
-			  IDid did = DIDManager.GetDID(didName);
-			  if (did == null) {
-				  errorProcess(cc, errCodeInvalidDID, "DID manager get DID " + didName + " fail");
-				  return;
-			  }
-
-			  did.SetValue(keyPath, valueJson);
-			  cc.success("DID set value successfully");
-		  } catch (WalletException e) {
-			  exceptionProcess(e, cc, formatWalletName(masterWalletID) + " DID set value");
-		  }
-	  }
-
-	  // args[0]: String masterWalletID
-	  // args[1]: String didName
-	  // args[2]: String keyPath
-	  public void didGetValue(JSONArray args, CallbackContext cc) throws JSONException {
-		  int idx = 0;
-
-		  String masterWalletID = args.getString(idx++);
-		  String didName        = args.getString(idx++);
-		  String keyPath        = args.getString(idx++);
-
-		  if (args.length() != idx) {
-			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-			  return;
-		  }
-
-		  try {
-			  IDidManager DIDManager = getDIDManager(masterWalletID);
-			  if (DIDManager == null) {
-				  errorProcess(cc, errCodeInvalidDIDManager, formatWalletName(masterWalletID) + " do not contain DID manager");
-				  return;
-			  }
-
-			  IDid did = DIDManager.GetDID(didName);
-			  if (did == null) {
-				  errorProcess(cc, errCodeInvalidDID, "DID manager get DID " + didName + " fail");
-				  return;
-			  }
-
-			  cc.success(did.GetValue(keyPath));
-		  } catch (WalletException e) {
-			  exceptionProcess(e, cc, formatWalletName(masterWalletID) + " DID get value of '" + keyPath + "'");
-		  }
-	  }
-
-	  // args[0]: String masterWalletID
-	  // args[1]: String didName
-	  // args[2]: String keyPath
-	  public void didGetHistoryValue(JSONArray args, CallbackContext cc) throws JSONException {
-		  int idx = 0;
-
-		  String masterWalletID = args.getString(idx++);
-		  String didName        = args.getString(idx++);
-		  String keyPath        = args.getString(idx++);
-
-		  if (args.length() != idx) {
-			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-			  return;
-		  }
-
-		  try {
-			  IDidManager DIDManager = getDIDManager(masterWalletID);
-			  if (DIDManager == null) {
-				  errorProcess(cc, errCodeInvalidDIDManager, formatWalletName(masterWalletID) + " do not contain DID manager");
-				  return;
-			  }
-
-			  IDid did = DIDManager.GetDID(didName);
-			  if (did == null) {
-				  errorProcess(cc, errCodeInvalidDID, "DID manager get DID '" + didName + "' fail");
-				  return;
-			  }
-
-			  cc.success(did.GetHistoryValue(keyPath));
-		  } catch (WalletException e) {
-			  exceptionProcess(e, cc, formatWalletName(masterWalletID) + " DID get history value by '" + keyPath + "'");
-		  }
-	  }
-
-	  // args[0]: String masterWalletID
-	  // args[1]: String didName
-	  // args[2]: int start
-	  // args[3]: int count
-	  public void didGetAllKeys(JSONArray args, CallbackContext cc) throws JSONException {
-		  int idx = 0;
-
-		  String masterWalletID = args.getString(idx++);
-		  String didName        = args.getString(idx++);
-		  int    start          = args.getInt(idx++);
-		  int    count          = args.getInt(idx++);
-
-		  if (args.length() != idx) {
-			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-			  return;
-		  }
-
-		  try {
-			  IDidManager DIDManager = getDIDManager(masterWalletID);
-			  if (DIDManager == null) {
-				  errorProcess(cc, errCodeInvalidDIDManager, formatWalletName(masterWalletID) + " do not contain DID manager");
-				  return;
-			  }
-
-			  IDid did = DIDManager.GetDID(didName);
-			  if (did == null) {
-				  errorProcess(cc, errCodeInvalidDID, "DID manager get DID " + didName + " fail");
-				  return;
-			  }
-
-			  cc.success(did.GetAllKeys(start, count));
-		  } catch (WalletException e) {
-			  exceptionProcess(e, cc, formatWalletName(masterWalletID) + " DID get " + count + " keys from " + start);
-		  }
-	  }
-
-	  // args[0]: String masterWalletID
-	  // args[1]: String didName
-	  // args[2]: String message
-	  // args[3]: String password
-	  public void didSign(JSONArray args, CallbackContext cc) throws JSONException {
-		  int idx = 0;
-
-		  String masterWalletID = args.getString(idx++);
-		  String didName        = args.getString(idx++);
-		  String message        = args.getString(idx++);
-		  String password       = args.getString(idx++);
-
-		  if (args.length() != idx) {
-			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-			  return;
-		  }
-
-		  try {
-			  IDidManager DIDManager = getDIDManager(masterWalletID);
-			  if (DIDManager == null) {
-				  errorProcess(cc, errCodeInvalidDIDManager, formatWalletName(masterWalletID) + " do not contain DID manager");
-				  return;
-			  }
-
-			  IDid did = DIDManager.GetDID(didName);
-			  if (did == null) {
-				  errorProcess(cc, errCodeInvalidDID, "DID manager get DID " + didName + " fail");
-				  return;
-			  }
-
-			  cc.success(did.Sign(message, password));
-		  } catch (WalletException e) {
-			  exceptionProcess(e, cc, formatWalletName(masterWalletID) + " DID sign");
-		  }
-	  }
-
-	  // args[0]: String masterWalletID
-	  // args[1]: String didName
-	  // args[2]: String message
-	  // args[3]: String password
-	  public void didGenerateProgram(JSONArray args, CallbackContext cc) throws JSONException {
-		  int idx = 0;
-
-		  String masterWalletID = args.getString(idx++);
-		  String didName        = args.getString(idx++);
-		  String message        = args.getString(idx++);
-		  String password       = args.getString(idx++);
-
-		  if (args.length() != idx) {
-			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-			  return;
-		  }
-
-		  try {
-			  IDidManager DIDManager = getDIDManager(masterWalletID);
-			  if (DIDManager == null) {
-				  errorProcess(cc, errCodeInvalidDIDManager, formatWalletName(masterWalletID) + " do not contain DID manager");
-				  return;
-			  }
-
-			  IDid did = DIDManager.GetDID(didName);
-			  if (did == null) {
-				  errorProcess(cc, errCodeInvalidDID, "DID manager get DID " + didName + " fail");
-				  return;
-			  }
-
-			  cc.success(did.GenerateProgram(message, password));
-		  } catch (WalletException e) {
-			  exceptionProcess(e, cc, formatWalletName(masterWalletID) + " DID generate program");
-		  }
-	  }
-
-	  // args[0]: String masterWalletID
-	  // args[1]: String didName
-	  // args[2]: String message
-	  // args[3]: String signature
-	  public void didCheckSign(JSONArray args, CallbackContext cc) throws JSONException {
-		  int idx = 0;
-
-		  String masterWalletID = args.getString(idx++);
-		  String didName        = args.getString(idx++);
-		  String message        = args.getString(idx++);
-		  String signature      = args.getString(idx++);
-
-		  if (args.length() != idx) {
-			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-			  return;
-		  }
-
-		  try {
-			  IDidManager DIDManager = getDIDManager(masterWalletID);
-			  if (DIDManager == null) {
-				  errorProcess(cc, errCodeInvalidDIDManager, formatWalletName(masterWalletID) + " do not contain DID manager");
-				  return;
-			  }
-
-			  IDid did = DIDManager.GetDID(didName);
-			  if (did == null) {
-				  errorProcess(cc, errCodeInvalidDID, "DID manager get DID " + didName + " fail");
-				  return;
-			  }
-
-			  cc.success(did.CheckSign(message, signature));
-		  } catch (WalletException e) {
-			  exceptionProcess(e, cc, formatWalletName(masterWalletID) + " DID verify sign");
-		  }
-	  }
-
-	  // args[0]: String masterWalletID
-	  // args[1]: String didName
-	  public void didGetPublicKey(JSONArray args, CallbackContext cc) throws JSONException {
-		  int idx = 0;
-
-		  String masterWalletID = args.getString(idx++);
-		  String didName        = args.getString(idx++);
-
-		  if (args.length() != idx) {
-			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-			  return;
-		  }
-
-		  try {
-			  IDidManager DIDManager = getDIDManager(masterWalletID);
-			  if (DIDManager == null) {
-				  errorProcess(cc, errCodeInvalidDIDManager, formatWalletName(masterWalletID) + " do not contain DID manager");
-				  return;
-			  }
-
-			  IDid did = DIDManager.GetDID(didName);
-			  if (did == null) {
-				  errorProcess(cc, errCodeInvalidDID, formatWalletName(masterWalletID) + " DID manager get DID '" + didName + "' fail");
-				  return;
-			  }
-
-			  cc.success(did.GetPublicKey());
-		  } catch (WalletException e) {
-			  exceptionProcess(e, cc, formatWalletName(masterWalletID) + " DID get public key");
-		  }
-	  }
-
-	  // args[0]: String masterWalletID
-	  // args[1]: String didName
-	  public void registerIdListener(JSONArray args, CallbackContext cc) throws JSONException {
-		  int idx = 0;
-
-		  String masterWalletID = args.getString(idx++);
-		  String didName        = args.getString(idx++);
-
-		  if (args.length() != idx) {
-			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-			  return;
-		  }
-
-		  try {
-			  IDidManager DIDManager = getDIDManager(masterWalletID);
-			  if (DIDManager == null) {
-				  errorProcess(cc, errCodeInvalidDIDManager, formatWalletName(masterWalletID) + " do not contain DID manager");
-				  return;
-			  }
-
-			  DIDManager.RegisterCallback(didName, new IIdManagerCallback() {
-				  @Override
-				  public void OnIdStatusChanged(String id, String path, /*const nlohmann::json*/ String value) {
-					  try {
-						  JSONObject jsonObject = new JSONObject();
-						  jsonObject.put("id", id);
-						  jsonObject.put("path", path);
-						  jsonObject.put("value", value);
-
-						  PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, jsonObject);
-						  pluginResult.setKeepCallback(true);
-						  cc.sendPluginResult(pluginResult);
-					  } catch (JSONException e) {
-						  e.printStackTrace();
-					  }
-				  }
-			  });
-		  } catch (WalletException e) {
-			  exceptionProcess(e, cc, formatWalletName(masterWalletID) + " DID register listener");
 		  }
 	  }
 
