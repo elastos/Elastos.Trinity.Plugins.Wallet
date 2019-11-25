@@ -34,7 +34,7 @@ function _exec(success, error, obj, fun, args) {
     exec(_onSuccess, error, obj, fun, args)
 }
  
-class WalletImpl implements Wallet.Wallet {
+class WalletManagerImpl implements WalletPlugin.WalletManager {
     print(args, success, error) {
         exec(success, error, "Wallet", "print", args);
     };
@@ -195,7 +195,6 @@ class WalletImpl implements Wallet.Wallet {
         exec(success, error, "Wallet", "didGetHistoryValue", args);
     };
 
-
     didGetAllKeys(args, success, error) {
         exec(success, error, "Wallet", "didGetAllKeys", args);
     };
@@ -347,5 +346,5 @@ class WalletImpl implements Wallet.Wallet {
     };
 }
 
-var wallet = new WalletImpl();
-export = wallet;
+var walletManager = new WalletManagerImpl();
+export = walletManager;
