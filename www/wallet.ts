@@ -34,7 +34,7 @@ function _exec(success, error, obj, fun, args) {
     exec(_onSuccess, error, obj, fun, args)
 }
  
-class WalletImpl implements Wallet {
+class WalletImpl implements Wallet.Wallet {
     print(args, success, error) {
         exec(success, error, "Wallet", "print", args);
     };
