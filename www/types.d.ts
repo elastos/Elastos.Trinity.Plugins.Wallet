@@ -20,8 +20,8 @@
 * SOFTWARE.
 */
 
-declare module Wallet {
-    interface Wallet {
+declare module WalletPlugin {
+    interface WalletManager {
         // TODO: define types for all arguments and callback parameters
         print:(args, success, error)=>void;
         recoverWallet:(args, success, error)=>void;
