@@ -23,17 +23,14 @@
   package org.elastos.trinity.plugins.wallet;
 
 
-  import org.elastos.spvcore.IMasterWallet;
-  import org.elastos.spvcore.ISubWallet;
-  import org.elastos.spvcore.IMainchainSubWallet;
-  import org.elastos.spvcore.IIDChainSubWallet;
-  import org.elastos.spvcore.ISidechainSubWallet;
+  import org.elastos.spvcore.ISubWalletListener;
+  import org.elastos.spvcore.MasterWallet;
+  import org.elastos.spvcore.SubWallet;
+  import org.elastos.spvcore.MainchainSubWallet;
+  import org.elastos.spvcore.IDChainSubWallet;
+  import org.elastos.spvcore.SidechainSubWallet;
   import org.elastos.spvcore.ISubWalletCallback;
   import org.elastos.spvcore.MasterWalletManager;
-  import org.elastos.spvcore.DIDManagerSupervisor;
-  import org.elastos.spvcore.IDidManager;
-  import org.elastos.spvcore.IDid;
-  import org.elastos.spvcore.IIdManagerCallback;
   import org.elastos.spvcore.WalletException;
   import org.elastos.trinity.runtime.TrinityPlugin;
 
@@ -47,9 +44,6 @@
   import org.json.JSONException;
   import org.json.JSONObject;
 
-  import java.io.FileOutputStream;
-  import java.io.InputStream;
-  import java.io.OutputStream;
   import java.util.ArrayList;
   import java.util.HashMap;
   import java.util.Map;
@@ -61,15 +55,13 @@
    */
   public class Wallet extends TrinityPlugin {
 
-	  //	static {
-	  //		System.loadLibrary("spvsdk");
-	  //		System.loadLibrary("elastoswallet");
-	  //	}
+//	  	static {
+//	  		System.loadLibrary("spvsdk");
+//	  		System.loadLibrary("spvsdk_jni");
+//	  	}
 
 	  private static final String TAG = "Wallet";
 
-	  private Map<String, IDidManager> mDIDManagerMap = new HashMap<String, IDidManager>();
-	  private DIDManagerSupervisor mDIDManagerSupervisor = null;
 	  private MasterWalletManager mMasterWalletManager = null;
 	  //private IDidManager mDidManager = null;
 	  private String mRootPath = null;
@@ -79,6 +71,8 @@
 	  private String keyCode      = "code";
 	  private String keyMessage   = "message";
 	  private String keyException = "exception";
+
+	  public static final String IDChain = "IDChain";
 
 	  private int errCodeParseJsonInAction          = 10000;
 	  private int errCodeInvalidArg                 = 10001;
@@ -146,18 +140,18 @@
 	  public void onDestroy() {
 		  Log.i(TAG, "onDestroy");
 		  if (mMasterWalletManager != null) {
-			  Map<String, ArrayList<ISubWallet>> subWalletMap = new HashMap<String, ArrayList<ISubWallet>>();
-			  ArrayList<IMasterWallet> masterWalletList = mMasterWalletManager.GetAllMasterWallets();
+			  Map<String, ArrayList<SubWallet>> subWalletMap = new HashMap<String, ArrayList<SubWallet>>();
+			  ArrayList<MasterWallet> masterWalletList = mMasterWalletManager.GetAllMasterWallets();
 			  for (int i = 0; i < masterWalletList.size(); i++) {
-				  IMasterWallet masterWallet = masterWalletList.get(i);
+				  MasterWallet masterWallet = masterWalletList.get(i);
 				  subWalletMap.put(masterWallet.GetID(), masterWallet.GetAllSubWallets());
 			  }
 
-			  mMasterWalletManager.DisposeNative();
+			  mMasterWalletManager.Dispose();
 
-			  for (Map.Entry<String, ArrayList<ISubWallet>> entry : subWalletMap.entrySet()) {
+			  for (Map.Entry<String, ArrayList<SubWallet>> entry : subWalletMap.entrySet()) {
 				  Log.i(TAG, "Removing masterWallet[" + entry.getKey() + "]'s callback");
-				  ArrayList<ISubWallet> subWallets = entry.getValue();
+				  ArrayList<SubWallet> subWallets = entry.getValue();
 				  for (int i = 0; i < subWallets.size(); i++) {
 					  subWallets.get(i).RemoveCallback();
 				  }
@@ -171,8 +165,9 @@
 	  @Override
 	  public void initialize(CordovaInterface cordova, CordovaWebView webView) {
 		  super.initialize(cordova, webView);
-		  mRootPath = getConfigPath() + "spv";
-		  mMasterWalletManager = new MasterWalletManager(mRootPath);
+		  mRootPath = getDataPath() + "spv";
+		  mMasterWalletManager = new MasterWalletManager(mRootPath, "TestNet"
+				  , mRootPath + "/config", mRootPath + "/data");
 	  }
 
 
@@ -248,23 +243,23 @@
  //		 cc.success(msg);
  //	 }
 
-	  private IMasterWallet getIMasterWallet(String masterWalletID) {
+	  private MasterWallet getIMasterWallet(String masterWalletID) {
 		  if (mMasterWalletManager == null) {
 			  Log.e(TAG, "Master wallet manager has not initialize");
 			  return null;
 		  }
 
-		  return mMasterWalletManager.GetMasterWallet(masterWalletID);
+		  return mMasterWalletManager.GetWallet(masterWalletID);
 	  }
 
-	  private ISubWallet getSubWallet(String masterWalletID, String chainID) {
-		  IMasterWallet masterWallet = getIMasterWallet(masterWalletID);
+	  private SubWallet getSubWallet(String masterWalletID, String chainID) {
+		  MasterWallet masterWallet = getIMasterWallet(masterWalletID);
 		  if (masterWallet == null) {
 			  Log.e(TAG, formatWalletName(masterWalletID) + " not found");
 			  return null;
 		  }
 
-		  ArrayList<ISubWallet> subWalletList = masterWallet.GetAllSubWallets();
+		  ArrayList<SubWallet> subWalletList = masterWallet.GetAllSubWallets();
 		  for (int i = 0; i < subWalletList.size(); i++) {
 			  if (chainID.equals(subWalletList.get(i).GetChainID())) {
 				  return subWalletList.get(i);
@@ -299,12 +294,12 @@
 				  case "generateMnemonic":
 					  this.generateMnemonic(args, cc);
 					  break;
-				  case "getMultiSignPubKeyWithMnemonic":
-					  this.getMultiSignPubKeyWithMnemonic(args, cc);
-					  break;
-				  case "getMultiSignPubKeyWithPrivKey":
-					  this.getMultiSignPubKeyWithPrivKey(args, cc);
-					  break;
+//				  case "getMultiSignPubKeyWithMnemonic":
+//					  this.getMultiSignPubKeyWithMnemonic(args, cc);
+//					  break;
+//				  case "getMultiSignPubKeyWithPrivKey":
+//					  this.getMultiSignPubKeyWithPrivKey(args, cc);
+//					  break;
 				  case "createMasterWallet":
 					  this.createMasterWallet(args, cc);
 					  break;
@@ -320,18 +315,15 @@
 				  case "getAllMasterWallets":
 					  this.getAllMasterWallets(args, cc);
 					  break;
-				  case "getAllMasterWalletIds":
-					  this.getAllMasterWalletIds(args, cc);
-					  break;
 				  case "getMasterWallet":
 					  this.getMasterWallet(args, cc);
 					  break;
 				  case "importWalletWithKeystore":
 					  this.importWalletWithKeystore(args, cc);
 					  break;
-				  case "importWalletWithOldKeystore":
-					  this.importWalletWithOldKeystore(args, cc);
-					  break;
+//				  case "importWalletWithOldKeystore":
+//					  this.importWalletWithOldKeystore(args, cc);
+//					  break;
 				  case "importWalletWithMnemonic":
 					  this.importWalletWithMnemonic(args, cc);
 					  break;
@@ -358,15 +350,9 @@
 				  case "destroySubWallet":
 					  this.destroySubWallet(args, cc);
 					  break;
-				  case "getMasterWalletPublicKey":
-					  this.getMasterWalletPublicKey(args, cc);
-					  break;
-				  case "masterWalletSign":
-					  this.masterWalletSign(args, cc);
-					  break;
-				  case "masterWalletCheckSign":
-					  this.masterWalletCheckSign(args, cc);
-					  break;
+//				  case "getMasterWalletPublicKey":
+//					  this.getMasterWalletPublicKey(args, cc);
+//					  break;
 				  case "isAddressValid":
 					  this.isAddressValid(args, cc);
 					  break;
@@ -414,9 +400,9 @@
 				  case "subWalletCheckSign":
 					  this.checkSign(args, cc);
 					  break;
-				  case "getSubWalletPublicKey":
-					  this.getSubWalletPublicKey(args, cc);
-					  break;
+//				  case "getSubWalletPublicKey":
+//					  this.getSubWalletPublicKey(args, cc);
+//					  break;
 				  case "registerWalletListener":
 					  this.registerWalletListener(args, cc);
 					  break;
@@ -428,6 +414,27 @@
 				  case "createIdTransaction":
 					  this.createIdTransaction(args, cc);
 					  break;
+					case "getResolveDIDInfo":
+					  	this.getResolveDIDInfo(args, cc);
+					  	break;
+					case "getAllDID":
+					  	this.getAllDID(args, cc);
+					  	break;
+					case "didSign":
+					  	this.didSign(args, cc);
+					  	break;
+					case "didSignDigest":
+					  	this.didSignDigest(args, cc);
+						  break;
+					case "verifySignature":
+					  	this.verifySignature(args, cc);
+					  	break;
+					case "getPublicKeyDID":
+					  	this.getPublicKeyDID(args, cc);
+					  	break;
+					case "generateDIDInfoPayload":
+					  	this.generateDIDInfoPayload(args, cc);
+					  	break;
 
 				  // Main chain subwallet
 				  case "createDepositTransaction":
@@ -493,7 +500,6 @@
 
 		  String masterWalletID = args.getString(idx++);
 		  String chainID        = args.getString(idx++);
-		  long feePerKb         = args.getLong(idx++);
 
 		  if (args.length() != idx) {
 			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
@@ -501,13 +507,13 @@
 		  }
 
 		  try {
-			  IMasterWallet masterWallet = getIMasterWallet(masterWalletID);
+			  MasterWallet masterWallet = getIMasterWallet(masterWalletID);
 			  if (masterWallet == null) {
 				  errorProcess(cc, errCodeInvalidMasterWallet, "Get " + formatWalletName(masterWalletID));
 				  return;
 			  }
 
-			  ISubWallet subWallet = masterWallet.CreateSubWallet(chainID, feePerKb);
+			  SubWallet subWallet = masterWallet.CreateSubWallet(chainID);
 			  if (subWallet == null) {
 				  errorProcess(cc, errCodeCreateSubWallet, "Create " + formatWalletName(masterWalletID, chainID));
 				  return;
@@ -522,7 +528,7 @@
 	  public void getAllMasterWallets(JSONArray args, CallbackContext cc) throws JSONException {
 		  try {
 
-			  ArrayList<IMasterWallet> masterWalletList = mMasterWalletManager.GetAllMasterWallets();
+			  ArrayList<MasterWallet> masterWalletList = mMasterWalletManager.GetAllMasterWallets();
 			  JSONArray masterWalletListJson = new JSONArray();
 
 			  for (int i = 0; i < masterWalletList.size(); i++) {
@@ -534,24 +540,6 @@
 		  }
 	  }
 
-	  public void getAllMasterWalletIds(JSONArray args, CallbackContext cc) throws JSONException {
-		  try {
-			  String[] allMasterWalletIds = mMasterWalletManager.GetAllMasterWalletIds();
-
-			  if (allMasterWalletIds.length == 0) {
-				  errorProcess(cc, errCodeInvalidMasterWallet, "Don't have any master wallet");
-				  return;
-			  }
-
-			  JSONArray allIdJson = new JSONArray();
-			  for (int i = 0; i < allMasterWalletIds.length; i++) {
-				  allIdJson.put(allMasterWalletIds[i]);
-			  }
-			  cc.success(allIdJson.toString());
-		  } catch (WalletException e) {
-			  exceptionProcess(e, cc, "Get all master wallet ID");
-		  }
-	  }
 
 	  // args[0]: String masterWalletID
 	  public void getMasterWallet(JSONArray args, CallbackContext cc) throws JSONException {
@@ -565,7 +553,7 @@
 		  }
 
 		  try {
-			  IMasterWallet masterWallet = getIMasterWallet(masterWalletID);
+			  MasterWallet masterWallet = getIMasterWallet(masterWalletID);
 			  if (masterWallet == null) {
 				  errorProcess(cc, errCodeInvalidMasterWallet, "Get " + formatWalletName(masterWalletID));
 				  return;
@@ -589,7 +577,7 @@
 		  }
 
 		  try {
-			  IMasterWallet masterWallet = getIMasterWallet(masterWalletID);
+			  MasterWallet masterWallet = getIMasterWallet(masterWalletID);
 			  if (masterWallet == null) {
 				  errorProcess(cc, errCodeInvalidMasterWallet, "Get " + formatWalletName(masterWalletID));
 				  return;
@@ -613,13 +601,13 @@
 		  }
 
 		  try {
-			  IMasterWallet masterWallet = getIMasterWallet(masterWalletID);
+			  MasterWallet masterWallet = getIMasterWallet(masterWalletID);
 			  if (masterWallet == null) {
 				  errorProcess(cc, errCodeInvalidMasterWallet, "Get " + formatWalletName(masterWalletID));
 				  return;
 			  }
 
-			  ArrayList<ISubWallet> subWalletList = masterWallet.GetAllSubWallets();
+			  ArrayList<SubWallet> subWalletList = masterWallet.GetAllSubWallets();
 
 			  JSONArray subWalletJsonArray = new JSONArray();
 			  for (int i = 0; i < subWalletList.size(); i++) {
@@ -673,57 +661,57 @@
 		  }
 
 		  try {
-			  String mnemonic = mMasterWalletManager.GenerateMnemonic(language);
+			  String mnemonic = mMasterWalletManager.GenerateMnemonic(language,12);
 			  cc.success(mnemonic);
 		  } catch (WalletException e) {
 			  exceptionProcess(e, cc, "Generate mnemonic in '" + language + "'");
 		  }
 	  }
 
-	  // args[0]: String mnemonic
-	  // args[1]: String phrasePassword
-	  public void getMultiSignPubKeyWithMnemonic(JSONArray args, CallbackContext cc) throws JSONException {
-		  int idx = 0;
+//	  // args[0]: String mnemonic
+//	  // args[1]: String phrasePassword
+//	  public void getMultiSignPubKeyWithMnemonic(JSONArray args, CallbackContext cc) throws JSONException {
+//		  int idx = 0;
+//
+//		  String mnemonic = args.getString(idx++);
+//		  String phrasePassword = args.getString(idx++);
+//
+//		  if (args.length() != idx) {
+//			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+//			  return;
+//		  }
+//
+//		  if (mMasterWalletManager == null) {
+//			  errorProcess(cc, errCodeInvalidMasterWalletManager, "Master wallet manager has not initialize");
+//			  return;
+//		  }
+//
+//		  try {
+//			  String pubKey = mMasterWalletManager.GetMultiSignPubKeyWithMnemonic(mnemonic, phrasePassword);
+//			  cc.success(pubKey);
+//		  } catch (WalletException e) {
+//			  exceptionProcess(e, cc, "Get multi sign public key with mnemonic");
+//		  }
+//	  }
 
-		  String mnemonic = args.getString(idx++);
-		  String phrasePassword = args.getString(idx++);
-
-		  if (args.length() != idx) {
-			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-			  return;
-		  }
-
-		  if (mMasterWalletManager == null) {
-			  errorProcess(cc, errCodeInvalidMasterWalletManager, "Master wallet manager has not initialize");
-			  return;
-		  }
-
-		  try {
-			  String pubKey = mMasterWalletManager.GetMultiSignPubKeyWithMnemonic(mnemonic, phrasePassword);
-			  cc.success(pubKey);
-		  } catch (WalletException e) {
-			  exceptionProcess(e, cc, "Get multi sign public key with mnemonic");
-		  }
-	  }
-
-	  // args[0]: String privKey
-	  public void getMultiSignPubKeyWithPrivKey(JSONArray args, CallbackContext cc) throws JSONException {
-		  int idx = 0;
-
-		  String privKey = args.getString(idx++);
-
-		  if (args.length() != idx) {
-			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-			  return;
-		  }
-
-		  try {
-			  String pubKey = mMasterWalletManager.GetMultiSignPubKeyWithPrivKey(privKey);
-			  cc.success(pubKey);
-		  } catch (WalletException e) {
-			  exceptionProcess(e, cc, "Get multi sign public key with private key");
-		  }
-	  }
+//	  // args[0]: String privKey
+//	  public void getMultiSignPubKeyWithPrivKey(JSONArray args, CallbackContext cc) throws JSONException {
+//		  int idx = 0;
+//
+//		  String privKey = args.getString(idx++);
+//
+//		  if (args.length() != idx) {
+//			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+//			  return;
+//		  }
+//
+//		  try {
+//			  String pubKey = mMasterWalletManager.GetMultiSignPubKeyWithPrivKey(privKey);
+//			  cc.success(pubKey);
+//		  } catch (WalletException e) {
+//			  exceptionProcess(e, cc, "Get multi sign public key with private key");
+//		  }
+//	  }
 
 	  // args[0]: String masterWalletID
 	  // args[1]: String address
@@ -739,7 +727,7 @@
 		  }
 
 		  try {
-			  IMasterWallet masterWallet = getIMasterWallet(masterWalletID);
+			  MasterWallet masterWallet = getIMasterWallet(masterWalletID);
 			  if (masterWallet == null) {
 				  errorProcess(cc, errCodeInvalidMasterWallet, "Get " + formatWalletName(masterWalletID));
 				  return;
@@ -772,7 +760,7 @@
 		  }
 
 		  try {
-			  IMasterWallet masterWallet = mMasterWalletManager.CreateMasterWallet(
+			  MasterWallet masterWallet = mMasterWalletManager.CreateMasterWallet(
 					  masterWalletID, mnemonic, phrasePassword, payPassword, singleAddress);
 
 			  if (masterWallet == null) {
@@ -802,8 +790,10 @@
 		  }
 
 		  try {
-			  IMasterWallet masterWallet = mMasterWalletManager.CreateMultiSignMasterWallet(
-					  masterWalletID, publicKeys, m, timestamp);
+		  	//TODO:: String masterWalletID, String coSigners, int requiredSignCount,
+			  //                                                  boolean singleAddress, boolean compatible, long timestamp
+			  MasterWallet masterWallet = null; //mMasterWalletManager.CreateMultiSignMasterWallet(
+//					  masterWalletID, publicKeys, m, timestamp);
 
 			  if (masterWallet == null) {
 				  errorProcess(cc, errCodeCreateMasterWallet, "Create multi sign " + formatWalletName(masterWalletID));
@@ -832,8 +822,9 @@
 		  }
 
 		  try {
-			  IMasterWallet masterWallet = mMasterWalletManager.CreateMultiSignMasterWallet(
-					  masterWalletID, privKey, payPassword, publicKeys, m, timestamp);
+			  MasterWallet masterWallet = null;
+//					  mMasterWalletManager.CreateMultiSignMasterWallet(
+//					  masterWalletID, privKey, payPassword, publicKeys, m, timestamp);
 
 			  if (masterWallet == null) {
 				  errorProcess(cc, errCodeCreateMasterWallet, "Create multi sign " + formatWalletName(masterWalletID) + " with private key");
@@ -869,8 +860,9 @@
 		  }
 
 		  try {
-			  IMasterWallet masterWallet = mMasterWalletManager.CreateMultiSignMasterWallet(
-					  masterWalletID, mnemonic, phrasePassword, payPassword, publicKeys, m, timestamp);
+			  MasterWallet masterWallet = null;
+//					  mMasterWalletManager.CreateMultiSignMasterWallet(
+//					  masterWalletID, mnemonic, phrasePassword, payPassword, publicKeys, m, timestamp);
 
 			  if (masterWallet == null) {
 				  errorProcess(cc, errCodeCreateMasterWallet, "Create multi sign " + formatWalletName(masterWalletID) + " with mnemonic");
@@ -897,12 +889,12 @@
 		  }
 
 		  try {
-			  IMasterWallet masterWallet = getIMasterWallet(masterWalletID);
+			  MasterWallet masterWallet = getIMasterWallet(masterWalletID);
 			  if (masterWallet == null) {
 				  errorProcess(cc, errCodeInvalidMasterWallet, "Get " + formatWalletName(masterWalletID));
 				  return;
 			  }
-			  ISubWallet subWallet = masterWallet.GetSubWallet(chainID);
+			  SubWallet subWallet = masterWallet.GetSubWallet(chainID);
 			  if (subWallet == null) {
 				  errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
 				  return;
@@ -931,13 +923,13 @@
 		  }
 
 		  try {
-			  IMasterWallet masterWallet = getIMasterWallet(masterWalletID);
+			  MasterWallet masterWallet = getIMasterWallet(masterWalletID);
 			  if (masterWallet == null) {
 				  errorProcess(cc, errCodeInvalidMasterWallet, "Get " + formatWalletName(masterWalletID));
 				  return;
 			  }
 
-			  ArrayList<ISubWallet> subWallets = masterWallet.GetAllSubWallets();
+			  ArrayList<SubWallet> subWallets = masterWallet.GetAllSubWallets();
 
 			  mMasterWalletManager.DestroyWallet(masterWalletID);
 
@@ -951,38 +943,38 @@
 		  }
 	  }
 
-	  // args[0]: String masterWalletID
-	  // args[1]: String keystoreContent
-	  // args[2]: String backupPassword
-	  // args[3]: String payPassword
-	  // args[4]: String phrasePassword
-	  public void importWalletWithOldKeystore(JSONArray args, CallbackContext cc) throws JSONException {
-		  int idx = 0;
-
-		  String masterWalletID  = args.getString(idx++);
-		  String keystoreContent = args.getString(idx++);
-		  String backupPassword  = args.getString(idx++);
-		  String payPassword     = args.getString(idx++);
-		  String phrasePassword  = args.getString(idx++);
-
-		  if (args.length() != idx) {
-			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-			  return;
-		  }
-
-		  try {
-			  IMasterWallet masterWallet = mMasterWalletManager.ImportWalletWithOldKeystore(
-					  masterWalletID, keystoreContent, backupPassword, payPassword, phrasePassword);
-			  if (masterWallet == null) {
-				  errorProcess(cc, errCodeImportFromKeyStore, "Import " + formatWalletName(masterWalletID) + " with keystore");
-				  return;
-			  }
-
-			  cc.success(masterWallet.GetBasicInfo());
-		  } catch (WalletException e) {
-			  exceptionProcess(e, cc, "Import " + formatWalletName(masterWalletID) + " with keystore");
-		  }
-	  }
+//	  // args[0]: String masterWalletID
+//	  // args[1]: String keystoreContent
+//	  // args[2]: String backupPassword
+//	  // args[3]: String payPassword
+//	  // args[4]: String phrasePassword
+//	  public void importWalletWithOldKeystore(JSONArray args, CallbackContext cc) throws JSONException {
+//		  int idx = 0;
+//
+//		  String masterWalletID  = args.getString(idx++);
+//		  String keystoreContent = args.getString(idx++);
+//		  String backupPassword  = args.getString(idx++);
+//		  String payPassword     = args.getString(idx++);
+//		  String phrasePassword  = args.getString(idx++);
+//
+//		  if (args.length() != idx) {
+//			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+//			  return;
+//		  }
+//
+//		  try {
+//			  MasterWallet masterWallet = mMasterWalletManager.ImportWalletWithOldKeystore(
+//					  masterWalletID, keystoreContent, backupPassword, payPassword, phrasePassword);
+//			  if (masterWallet == null) {
+//				  errorProcess(cc, errCodeImportFromKeyStore, "Import " + formatWalletName(masterWalletID) + " with keystore");
+//				  return;
+//			  }
+//
+//			  cc.success(masterWallet.GetBasicInfo());
+//		  } catch (WalletException e) {
+//			  exceptionProcess(e, cc, "Import " + formatWalletName(masterWalletID) + " with keystore");
+//		  }
+//	  }
 
 	  // args[0]: String masterWalletID
 	  // args[1]: String keystoreContent
@@ -1002,7 +994,7 @@
 		  }
 
 		  try {
-			  IMasterWallet masterWallet = mMasterWalletManager.ImportWalletWithKeystore(
+			  MasterWallet masterWallet = mMasterWalletManager.ImportWalletWithKeystore(
 					  masterWalletID, keystoreContent, backupPassword, payPassword);
 			  if (masterWallet == null) {
 				  errorProcess(cc, errCodeImportFromKeyStore, "Import " + formatWalletName(masterWalletID) + " with keystore");
@@ -1035,8 +1027,8 @@
 		  }
 
 		  try {
-			  IMasterWallet masterWallet = mMasterWalletManager.ImportWalletWithMnemonic(
-					  masterWalletID, mnemonic, phrasePassword, payPassword, singleAddress);
+			  MasterWallet masterWallet = mMasterWalletManager.ImportWalletWithMnemonic(
+					  masterWalletID, mnemonic, phrasePassword, payPassword, singleAddress, 0);
 			  if (masterWallet == null) {
 				  errorProcess(cc, errCodeImportFromMnemonic, "Import " + formatWalletName(masterWalletID) + " with mnemonic");
 				  return;
@@ -1064,13 +1056,13 @@
 		  }
 
 		  try {
-			  IMasterWallet masterWallet = getIMasterWallet(masterWalletID);
+			  MasterWallet masterWallet = getIMasterWallet(masterWalletID);
 			  if (masterWallet == null) {
 				  errorProcess(cc, errCodeInvalidMasterWallet, "Get " + formatWalletName(masterWalletID));
 				  return;
 			  }
 
-			  String keystore = mMasterWalletManager.ExportWalletWithKeystore(masterWallet, backupPassword, payPassword);
+			  String keystore = masterWallet.ExportKeystore(backupPassword, payPassword);
 
 			  cc.success(keystore);
 		  } catch (WalletException e) {
@@ -1092,13 +1084,13 @@
 		  }
 
 		  try {
-			  IMasterWallet masterWallet = getIMasterWallet(masterWalletID);
+			  MasterWallet masterWallet = getIMasterWallet(masterWalletID);
 			  if (masterWallet == null) {
 				  errorProcess(cc, errCodeInvalidMasterWallet, "Get " + formatWalletName(masterWalletID));
 				  return;
 			  }
 
-			  String mnemonic = mMasterWalletManager.ExportWalletWithMnemonic(masterWallet, backupPassword);
+			  String mnemonic = masterWallet.ExportMnemonic(backupPassword);
 
 			  cc.success(mnemonic);
 		  } catch (WalletException e) {
@@ -1120,7 +1112,7 @@
 		  }
 
 		  try {
-			  ISubWallet subWallet = getSubWallet(masterWalletID, chainID);
+			  SubWallet subWallet = getSubWallet(masterWalletID, chainID);
 			  if (subWallet == null) {
 				  errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
 				  return;
@@ -1139,7 +1131,6 @@
 
 		  String masterWalletID = args.getString(idx++);
 		  String chainID        = args.getString(idx++);
-		  int balanceType       = args.getInt(idx++);
 
 		  if (args.length() != idx) {
 			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
@@ -1147,13 +1138,13 @@
 		  }
 
 		  try {
-			  ISubWallet subWallet = getSubWallet(masterWalletID, chainID);
+			  SubWallet subWallet = getSubWallet(masterWalletID, chainID);
 			  if (subWallet == null) {
 				  errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID) + " balance");
 				  return;
 			  }
 
-			  cc.success(subWallet.GetBalance(balanceType));
+			  cc.success(subWallet.GetBalance());
 		  } catch (WalletException e) {
 			  exceptionProcess(e, cc, "Get " + formatWalletName(masterWalletID, chainID) + " balance");
 		  }
@@ -1173,7 +1164,7 @@
 		  }
 
 		  try {
-			  ISubWallet subWallet = getSubWallet(masterWalletID, chainID);
+			  SubWallet subWallet = getSubWallet(masterWalletID, chainID);
 			  if (subWallet == null) {
 				  errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
 				  return;
@@ -1205,7 +1196,7 @@
 		  }
 
 		  try {
-			  ISubWallet subWallet = getSubWallet(masterWalletID, chainID);
+			  SubWallet subWallet = getSubWallet(masterWalletID, chainID);
 			  if (subWallet == null) {
 				  errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
 				  return;
@@ -1235,13 +1226,13 @@
 		  }
 
 		  try {
-			  ISubWallet subWallet = getSubWallet(masterWalletID, chainID);
+			  SubWallet subWallet = getSubWallet(masterWalletID, chainID);
 			  if (subWallet == null) {
 				  errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
 				  return;
 			  }
 
-			  String balance = subWallet.GetBalanceWithAddress(address, balanceType);
+			  String balance = subWallet.GetBalanceWithAddress(address);
 
 			  cc.success(balance);
 		  } catch (WalletException e) {
@@ -1255,7 +1246,6 @@
 	  // args[3]: String toAddress
 	  // args[4]: String amount
 	  // args[5]: String memo
-	  // args[7]: boolean useVotedUTXO
 	  public void createTransaction(JSONArray args, CallbackContext cc) throws JSONException {
 		  int idx = 0;
 
@@ -1266,21 +1256,19 @@
 		  String amount         = args.getString(idx++);
 		  String memo           = args.getString(idx++);
 
-		  boolean useVotedUTXO  = args.getBoolean(idx++);
-
 		  if (args.length() != idx) {
 			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
 			  return ;
 		  }
 
 		  try {
-			  ISubWallet subWallet = getSubWallet(masterWalletID, chainID);
+			  SubWallet subWallet = getSubWallet(masterWalletID, chainID);
 			  if (subWallet == null) {
 				  errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
 				  return;
 			  }
 
-			  String tx = subWallet.CreateTransaction(fromAddress, toAddress, amount, memo, useVotedUTXO);
+			  String tx = subWallet.CreateTransaction(fromAddress, toAddress, amount, memo);
 
 			  cc.success(tx);
 		  } catch (WalletException e) {
@@ -1307,7 +1295,7 @@
 		  }
 
 		  try {
-			  ISubWallet subWallet = getSubWallet(masterWalletID, chainID);
+			  SubWallet subWallet = getSubWallet(masterWalletID, chainID);
 			  if (subWallet == null) {
 				  errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
 				  return;
@@ -1336,7 +1324,7 @@
 		  }
 
 		  try {
-			  ISubWallet subWallet = getSubWallet(masterWalletID, chainID);
+			  SubWallet subWallet = getSubWallet(masterWalletID, chainID);
 			  if (subWallet == null) {
 				  errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
 				  return;
@@ -1366,7 +1354,7 @@
 		  }
 
 		  try {
-			  ISubWallet subWallet = getSubWallet(masterWalletID, chainID);
+			  SubWallet subWallet = getSubWallet(masterWalletID, chainID);
 			  if (subWallet == null) {
 				  errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
 				  return;
@@ -1400,7 +1388,7 @@
 		  }
 
 		  try {
-			  ISubWallet subWallet = getSubWallet(masterWalletID, chainID);
+			  SubWallet subWallet = getSubWallet(masterWalletID, chainID);
 			  if (subWallet == null) {
 				  errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
 				  return;
@@ -1431,7 +1419,7 @@
 		  }
 
 		  try {
-			  ISubWallet subWallet = getSubWallet(masterWalletID, chainID);
+			  SubWallet subWallet = getSubWallet(masterWalletID, chainID);
 			  if (subWallet == null) {
 				  errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
 				  return;
@@ -1463,7 +1451,7 @@
 		  }
 
 		  try {
-			  ISubWallet subWallet = getSubWallet(masterWalletID, chainID);
+			  SubWallet subWallet = getSubWallet(masterWalletID, chainID);
 			  if (subWallet == null) {
 				  errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
 				  return;
@@ -1477,120 +1465,59 @@
 		  }
 	  }
 
-	  // args[0]: String masterWalletID
-	  // args[1]: String chainID
-	  // return:  String publicKey
-	  public void getSubWalletPublicKey(JSONArray args, CallbackContext cc) throws JSONException {
-		  int idx = 0;
+//	  // args[0]: String masterWalletID
+//	  // args[1]: String chainID
+//	  // return:  String publicKey
+//	  public void getSubWalletPublicKey(JSONArray args, CallbackContext cc) throws JSONException {
+//		  int idx = 0;
+//
+//		  String masterWalletID = args.getString(idx++);
+//		  String chainID        = args.getString(idx++);
+//
+//		  if (args.length() != idx) {
+//			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+//			  return;
+//		  }
+//
+//		  try {
+//			  SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+//			  if (subWallet == null) {
+//				  errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+//				  return;
+//			  }
+//			  String pubKey = subWallet.GetPublicKey();
+//
+//			  cc.success(pubKey);
+//		  } catch (WalletException e) {
+//			  exceptionProcess(e, cc, "Get " + formatWalletName(masterWalletID, chainID) + " public key");
+//		  }
+//	  }
 
-		  String masterWalletID = args.getString(idx++);
-		  String chainID        = args.getString(idx++);
-
-		  if (args.length() != idx) {
-			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-			  return;
-		  }
-
-		  try {
-			  ISubWallet subWallet = getSubWallet(masterWalletID, chainID);
-			  if (subWallet == null) {
-				  errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
-				  return;
-			  }
-			  String pubKey = subWallet.GetPublicKey();
-
-			  cc.success(pubKey);
-		  } catch (WalletException e) {
-			  exceptionProcess(e, cc, "Get " + formatWalletName(masterWalletID, chainID) + " public key");
-		  }
-	  }
-
-	  // args[0]: String masterWalletID
-	  public void getMasterWalletPublicKey(JSONArray args, CallbackContext cc) throws JSONException {
-		  int idx = 0;
-
-		  String masterWalletID = args.getString(idx++);
-
-		  if (args.length() != idx) {
-			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-			  return;
-		  }
-
-		  try {
-			  IMasterWallet masterWallet = getIMasterWallet(masterWalletID);
-			  if (masterWallet == null) {
-				  errorProcess(cc, errCodeInvalidMasterWallet, "Get " + formatWalletName(masterWalletID));
-				  return;
-			  }
-
-			  String pubKey = masterWallet.GetPublicKey();
-
-			  cc.success(pubKey);
-		  } catch (WalletException e) {
-			  exceptionProcess(e, cc, "Get " + formatWalletName(masterWalletID) + " public key");
-		  }
-	  }
-
-	  // args[0]: String masterWalletID
-	  // args[1]: String message
-	  // args[2]: String payPassword
-	  // return:  String result
-	  public void masterWalletSign(JSONArray args, CallbackContext cc) throws JSONException {
-		  int idx = 0;
-
-		  String masterWalletID = args.getString(idx++);
-		  String message        = args.getString(idx++);
-		  String payPassword    = args.getString(idx++);
-
-		  if (args.length() != idx) {
-			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-			  return;
-		  }
-
-		  try {
-			  IMasterWallet masterWallet = getIMasterWallet(masterWalletID);
-			  if (masterWallet == null) {
-				  errorProcess(cc, errCodeInvalidMasterWallet, "Get " + formatWalletName(masterWalletID));
-				  return;
-			  }
-
-			  cc.success(masterWallet.Sign(message, payPassword));
-		  } catch (WalletException e) {
-			  exceptionProcess(e, cc, formatWalletName(masterWalletID) + " sign");
-		  }
-	  }
-
-	  // args[0]: String masterWalletID
-	  // args[1]: String publicKey
-	  // args[2]: String message
-	  // args[3]: String signature
-	  // return:  String resultJson
-	  public void masterWalletCheckSign(JSONArray args, CallbackContext cc) throws JSONException {
-		  int idx = 0;
-
-		  String masterWalletID = args.getString(idx++);
-		  String publicKey      = args.getString(idx++);
-		  String message        = args.getString(idx++);
-		  String signature      = args.getString(idx++);
-
-		  if (args.length() != idx) {
-			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-			  return;
-		  }
-
-		  try {
-			  IMasterWallet masterWallet = getIMasterWallet(masterWalletID);
-			  if (masterWallet == null) {
-				  errorProcess(cc, errCodeInvalidMasterWallet, "Get " + formatWalletName(masterWalletID));
-				  return;
-			  }
-
-			  Boolean ret = masterWallet.CheckSign(publicKey, message, signature);
-			  cc.success(ret.toString());
-		  } catch (WalletException e) {
-			  exceptionProcess(e, cc, formatWalletName(masterWalletID) + " verify sign");
-		  }
-	  }
+//	  // args[0]: String masterWalletID
+//	  public void getMasterWalletPublicKey(JSONArray args, CallbackContext cc) throws JSONException {
+//		  int idx = 0;
+//
+//		  String masterWalletID = args.getString(idx++);
+//
+//		  if (args.length() != idx) {
+//			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+//			  return;
+//		  }
+//
+//		  try {
+//			  MasterWallet masterWallet = getIMasterWallet(masterWalletID);
+//			  if (masterWallet == null) {
+//				  errorProcess(cc, errCodeInvalidMasterWallet, "Get " + formatWalletName(masterWalletID));
+//				  return;
+//			  }
+//
+//			  String pubKey = masterWallet.GetPublicKey();
+//
+//			  cc.success(pubKey);
+//		  } catch (WalletException e) {
+//			  exceptionProcess(e, cc, "Get " + formatWalletName(masterWalletID) + " public key");
+//		  }
+//	  }
 
 	  // args[0]: String masterWalletID
 	  // args[1]: String chainID
@@ -1606,7 +1533,7 @@
 		  }
 
 		  try {
-			  ISubWallet subWallet = getSubWallet(masterWalletID, chainID);
+			  SubWallet subWallet = getSubWallet(masterWalletID, chainID);
 			  if (subWallet == null) {
 				  errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
 				  return;
@@ -1638,71 +1565,28 @@
 					  }
 				  }
 
-				  @Override
-				  public void OnBlockSyncStarted() {
-					  JSONObject jsonObject = new JSONObject();
-					  Log.i(TAG, formatWalletName(masterWalletID, chainID) + " OnBlockSyncStarted");
-					  try {
-						  jsonObject.put("MasterWalletID", masterWalletID);
-						  jsonObject.put("ChaiID", chainID);
-						  jsonObject.put("Action", "OnBlockSyncStarted");
-
-						  PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, jsonObject);
-						  pluginResult.setKeepCallback(true);
-						  cc.sendPluginResult(pluginResult);
-					  } catch (JSONException e) {
-						  e.printStackTrace();
-
-						  PluginResult pluginResult = new PluginResult(PluginResult.Status.JSON_EXCEPTION, e.toString());
-						  pluginResult.setKeepCallback(true);
-						  cc.sendPluginResult(pluginResult);
-					  }
-				  }
 
 				  @Override
-				  public void OnBlockSyncProgress(int currentBlockHeight, int estimatedHeight, long lastBlockTime) {
-					  JSONObject jsonObject = new JSONObject();
-					  Log.i(TAG, formatWalletName(masterWalletID, chainID) + " OnBlockSyncProgress => [" + currentBlockHeight + " / " + estimatedHeight + "]");
-					  try {
-						  jsonObject.put("currentBlockHeight", currentBlockHeight);
-						  jsonObject.put("estimatedHeight", estimatedHeight);
-						  jsonObject.put("lastBlockTime", lastBlockTime);
-						  jsonObject.put("MasterWalletID", masterWalletID);
-						  jsonObject.put("ChaiID", chainID);
-						  jsonObject.put("Action", "OnBlockSyncProgress");
+				  public void OnBlockSyncProgress(String progressInfo) {
+					 JSONObject jsonObject = new JSONObject();
+						  Log.i(TAG, formatWalletName(masterWalletID, chainID) + " OnBlockSyncProgress => [" + progressInfo + "]");
+						  try {
+							  jsonObject.put("progressInfo", progressInfo);
+							  jsonObject.put("MasterWalletID", masterWalletID);
+							  jsonObject.put("ChaiID", chainID);
+							  jsonObject.put("Action", "OnBlockSyncProgress");
 
-						  PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, jsonObject);
-						  pluginResult.setKeepCallback(true);
-						  cc.sendPluginResult(pluginResult);
-					  } catch (JSONException e) {
-						  e.printStackTrace();
+							  PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, jsonObject);
+							  pluginResult.setKeepCallback(true);
+							  cc.sendPluginResult(pluginResult);
+						  } catch (JSONException e) {
+							  e.printStackTrace();
 
-						  PluginResult pluginResult = new PluginResult(PluginResult.Status.JSON_EXCEPTION, e.toString());
-						  pluginResult.setKeepCallback(true);
-						  cc.sendPluginResult(pluginResult);
+							  PluginResult pluginResult = new PluginResult(PluginResult.Status.JSON_EXCEPTION, e.toString());
+							  pluginResult.setKeepCallback(true);
+							  cc.sendPluginResult(pluginResult);
+						  }
 					  }
-				  }
-
-				  @Override
-				  public void OnBlockSyncStopped() {
-					  JSONObject jsonObject = new JSONObject();
-					  Log.i(TAG, formatWalletName(masterWalletID, chainID) + " OnBlockSyncStopped");
-					  try {
-						  jsonObject.put("MasterWalletID", masterWalletID);
-						  jsonObject.put("ChaiID", chainID);
-						  jsonObject.put("Action", "OnBlockSyncStopped");
-
-						  PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, jsonObject);
-						  pluginResult.setKeepCallback(true);
-						  cc.sendPluginResult(pluginResult);
-					  } catch (JSONException e) {
-						  e.printStackTrace();
-
-						  PluginResult pluginResult = new PluginResult(PluginResult.Status.JSON_EXCEPTION, e.toString());
-						  pluginResult.setKeepCallback(true);
-						  cc.sendPluginResult(pluginResult);
-					  }
-				  }
 
 				  @Override
 				  public void OnBalanceChanged(String asset, String balance) {
@@ -1727,9 +1611,6 @@
 					  }
 				  }
 
-				  /**
-				   * @param result is json result
-				   */
 				  @Override
 				  public void OnTxPublished(String hash, String result) {
 					  JSONObject jsonObject = new JSONObject();
@@ -1753,6 +1634,7 @@
 					  }
 				  }
 
+				  @Override
 				  public void OnAssetRegistered(String asset, String info) {
 					  JSONObject jsonObject = new JSONObject();
 					  Log.i(TAG, formatWalletName(masterWalletID, chainID) + " asset => " + asset + ", info: " + info);
@@ -1774,6 +1656,8 @@
 						  cc.sendPluginResult(pluginResult);
 					  }
 				  }
+
+				  @Override
 				  public void OnConnectStatusChanged(String status) {
 					  JSONObject jsonObject = new JSONObject();
 					  Log.i(TAG, formatWalletName(masterWalletID, chainID) + " status => " + status);
@@ -1794,12 +1678,12 @@
 						  cc.sendPluginResult(pluginResult);
 					  }
 				  }
-
 			  });
 		  } catch (WalletException e) {
 			  exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " add callback");
 		  }
 	  }
+
 
 	  // args[0]: String masterWalletID
 	  // args[1]: String chainID
@@ -1814,7 +1698,7 @@
 			  return;
 		  }
 		  try {
-			  ISubWallet subWallet = getSubWallet(masterWalletID, chainID);
+			  SubWallet subWallet = getSubWallet(masterWalletID, chainID);
 			  if (subWallet == null) {
 				  errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
 				  return;
@@ -1830,19 +1714,13 @@
 
 	  // args[0]: String masterWalletID
 	  // args[1]: String chainID
-	  // args[2]: String fromAddress
 	  // args[3]: String payloadJson
-	  // args[4]: String programJson
-	  // args[5]: String memo
 	  public void createIdTransaction(JSONArray args, CallbackContext cc) throws JSONException {
 		  int idx = 0;
 
 		  String masterWalletID = args.getString(idx++);
 		  String chainID        = args.getString(idx++);
-		  String fromAddress    = args.getString(idx++);
 		  String payloadJson    = args.getString(idx++);
-		  String programJson    = args.getString(idx++);
-		  String memo           = args.getString(idx++);
 
 		  if (args.length() != idx) {
 			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
@@ -1850,24 +1728,214 @@
 		  }
 
 		  try {
-			  ISubWallet subWallet = getSubWallet(masterWalletID, chainID);
+			  SubWallet subWallet = getSubWallet(masterWalletID, chainID);
 			  if (subWallet == null) {
 				  errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
 				  return;
 			  }
 
-			  if (! (subWallet instanceof IIDChainSubWallet)) {
-				  errorProcess(cc, errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + "' is not instance of IIDChainSubWallet");
+			  if (! (subWallet instanceof IDChainSubWallet)) {
+				  errorProcess(cc, errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + "' is not instance of IDChainSubWallet");
 				  return;
 			  }
 
-			  IIDChainSubWallet idchainSubWallet = (IIDChainSubWallet)subWallet;
+			  IDChainSubWallet idchainSubWallet = (IDChainSubWallet)subWallet;
 
-			  cc.success(idchainSubWallet.CreateIDTransaction(fromAddress, payloadJson, programJson, memo));
+			  cc.success(idchainSubWallet.CreateIDTransaction(masterWalletID, payloadJson));
 		  } catch (WalletException e) {
 			  exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " create ID tx");
 		  }
 	  }
+
+	  private IDChainSubWallet getIDChainSubWallet(String masterWalletID) {
+		  SubWallet subWallet = getSubWallet(masterWalletID, IDChain);
+
+		  if ((subWallet instanceof IDChainSubWallet)) {
+			  return (IDChainSubWallet) subWallet;
+		  }
+		  return null;
+
+	  }
+
+	public void getResolveDIDInfo(JSONArray args, CallbackContext cc) throws JSONException {
+		int idx = 0;
+
+		String masterWalletID = args.getString(idx++);
+		int start        	= args.getInt(idx++);
+		int count        	= args.getInt(idx++);
+		String did    		= args.getString(idx++);
+
+		if (args.length() != idx) {
+			errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+			return;
+		}
+
+        try {
+            IDChainSubWallet idChainSubWallet = getIDChainSubWallet(masterWalletID);
+            if (idChainSubWallet == null) {
+				errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, IDChain));
+				return;
+            }
+            String info = idChainSubWallet.GetResolveDIDInfo(start, count, did);
+
+			cc.success(info);
+		} catch (WalletException e) {
+			exceptionProcess(e, cc, formatWalletName(masterWalletID, IDChain) + " create ID tx");
+		}
+	}
+
+	public void getAllDID(JSONArray args, CallbackContext cc) throws JSONException {
+		int idx = 0;
+
+		String masterWalletID = args.getString(idx++);
+		int start        	= args.getInt(idx++);
+		int count        	= args.getInt(idx++);
+
+		if (args.length() != idx) {
+			errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+			return;
+		}
+
+        try {
+            IDChainSubWallet idChainSubWallet = getIDChainSubWallet(masterWalletID);
+            if (idChainSubWallet == null) {
+				errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, IDChain));
+				return;
+			}
+            String did = idChainSubWallet.GetAllDID(start, count);
+
+			cc.success(did);
+		} catch (WalletException e) {
+			exceptionProcess(e, cc, formatWalletName(masterWalletID, IDChain) + " create ID tx");
+		}
+	}
+
+	public void didSign(JSONArray args, CallbackContext cc) throws JSONException {
+		int idx = 0;
+
+		String masterWalletID = args.getString(idx++);
+		String did    		= args.getString(idx++);
+		String message    	= args.getString(idx++);
+		String payPassword  = args.getString(idx++);
+
+		if (args.length() != idx) {
+			errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+			return;
+		}
+
+        try {
+            IDChainSubWallet idChainSubWallet = getIDChainSubWallet(masterWalletID);
+            if (idChainSubWallet == null) {
+				errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, IDChain));
+				return;
+			}
+            String result = idChainSubWallet.Sign(did, message, payPassword);
+			cc.success(result);
+		} catch (WalletException e) {
+			exceptionProcess(e, cc, formatWalletName(masterWalletID, IDChain) + " create ID tx");
+		}
+	}
+
+	public void didSignDigest(JSONArray args, CallbackContext cc) throws JSONException {
+		int idx = 0;
+
+		String masterWalletID = args.getString(idx++);
+		String did    		= args.getString(idx++);
+		String digest    	= args.getString(idx++);
+		String payPassword  = args.getString(idx++);
+
+		if (args.length() != idx) {
+			errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+			return;
+		}
+
+        try {
+            IDChainSubWallet idChainSubWallet = getIDChainSubWallet(masterWalletID);
+            if (idChainSubWallet == null) {
+				errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, IDChain));
+				return;
+			}
+            String result = idChainSubWallet.SignDigest(did, digest, payPassword);
+			cc.success(result);
+		} catch (WalletException e) {
+			exceptionProcess(e, cc, formatWalletName(masterWalletID, IDChain) + " create ID tx");
+		}
+	}
+
+	public void verifySignature(JSONArray args, CallbackContext cc) throws JSONException {
+		int idx = 0;
+
+		String masterWalletID = args.getString(idx++);
+		String publicKey    = args.getString(idx++);
+		String message    	= args.getString(idx++);
+		String signature  	= args.getString(idx++);
+
+		if (args.length() != idx) {
+			errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+			return;
+		}
+
+        try {
+            IDChainSubWallet idChainSubWallet = getIDChainSubWallet(masterWalletID);
+            if (idChainSubWallet == null) {
+				errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, IDChain));
+				return;
+			}
+            Boolean result = idChainSubWallet.VerifySignature(publicKey, message, signature);
+			cc.success(result.toString());
+		} catch (WalletException e) {
+			exceptionProcess(e, cc, formatWalletName(masterWalletID, IDChain) + " create ID tx");
+		}
+	}
+
+	public void getPublicKeyDID(JSONArray args, CallbackContext cc) throws JSONException {
+		int idx = 0;
+
+		String masterWalletID = args.getString(idx++);
+		String pubkey    		= args.getString(idx++);
+
+		if (args.length() != idx) {
+			errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+			return;
+		}
+
+        try {
+            IDChainSubWallet idChainSubWallet = getIDChainSubWallet(masterWalletID);
+            if (idChainSubWallet == null) {
+				errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, IDChain));
+				return;
+			}
+            String did = idChainSubWallet.GetPublicKeyDID(pubkey);
+			cc.success(did);
+		} catch (WalletException e) {
+			exceptionProcess(e, cc, formatWalletName(masterWalletID, IDChain) + " create ID tx");
+		}
+	}
+
+	public void generateDIDInfoPayload(JSONArray args, CallbackContext cc) throws JSONException {
+		int idx = 0;
+
+		String masterWalletID = args.getString(idx++);
+		String didInfo    		= args.getString(idx++);
+		String paypasswd    	= args.getString(idx++);
+
+		if (args.length() != idx) {
+			errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+			return;
+		}
+
+        try {
+            IDChainSubWallet idChainSubWallet = getIDChainSubWallet(masterWalletID);
+            if (idChainSubWallet == null) {
+				errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, IDChain));
+				return;
+			}
+            String info = idChainSubWallet.GenerateDIDInfoPayload(didInfo, paypasswd);
+			cc.success(info);
+		} catch (WalletException e) {
+			exceptionProcess(e, cc, formatWalletName(masterWalletID, IDChain) + " create ID tx");
+		}
+	}
 
 	  // args[0]: String masterWalletID
 	  // args[1]: String chainID
@@ -1876,18 +1944,16 @@
 	  // args[4]: String amount
 	  // args[5]: String sideChainAddress
 	  // args[6]: String memo
-	  // args[8]: boolean useVotedUTXO
 	  public void createDepositTransaction(JSONArray args, CallbackContext cc) throws JSONException {
 		  int idx = 0;
 
 		  String masterWalletID = args.getString(idx++);
 		  String chainID        = args.getString(idx++);
-		  String fromAddress    = args.getString(idx++);
-		  String lockedAddress  = args.getString(idx++);
+		  String fromAddress  = args.getString(idx++);
+		  String sideChainID    = args.getString(idx++);
 		  String amount         = args.getString(idx++);
 		  String sideChainAddress = args.getString(idx++);
 		  String memo            = args.getString(idx++);
-		  boolean useVotedUTXO   = args.getBoolean(idx++);
 
 		  if (args.length() != idx) {
 			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
@@ -1895,20 +1961,20 @@
 		  }
 
 		  try {
-			  ISubWallet subWallet = getSubWallet(masterWalletID, chainID);
+			  SubWallet subWallet = getSubWallet(masterWalletID, chainID);
 			  if (subWallet == null) {
 				  errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
 				  return;
 			  }
 
-			  if (! (subWallet instanceof IMainchainSubWallet)) {
-				  errorProcess(cc, errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of IMainchainSubWallet");
+			  if (! (subWallet instanceof MainchainSubWallet)) {
+				  errorProcess(cc, errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
 				  return;
 			  }
 
-			  IMainchainSubWallet mainchainSubWallet = (IMainchainSubWallet)subWallet;
+			  MainchainSubWallet mainchainSubWallet = (MainchainSubWallet)subWallet;
 
-			  String txJson = mainchainSubWallet.CreateDepositTransaction(fromAddress, lockedAddress, amount, sideChainAddress, memo, useVotedUTXO);
+			  String txJson = mainchainSubWallet.CreateDepositTransaction(fromAddress, sideChainID, amount, sideChainAddress, memo);
 
 			  cc.success(txJson);
 		  } catch (WalletException e) {
@@ -1944,18 +2010,18 @@
 		  }
 
 		  try {
-			  ISubWallet subWallet = getSubWallet(masterWalletID, chainID);
+			  SubWallet subWallet = getSubWallet(masterWalletID, chainID);
 			  if (subWallet == null) {
 				  errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
 				  return;
 			  }
 
-			  if (! (subWallet instanceof IMainchainSubWallet)) {
-				  errorProcess(cc, errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of IMainchainSubWallet");
+			  if (! (subWallet instanceof MainchainSubWallet)) {
+				  errorProcess(cc, errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
 				  return;
 			  }
 
-			  IMainchainSubWallet mainchainSubWallet = (IMainchainSubWallet)subWallet;
+			  MainchainSubWallet mainchainSubWallet = (MainchainSubWallet)subWallet;
 
 			  String payloadJson = mainchainSubWallet.GenerateProducerPayload(publicKey, nodePublicKey, nickName, url, IPAddress, location, payPasswd);
 			  cc.success(payloadJson);
@@ -1982,18 +2048,18 @@
 		  }
 
 		  try {
-			  ISubWallet subWallet = getSubWallet(masterWalletID, chainID);
+			  SubWallet subWallet = getSubWallet(masterWalletID, chainID);
 			  if (subWallet == null) {
 				  errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
 				  return;
 			  }
 
-			  if (! (subWallet instanceof IMainchainSubWallet)) {
-				  errorProcess(cc, errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of IMainchainSubWallet");
+			  if (! (subWallet instanceof MainchainSubWallet)) {
+				  errorProcess(cc, errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
 				  return;
 			  }
 
-			  IMainchainSubWallet mainchainSubWallet = (IMainchainSubWallet)subWallet;
+			  MainchainSubWallet mainchainSubWallet = (MainchainSubWallet)subWallet;
 
 			  String payloadJson = mainchainSubWallet.GenerateCancelProducerPayload(publicKey, payPasswd);
 			  cc.success(payloadJson);
@@ -2008,7 +2074,6 @@
 	  // args[3]: String payloadJson
 	  // args[4]: String amount
 	  // args[5]: String memo
-	  // args[7]: boolean useVotedUTXO
 	  public void createRegisterProducerTransaction(JSONArray args, CallbackContext cc) throws JSONException {
 		  int idx = 0;
 
@@ -2018,7 +2083,6 @@
 		  String payloadJson    = args.getString(idx++);
 		  String amount         = args.getString(idx++);
 		  String memo           = args.getString(idx++);
-		  boolean useVotedUTXO  = args.getBoolean(idx++);
 
 		  if (args.length() != idx) {
 			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
@@ -2026,20 +2090,20 @@
 		  }
 
 		  try {
-			  ISubWallet subWallet = getSubWallet(masterWalletID, chainID);
+			  SubWallet subWallet = getSubWallet(masterWalletID, chainID);
 			  if (subWallet == null) {
 				  errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
 				  return;
 			  }
 
-			  if (! (subWallet instanceof IMainchainSubWallet)) {
-				  errorProcess(cc, errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of IMainchainSubWallet");
+			  if (! (subWallet instanceof MainchainSubWallet)) {
+				  errorProcess(cc, errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
 				  return;
 			  }
 
-			  IMainchainSubWallet mainchainSubWallet = (IMainchainSubWallet)subWallet;
+			  MainchainSubWallet mainchainSubWallet = (MainchainSubWallet)subWallet;
 
-			  String txJson = mainchainSubWallet.CreateRegisterProducerTransaction(fromAddress, payloadJson, amount, memo, useVotedUTXO);
+			  String txJson = mainchainSubWallet.CreateRegisterProducerTransaction(fromAddress, payloadJson, amount, memo);
 			  cc.success(txJson);
 		  } catch (WalletException e) {
 			  exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " create register producer tx");
@@ -2051,7 +2115,6 @@
 	  // args[2]: String fromAddress
 	  // args[3]: String payloadJson
 	  // args[4]: String memo
-	  // args[6]: boolean useVotedUTXO
 	  public void createUpdateProducerTransaction(JSONArray args, CallbackContext cc) throws JSONException {
 		  int idx = 0;
 
@@ -2060,7 +2123,6 @@
 		  String fromAddress    = args.getString(idx++);
 		  String payloadJson    = args.getString(idx++);
 		  String memo           = args.getString(idx++);
-		  boolean useVotedUTXO  = args.getBoolean(idx++);
 
 		  if (args.length() != idx) {
 			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
@@ -2068,20 +2130,20 @@
 		  }
 
 		  try {
-			  ISubWallet subWallet = getSubWallet(masterWalletID, chainID);
+			  SubWallet subWallet = getSubWallet(masterWalletID, chainID);
 			  if (subWallet == null) {
 				  errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
 				  return;
 			  }
 
-			  if (! (subWallet instanceof IMainchainSubWallet)) {
-				  errorProcess(cc, errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of IMainchainSubWallet");
+			  if (! (subWallet instanceof MainchainSubWallet)) {
+				  errorProcess(cc, errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
 				  return;
 			  }
 
-			  IMainchainSubWallet mainchainSubWallet = (IMainchainSubWallet)subWallet;
+			  MainchainSubWallet mainchainSubWallet = (MainchainSubWallet)subWallet;
 
-			  String txJson = mainchainSubWallet.CreateUpdateProducerTransaction(fromAddress, payloadJson, memo, useVotedUTXO);
+			  String txJson = mainchainSubWallet.CreateUpdateProducerTransaction(fromAddress, payloadJson, memo);
 			  cc.success(txJson);
 		  } catch (WalletException e) {
 			  exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " create update producer tx");
@@ -2093,7 +2155,6 @@
 	  // args[2]: String fromAddress
 	  // args[3]: String payloadJson
 	  // args[4]: String memo
-	  // args[6]: boolean useVotedUTXO
 	  public void createCancelProducerTransaction(JSONArray args, CallbackContext cc) throws JSONException {
 		  int idx = 0;
 
@@ -2102,7 +2163,6 @@
 		  String fromAddress    = args.getString(idx++);
 		  String payloadJson    = args.getString(idx++);
 		  String memo           = args.getString(idx++);
-		  boolean useVotedUTXO  = args.getBoolean(idx++);
 
 		  if (args.length() != idx) {
 			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
@@ -2110,20 +2170,20 @@
 		  }
 
 		  try {
-			  ISubWallet subWallet = getSubWallet(masterWalletID, chainID);
+			  SubWallet subWallet = getSubWallet(masterWalletID, chainID);
 			  if (subWallet == null) {
 				  errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
 				  return;
 			  }
 
-			  if (! (subWallet instanceof IMainchainSubWallet)) {
-				  errorProcess(cc, errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of IMainchainSubWallet");
+			  if (! (subWallet instanceof MainchainSubWallet)) {
+				  errorProcess(cc, errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
 				  return;
 			  }
 
-			  IMainchainSubWallet mainchainSubWallet = (IMainchainSubWallet)subWallet;
+			  MainchainSubWallet mainchainSubWallet = (MainchainSubWallet)subWallet;
 
-			  String txJson = mainchainSubWallet.CreateCancelProducerTransaction(fromAddress, payloadJson, memo, useVotedUTXO);
+			  String txJson = mainchainSubWallet.CreateCancelProducerTransaction(fromAddress, payloadJson, memo);
 			  cc.success(txJson);
 		  } catch (WalletException e) {
 			  exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " create cancel producer tx");
@@ -2148,18 +2208,18 @@
 		  }
 
 		  try {
-			  ISubWallet subWallet = getSubWallet(masterWalletID, chainID);
+			  SubWallet subWallet = getSubWallet(masterWalletID, chainID);
 			  if (subWallet == null) {
 				  errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
 				  return;
 			  }
 
-			  if (! (subWallet instanceof IMainchainSubWallet)) {
-				  errorProcess(cc, errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of IMainchainSubWallet");
+			  if (! (subWallet instanceof MainchainSubWallet)) {
+				  errorProcess(cc, errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
 				  return;
 			  }
 
-			  IMainchainSubWallet mainchainSubWallet = (IMainchainSubWallet)subWallet;
+			  MainchainSubWallet mainchainSubWallet = (MainchainSubWallet)subWallet;
 
 			  String txJson = mainchainSubWallet.CreateRetrieveDepositTransaction(amount, memo);
 			  cc.success(txJson);
@@ -2182,18 +2242,18 @@
 		  }
 
 		  try {
-			  ISubWallet subWallet = getSubWallet(masterWalletID, chainID);
+			  SubWallet subWallet = getSubWallet(masterWalletID, chainID);
 			  if (subWallet == null) {
 				  errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
 				  return;
 			  }
 
-			  if (! (subWallet instanceof IMainchainSubWallet)) {
-				  errorProcess(cc, errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of IMainchainSubWallet");
+			  if (! (subWallet instanceof MainchainSubWallet)) {
+				  errorProcess(cc, errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
 				  return;
 			  }
 
-			  IMainchainSubWallet mainchainSubWallet = (IMainchainSubWallet)subWallet;
+			  MainchainSubWallet mainchainSubWallet = (MainchainSubWallet)subWallet;
 
 			  String publicKey = mainchainSubWallet.GetOwnerPublicKey();
 			  cc.success(publicKey);
@@ -2209,7 +2269,6 @@
 	  // args[3]: long   stake
 	  // args[4]: String publicKeys JSONArray
 	  // args[5]: String memo
-	  // args[7]: boolean useVotedUTXO
 	  public void createVoteProducerTransaction(JSONArray args, CallbackContext cc) throws JSONException {
 		  int idx = 0;
 
@@ -2219,7 +2278,6 @@
 		  String stake          = args.getString(idx++);
 		  String publicKeys     = args.getString(idx++);
 		  String memo           = args.getString(idx++);
-		  boolean useVotedUTXO  = args.getBoolean(idx++);
 
 		  if (args.length() != idx) {
 			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
@@ -2229,20 +2287,20 @@
 		  Log.i(TAG, formatWalletName(masterWalletID, chainID));
 
 		  try {
-			  ISubWallet subWallet = getSubWallet(masterWalletID, chainID);
+			  SubWallet subWallet = getSubWallet(masterWalletID, chainID);
 			  if (subWallet == null) {
 				  errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
 				  return;
 			  }
 
-			  if (! (subWallet instanceof IMainchainSubWallet)) {
-				  errorProcess(cc, errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of IMainchainSubWallet");
+			  if (! (subWallet instanceof MainchainSubWallet)) {
+				  errorProcess(cc, errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
 				  return;
 			  }
 
-			  IMainchainSubWallet mainchainSubWallet = (IMainchainSubWallet)subWallet;
+			  MainchainSubWallet mainchainSubWallet = (MainchainSubWallet)subWallet;
 
-			  String txJson = mainchainSubWallet.CreateVoteProducerTransaction(fromAddress, stake, publicKeys, memo, useVotedUTXO);
+			  String txJson = mainchainSubWallet.CreateVoteProducerTransaction(fromAddress, stake, publicKeys, memo);
 
 			  cc.success(txJson);
 		  } catch (WalletException e) {
@@ -2263,18 +2321,18 @@
 		  }
 
 		  try {
-			  ISubWallet subWallet = getSubWallet(masterWalletID, chainID);
+			  SubWallet subWallet = getSubWallet(masterWalletID, chainID);
 			  if (subWallet == null) {
 				  errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
 				  return;
 			  }
 
-			  if (! (subWallet instanceof IMainchainSubWallet)) {
-				  errorProcess(cc, errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of IMainchainSubWallet");
+			  if (! (subWallet instanceof MainchainSubWallet)) {
+				  errorProcess(cc, errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
 				  return;
 			  }
 
-			  IMainchainSubWallet mainchainSubWallet = (IMainchainSubWallet) subWallet;
+			  MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 
 			  String list = mainchainSubWallet.GetVotedProducerList();
 
@@ -2297,18 +2355,18 @@
 		  }
 
 		  try {
-			  ISubWallet subWallet = getSubWallet(masterWalletID, chainID);
+			  SubWallet subWallet = getSubWallet(masterWalletID, chainID);
 			  if (subWallet == null) {
 				  errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
 				  return;
 			  }
 
-			  if (! (subWallet instanceof IMainchainSubWallet)) {
-				  errorProcess(cc, errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of IMainchainSubWallet");
+			  if (! (subWallet instanceof MainchainSubWallet)) {
+				  errorProcess(cc, errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
 				  return;
 			  }
 
-			  IMainchainSubWallet mainchainSubWallet = (IMainchainSubWallet) subWallet;
+			  MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
 			  String info = mainchainSubWallet.GetRegisteredProducerInfo();
 
 			  cc.success(info);
@@ -2329,7 +2387,7 @@
 		  }
 
 		  try {
-			  IMasterWallet masterWallet = getIMasterWallet(masterWalletID);
+			  MasterWallet masterWallet = getIMasterWallet(masterWalletID);
 			  if (masterWallet == null) {
 				  errorProcess(cc, errCodeInvalidMasterWallet, "Get " + formatWalletName(masterWalletID));
 				  return;
@@ -2363,7 +2421,7 @@
 		  }
 
 		  try {
-			  IMasterWallet masterWallet = getIMasterWallet(masterWalletID);
+			  MasterWallet masterWallet = getIMasterWallet(masterWalletID);
 			  if (masterWallet == null) {
 				  errorProcess(cc, errCodeInvalidMasterWallet, "Get " + formatWalletName(masterWalletID));
 				  return;
@@ -2423,18 +2481,18 @@
 		  }
 
 		  try {
-			  ISubWallet subWallet = getSubWallet(masterWalletID, chainID);
+			  SubWallet subWallet = getSubWallet(masterWalletID, chainID);
 			  if (subWallet == null) {
 				  errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
 				  return;
 			  }
 
-			  if (! (subWallet instanceof ISidechainSubWallet)) {
-				  errorProcess(cc, errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of ISidechainSubWallet");
+			  if (! (subWallet instanceof SidechainSubWallet)) {
+				  errorProcess(cc, errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of SidechainSubWallet");
 				  return;
 			  }
 
-			  ISidechainSubWallet sidechainSubWallet = (ISidechainSubWallet)subWallet;
+			  SidechainSubWallet sidechainSubWallet = (SidechainSubWallet)subWallet;
 			  String tx = sidechainSubWallet.CreateWithdrawTransaction(fromAddress, amount, mainchainAddress, memo);
 
 			  cc.success(tx);
@@ -2457,18 +2515,18 @@
 		  }
 
 		  try {
-			  ISubWallet subWallet = getSubWallet(masterWalletID, chainID);
+			  SubWallet subWallet = getSubWallet(masterWalletID, chainID);
 			  if (subWallet == null) {
 				  errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
 				  return;
 			  }
 
-			  if (! (subWallet instanceof ISidechainSubWallet)) {
-				  errorProcess(cc, errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of ISidechainSubWallet");
+			  if (! (subWallet instanceof SidechainSubWallet)) {
+				  errorProcess(cc, errCodeSubWalletInstance, formatWalletName(masterWalletID, chainID) + " is not instance of SidechainSubWallet");
 				  return;
 			  }
 
-			  ISidechainSubWallet sidechainSubWallet = (ISidechainSubWallet)subWallet;
+			  SidechainSubWallet sidechainSubWallet = (SidechainSubWallet)subWallet;
 
 			  String address = sidechainSubWallet.GetGenesisAddress();
 
