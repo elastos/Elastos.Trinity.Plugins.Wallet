@@ -1005,27 +1005,27 @@ void ElISubWalletCallback::OnBalanceChanged(const std::string &asset, const std:
 
 }
 
-- (CDVPluginResult *)getMasterWalletPublicKey:(CDVInvokedUrlCommand *)command
-{
-    NSArray *args = command.arguments;
-    int idx = 0;
+// - (CDVPluginResult *)getMasterWalletPublicKey:(CDVInvokedUrlCommand *)command
+// {
+//     NSArray *args = command.arguments;
+//     int idx = 0;
 
-    String masterWalletID = [self cstringWithString:args[idx++]];;
+//     String masterWalletID = [self cstringWithString:args[idx++]];;
 
-    if (args.count != idx) {
+//     if (args.count != idx) {
 
-        return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
-    }
-    IMasterWallet *masterWallet = [self getIMasterWallet:masterWalletID];
-    if (masterWallet == nil) {
-        NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletName:masterWalletID]];
-        return [self errorProcess:command code:errCodeInvalidMasterWallet msg:msg];
-    }
-    Json json = masterWallet->GetPublicKey();
-    NSString *jsonString = [self stringWithCString:json.dump()];
-    return [self successAsString:command msg:jsonString];
+//         return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
+//     }
+//     IMasterWallet *masterWallet = [self getIMasterWallet:masterWalletID];
+//     if (masterWallet == nil) {
+//         NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletName:masterWalletID]];
+//         return [self errorProcess:command code:errCodeInvalidMasterWallet msg:msg];
+//     }
+//     Json json = masterWallet->GetPublicKey();
+//     NSString *jsonString = [self stringWithCString:json.dump()];
+//     return [self successAsString:command msg:jsonString];
 
-}
+// }
 
 - (CDVPluginResult *)exportWalletWithKeystore:(CDVInvokedUrlCommand *)command
 {
@@ -1045,7 +1045,7 @@ void ElISubWalletCallback::OnBalanceChanged(const std::string &asset, const std:
         return [self errorProcess:command code:errCodeInvalidMasterWallet msg:msg];
     }
 
-    Json json = mMasterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword, payPassword);
+    Json json = mMasterWalletManager->ExportKeystore(masterWallet, backupPassword, payPassword);
     String str = json.dump();
     NSString *jsonString = [self stringWithCString:json.dump()];
     return [self successAsString:command msg:jsonString];
@@ -1071,7 +1071,7 @@ void ElISubWalletCallback::OnBalanceChanged(const std::string &asset, const std:
         return [self errorProcess:command code:errCodeInvalidMasterWallet msg:msg];
     }
 
-    Json json = mMasterWalletManager->ExportWalletWithMnemonic(masterWallet, backupPassword);
+    Json json = mMasterWalletManager->ExportMnemonic(masterWallet, backupPassword);
 
     NSString *jsonString = [self stringWithCString:json.dump()];
     return [self successAsString:command msg:jsonString];
@@ -1159,29 +1159,29 @@ void ElISubWalletCallback::OnBalanceChanged(const std::string &asset, const std:
 
 }
 
-- (CDVPluginResult *)getMultiSignPubKeyWithMnemonic:(CDVInvokedUrlCommand *)command
-{
-    NSArray *args = command.arguments;
-    int idx = 0;
+// - (CDVPluginResult *)getMultiSignPubKeyWithMnemonic:(CDVInvokedUrlCommand *)command
+// {
+//     NSArray *args = command.arguments;
+//     int idx = 0;
 
-    String mnemonic = [self cstringWithString:args[idx++]];
-    String phrasePassword = [self cstringWithString:args[idx++]];
+//     String mnemonic = [self cstringWithString:args[idx++]];
+//     String phrasePassword = [self cstringWithString:args[idx++]];
 
-    if (args.count != idx) {
+//     if (args.count != idx) {
 
-        return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
-    }
-    if (mMasterWalletManager == nil) {
-        NSString *msg = [NSString stringWithFormat:@"%@", @"Master wallet manager has not initialize"];
-        return [self errorProcess:command code:errCodeInvalidMasterWalletManager msg:msg];
-    }
+//         return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
+//     }
+//     if (mMasterWalletManager == nil) {
+//         NSString *msg = [NSString stringWithFormat:@"%@", @"Master wallet manager has not initialize"];
+//         return [self errorProcess:command code:errCodeInvalidMasterWalletManager msg:msg];
+//     }
 
-    String pubKey = mMasterWalletManager->GetMultiSignPubKey(mnemonic, phrasePassword);
+//     String pubKey = mMasterWalletManager->GetMultiSignPubKey(mnemonic, phrasePassword);
 
-    NSString *jsonString = [self stringWithCString:pubKey];
-    return [self successAsString:command msg:jsonString];
+//     NSString *jsonString = [self stringWithCString:pubKey];
+//     return [self successAsString:command msg:jsonString];
 
-}
+// }
 
 - (CDVPluginResult *)createMultiSignMasterWalletWithMnemonic:(CDVInvokedUrlCommand *)command
 {
@@ -1249,28 +1249,28 @@ void ElISubWalletCallback::OnBalanceChanged(const std::string &asset, const std:
     return [self successAsString:command msg:jsonString];
 }
 
-- (CDVPluginResult *)getMultiSignPubKeyWithPrivKey:(CDVInvokedUrlCommand *)command
-{
-    NSArray *args = command.arguments;
-    int idx = 0;
+// - (CDVPluginResult *)getMultiSignPubKeyWithPrivKey:(CDVInvokedUrlCommand *)command
+// {
+//     NSArray *args = command.arguments;
+//     int idx = 0;
 
-    String privKey = [self cstringWithString:args[idx++]];
+//     String privKey = [self cstringWithString:args[idx++]];
 
-    if (args.count != idx) {
+//     if (args.count != idx) {
 
-        return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
-    }
-    if (mMasterWalletManager == nil) {
-        NSString *msg = [NSString stringWithFormat:@"%@", @"Master wallet manager has not initialize"];
-        return [self errorProcess:command code:errCodeInvalidMasterWalletManager msg:msg];
-    }
+//         return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
+//     }
+//     if (mMasterWalletManager == nil) {
+//         NSString *msg = [NSString stringWithFormat:@"%@", @"Master wallet manager has not initialize"];
+//         return [self errorProcess:command code:errCodeInvalidMasterWalletManager msg:msg];
+//     }
 
-    String privateKey = mMasterWalletManager->GetMultiSignPubKey(privKey);
+//     String privateKey = mMasterWalletManager->GetMultiSignPubKey(privKey);
 
-    NSString *jsonString = [self stringWithCString:privateKey];
-    return [self successAsString:command msg:jsonString];
+//     NSString *jsonString = [self stringWithCString:privateKey];
+//     return [self successAsString:command msg:jsonString];
 
-}
+// }
 
 - (CDVPluginResult *)createMultiSignMasterWalletWithPrivKey:(CDVInvokedUrlCommand *)command
 {
@@ -1519,31 +1519,31 @@ void ElISubWalletCallback::OnBalanceChanged(const std::string &asset, const std:
 //     return [self successAsString:command msg:msg];
 // }
 
-- (CDVPluginResult *)importWalletWithOldKeystore:(CDVInvokedUrlCommand *)command
-{
-    NSArray *args = command.arguments;
-    int idx = 0;
+// - (CDVPluginResult *)importWalletWithOldKeystore:(CDVInvokedUrlCommand *)command
+// {
+//     NSArray *args = command.arguments;
+//     int idx = 0;
 
-    String masterWalletID  = [self cstringWithString:args[idx++]];
-    String keystoreContent = [self cstringWithString:args[idx++]];
-    String backupPassword  = [self cstringWithString:args[idx++]];
-    String payPassword     = [self cstringWithString:args[idx++]];
-    String phrasePassword  = [self cstringWithString:args[idx++]];
+//     String masterWalletID  = [self cstringWithString:args[idx++]];
+//     String keystoreContent = [self cstringWithString:args[idx++]];
+//     String backupPassword  = [self cstringWithString:args[idx++]];
+//     String payPassword     = [self cstringWithString:args[idx++]];
+//     String phrasePassword  = [self cstringWithString:args[idx++]];
 
-    if (args.count != idx) {
+//     if (args.count != idx) {
 
-        return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
-    }
-    IMasterWallet *masterWallet = mMasterWalletManager->ImportWalletWithKeystore(         masterWalletID, keystoreContent, backupPassword, payPassword);
-    if (masterWallet == nil) {
-        NSString *msg = [NSString stringWithFormat:@"%@ %@ %@", @"Import", [self formatWalletName:masterWalletID], @"with keystore"];
-        return [self errorProcess:command code:errCodeImportFromKeyStore msg:msg];
-    }
-    [self createDIDManager:masterWallet];
-    NSString *jsonString = [self getBasicInfo:masterWallet];
-    return [self successAsString:command msg:jsonString];
+//         return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
+//     }
+//     IMasterWallet *masterWallet = mMasterWalletManager->ImportWalletWithKeystore(         masterWalletID, keystoreContent, backupPassword, payPassword);
+//     if (masterWallet == nil) {
+//         NSString *msg = [NSString stringWithFormat:@"%@ %@ %@", @"Import", [self formatWalletName:masterWalletID], @"with keystore"];
+//         return [self errorProcess:command code:errCodeImportFromKeyStore msg:msg];
+//     }
+//     [self createDIDManager:masterWallet];
+//     NSString *jsonString = [self getBasicInfo:masterWallet];
+//     return [self successAsString:command msg:jsonString];
 
-}
+// }
 
 - (CDVPluginResult *)getTransactionSignedSigners:(CDVInvokedUrlCommand *)command
 {
@@ -1572,30 +1572,30 @@ void ElISubWalletCallback::OnBalanceChanged(const std::string &asset, const std:
 
 }
 
-- (CDVPluginResult *)getSubWalletPublicKey:(CDVInvokedUrlCommand *)command
-{
+// - (CDVPluginResult *)getSubWalletPublicKey:(CDVInvokedUrlCommand *)command
+// {
 
-    NSArray *args = command.arguments;
-    int idx = 0;
+//     NSArray *args = command.arguments;
+//     int idx = 0;
 
-    String masterWalletID = [self cstringWithString:args[idx++]];
-    String chainID       = [self cstringWithString:args[idx++]];
+//     String masterWalletID = [self cstringWithString:args[idx++]];
+//     String chainID       = [self cstringWithString:args[idx++]];
 
-    if (args.count != idx) {
+//     if (args.count != idx) {
 
-        return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
-    }
+//         return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
+//     }
 
-    ISubWallet *subWallet = [self getSubWallet:masterWalletID :chainID];
-    if (subWallet == nil) {
-        NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletNameWithString:masterWalletID other:chainID]];
-        return [self errorProcess:command code:errCodeInvalidSubWallet msg:msg];
-    }
-    String str = subWallet->GetPublicKey();
-    NSString *msg = [self stringWithCString:str];
-    return [self successAsString:command msg:msg];
+//     ISubWallet *subWallet = [self getSubWallet:masterWalletID :chainID];
+//     if (subWallet == nil) {
+//         NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletNameWithString:masterWalletID other:chainID]];
+//         return [self errorProcess:command code:errCodeInvalidSubWallet msg:msg];
+//     }
+//     String str = subWallet->GetPublicKey();
+//     NSString *msg = [self stringWithCString:str];
+//     return [self successAsString:command msg:msg];
 
-}
+// }
 
 - (CDVPluginResult *)removeWalletListener:(CDVInvokedUrlCommand *)command
 {

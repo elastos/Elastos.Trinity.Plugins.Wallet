@@ -72,15 +72,15 @@
 - (void)getAllTransaction:(CDVInvokedUrlCommand *)command;
 - (void)createAddress:(CDVInvokedUrlCommand *)command;
 - (void)getGenesisAddress:(CDVInvokedUrlCommand *)command;
-- (void)getMasterWalletPublicKey:(CDVInvokedUrlCommand *)command;
+// - (void)getMasterWalletPublicKey:(CDVInvokedUrlCommand *)command;
 - (void)exportWalletWithKeystore:(CDVInvokedUrlCommand *)command;
 - (void)exportWalletWithMnemonic:(CDVInvokedUrlCommand *)command;
 - (void)importWalletWithKeystore:(CDVInvokedUrlCommand *)command;
 - (void)importWalletWithMnemonic:(CDVInvokedUrlCommand *)command;
-- (void)getMultiSignPubKeyWithMnemonic:(CDVInvokedUrlCommand *)command;
+// - (void)getMultiSignPubKeyWithMnemonic:(CDVInvokedUrlCommand *)command;
 - (void)createMultiSignMasterWalletWithMnemonic:(CDVInvokedUrlCommand *)command;
 - (void)createMultiSignMasterWallet:(CDVInvokedUrlCommand *)command;
-- (void)getMultiSignPubKeyWithPrivKey:(CDVInvokedUrlCommand *)command;
+// - (void)getMultiSignPubKeyWithPrivKey:(CDVInvokedUrlCommand *)command;
 - (void)createMultiSignMasterWalletWithPrivKey:(CDVInvokedUrlCommand *)command;
 - (void)getAllAddress:(CDVInvokedUrlCommand *)command;
 - (void)isAddressValid:(CDVInvokedUrlCommand *)command;
@@ -89,9 +89,9 @@
 - (void)createTransaction:(CDVInvokedUrlCommand *)command;
 - (void)signTransaction:(CDVInvokedUrlCommand *)command;
 - (void)publishTransaction:(CDVInvokedUrlCommand *)command;
-- (void)importWalletWithOldKeystore:(CDVInvokedUrlCommand *)command;
+// - (void)importWalletWithOldKeystore:(CDVInvokedUrlCommand *)command;
 - (void)getTransactionSignedSigners:(CDVInvokedUrlCommand *)command;
-- (void)getSubWalletPublicKey:(CDVInvokedUrlCommand *)command;
+// - (void)getSubWalletPublicKey:(CDVInvokedUrlCommand *)command;
 - (void)removeWalletListener:(CDVInvokedUrlCommand *)command;
 - (void)createIdTransaction:(CDVInvokedUrlCommand *)command;
 - (void)createWithdrawTransaction:(CDVInvokedUrlCommand *)command;
@@ -543,16 +543,14 @@
 
 }
 
-- (void)getMultiSignPubKeyWithMnemonic:(CDVInvokedUrlCommand *)command
-{
+// - (void)getMultiSignPubKeyWithMnemonic:(CDVInvokedUrlCommand *)command
+// {
 
-    NSString *msg = @"Get multi sign public key with mnemonic";
-    CDVPluginResult *pluginResult = nil;
-    pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-
-
-}
+//     NSString *msg = @"Get multi sign public key with mnemonic";
+//     CDVPluginResult *pluginResult = nil;
+//     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
+//     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+// }
 
 - (void)createMultiSignMasterWalletWithMnemonic:(CDVInvokedUrlCommand *)command
 {
@@ -580,14 +578,14 @@
 
 }
 
-- (void)getMultiSignPubKeyWithPrivKey:(CDVInvokedUrlCommand *)command
-{
+// - (void)getMultiSignPubKeyWithPrivKey:(CDVInvokedUrlCommand *)command
+// {
 
-    NSString *msg = @"Get multi sign public key with private key";
-    CDVPluginResult *pluginResult = nil;
-    pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-}
+//     NSString *msg = @"Get multi sign public key with private key";
+//     CDVPluginResult *pluginResult = nil;
+//     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
+//     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+// }
 
 - (void)createMultiSignMasterWalletWithPrivKey:(CDVInvokedUrlCommand *)command
 {
@@ -702,18 +700,18 @@
 
 // }
 
-- (void)importWalletWithOldKeystore:(CDVInvokedUrlCommand *)command
-{
-    int idx = 0;
-    NSArray *array = command.arguments;
-    String masterWalletID = [self cstringWithString:array[idx++]];
+// - (void)importWalletWithOldKeystore:(CDVInvokedUrlCommand *)command
+// {
+//     int idx = 0;
+//     NSArray *array = command.arguments;
+//     String masterWalletID = [self cstringWithString:array[idx++]];
 
-    NSString *msg = [self formatMsgWithMasterWalletID:@"Import " masterId:masterWalletID end:@" with old keystore"];
-    CDVPluginResult *pluginResult = nil;
-    pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+//     NSString *msg = [self formatMsgWithMasterWalletID:@"Import " masterId:masterWalletID end:@" with old keystore"];
+//     CDVPluginResult *pluginResult = nil;
+//     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
+//     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 
-}
+// }
 
 - (void)encodeTransactionToString:(CDVInvokedUrlCommand *)command
 {
@@ -746,18 +744,18 @@
 
 }
 
-- (void)getSubWalletPublicKey:(CDVInvokedUrlCommand *)command
-{
-    int idx = 0;
-    NSArray *array = command.arguments;
-    String masterWalletID = [self cstringWithString:array[idx++]];
-    String chainID = [self cstringWithString:array[idx++]];
-    NSString *msg = [self formatMsgWithMasterWalletIDAndChainID:@"Get " masterId:masterWalletID chainID:chainID end:@" public key"];
-    CDVPluginResult *pluginResult = nil;
-    pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+// - (void)getSubWalletPublicKey:(CDVInvokedUrlCommand *)command
+// {
+//     int idx = 0;
+//     NSArray *array = command.arguments;
+//     String masterWalletID = [self cstringWithString:array[idx++]];
+//     String chainID = [self cstringWithString:array[idx++]];
+//     NSString *msg = [self formatMsgWithMasterWalletIDAndChainID:@"Get " masterId:masterWalletID chainID:chainID end:@" public key"];
+//     CDVPluginResult *pluginResult = nil;
+//     pluginResult = [self execMethmod:NSStringFromSelector(_cmd): command msg:msg];
+//     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 
-}
+// }
 
 
 - (void)removeWalletListener:(CDVInvokedUrlCommand *)command
