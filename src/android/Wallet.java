@@ -29,8 +29,8 @@
   import org.elastos.spvcore.MainchainSubWallet;
   import org.elastos.spvcore.IDChainSubWallet;
   import org.elastos.spvcore.SidechainSubWallet;
-  import org.elastos.spvcore.ISubWalletCallback;
   import org.elastos.spvcore.MasterWalletManager;
+  import org.elastos.spvcore.SubWalletCallback;
   import org.elastos.spvcore.WalletException;
   import org.elastos.trinity.runtime.TrinityPlugin;
 
@@ -44,9 +44,8 @@
   import org.json.JSONException;
   import org.json.JSONObject;
 
+  import java.io.File;
   import java.util.ArrayList;
-  import java.util.HashMap;
-  import java.util.Map;
   import android.util.Log;
 
 
@@ -64,8 +63,6 @@
 
 	  private MasterWalletManager mMasterWalletManager = null;
 	  //private IDidManager mDidManager = null;
-	  private String mRootPath = null;
-
 	  private String keySuccess   = "success";
 	  private String keyError     = "error";
 	  private String keyCode      = "code";
@@ -140,22 +137,16 @@
 	  public void onDestroy() {
 		  Log.i(TAG, "onDestroy");
 		  if (mMasterWalletManager != null) {
-			  Map<String, ArrayList<SubWallet>> subWalletMap = new HashMap<String, ArrayList<SubWallet>>();
 			  ArrayList<MasterWallet> masterWalletList = mMasterWalletManager.GetAllMasterWallets();
 			  for (int i = 0; i < masterWalletList.size(); i++) {
 				  MasterWallet masterWallet = masterWalletList.get(i);
-				  subWalletMap.put(masterWallet.GetID(), masterWallet.GetAllSubWallets());
+				  ArrayList<SubWallet> subWallets = masterWallet.GetAllSubWallets();
+				  for (int j = 0; j < subWallets.size(); ++j) {
+					  subWallets.get(j).RemoveCallback();
+				  }
 			  }
 
 			  mMasterWalletManager.Dispose();
-
-			  for (Map.Entry<String, ArrayList<SubWallet>> entry : subWalletMap.entrySet()) {
-				  Log.i(TAG, "Removing masterWallet[" + entry.getKey() + "]'s callback");
-				  ArrayList<SubWallet> subWallets = entry.getValue();
-				  for (int i = 0; i < subWallets.size(); i++) {
-					  subWallets.get(i).RemoveCallback();
-				  }
-			  }
 			  mMasterWalletManager = null;
 		  }
 
@@ -165,9 +156,18 @@
 	  @Override
 	  public void initialize(CordovaInterface cordova, CordovaWebView webView) {
 		  super.initialize(cordova, webView);
-		  mRootPath = getDataPath() + "spv";
-		  mMasterWalletManager = new MasterWalletManager(mRootPath, "TestNet"
-				  , mRootPath + "/config", mRootPath + "/data");
+		  String rootPath = getDataPath() + "spv";
+		  File destDir = new File(rootPath);
+		  if (!destDir.exists()) {
+			  destDir.mkdirs();
+		  }
+		  String dataPaht = rootPath + "/data";
+		  destDir = new File(dataPaht);
+		  if (!destDir.exists()) {
+			  destDir.mkdirs();
+		  }
+		  mMasterWalletManager = new MasterWalletManager(rootPath, "TestNet"
+				  , "", dataPaht);
 	  }
 
 
@@ -1539,146 +1539,21 @@
 				  return;
 			  }
 
-			  subWallet.AddCallback(new ISubWalletCallback() {
+			  subWallet.AddCallback(new SubWalletCallback(masterWalletID, chainID, new ISubWalletListener() {
 				  @Override
-				  public void OnTransactionStatusChanged(String txId, String status, String desc, int confirms) {
-					  JSONObject jsonObject = new JSONObject();
-					  Log.i(TAG, formatWalletName(masterWalletID, chainID) + " OnTxStatusChanged => tx: " + txId + ", status: " + status + ", confirms: " + confirms);
-					  try {
-						  jsonObject.put("txId", txId);
-						  jsonObject.put("status", status);
-						  jsonObject.put("desc", desc);
-						  jsonObject.put("confirms", confirms);
-						  jsonObject.put("MasterWalletID", masterWalletID);
-						  jsonObject.put("ChaiID", chainID);
-						  jsonObject.put("Action", "OnTransactionStatusChanged");
-
-						  PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, jsonObject);
-						  pluginResult.setKeepCallback(true);
-						  cc.sendPluginResult(pluginResult);
-					  } catch (JSONException e) {
-						  e.printStackTrace();
-
-						  PluginResult pluginResult = new PluginResult(PluginResult.Status.JSON_EXCEPTION, e.toString());
-						  pluginResult.setKeepCallback(true);
-						  cc.sendPluginResult(pluginResult);
-					  }
-				  }
-
-
-				  @Override
-				  public void OnBlockSyncProgress(String progressInfo) {
-					 JSONObject jsonObject = new JSONObject();
-						  Log.i(TAG, formatWalletName(masterWalletID, chainID) + " OnBlockSyncProgress => [" + progressInfo + "]");
-						  try {
-							  jsonObject.put("progressInfo", progressInfo);
-							  jsonObject.put("MasterWalletID", masterWalletID);
-							  jsonObject.put("ChaiID", chainID);
-							  jsonObject.put("Action", "OnBlockSyncProgress");
-
-							  PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, jsonObject);
-							  pluginResult.setKeepCallback(true);
-							  cc.sendPluginResult(pluginResult);
-						  } catch (JSONException e) {
-							  e.printStackTrace();
-
-							  PluginResult pluginResult = new PluginResult(PluginResult.Status.JSON_EXCEPTION, e.toString());
-							  pluginResult.setKeepCallback(true);
-							  cc.sendPluginResult(pluginResult);
-						  }
-					  }
-
-				  @Override
-				  public void OnBalanceChanged(String asset, String balance) {
-					  JSONObject jsonObject = new JSONObject();
-					  Log.i(TAG, formatWalletName(masterWalletID, chainID) + " OnBalanceChanged => " + balance);
-					  try {
-						  jsonObject.put("Asset", asset);
-						  jsonObject.put("Balance", balance);
-						  jsonObject.put("MasterWalletID", masterWalletID);
-						  jsonObject.put("ChaiID", chainID);
-						  jsonObject.put("Action", "OnBalanceChanged");
-
-						  PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, jsonObject);
-						  pluginResult.setKeepCallback(true);
-						  cc.sendPluginResult(pluginResult);
-					  } catch(JSONException e) {
-						  e.printStackTrace();
-
-						  PluginResult pluginResult = new PluginResult(PluginResult.Status.JSON_EXCEPTION, e.toString());
-						  pluginResult.setKeepCallback(true);
-						  cc.sendPluginResult(pluginResult);
-					  }
+				  public void sendResultSuccess(JSONObject jsonObject) {
+					  PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, jsonObject);
+					  pluginResult.setKeepCallback(true);
+					  cc.sendPluginResult(pluginResult);
 				  }
 
 				  @Override
-				  public void OnTxPublished(String hash, String result) {
-					  JSONObject jsonObject = new JSONObject();
-					  Log.i(TAG, formatWalletName(masterWalletID, chainID) + " OnTxPublished => " + hash + ", result: " + result);
-					  try {
-						  jsonObject.put("hash", hash);
-						  jsonObject.put("result", result);
-						  jsonObject.put("MasterWalletID", masterWalletID);
-						  jsonObject.put("ChaiID", chainID);
-						  jsonObject.put("Action", "OnTxPublished");
-
-						  PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, jsonObject);
-						  pluginResult.setKeepCallback(true);
-						  cc.sendPluginResult(pluginResult);
-					  } catch (JSONException e) {
-						  e.printStackTrace();
-
-						  PluginResult pluginResult = new PluginResult(PluginResult.Status.JSON_EXCEPTION, e.toString());
-						  pluginResult.setKeepCallback(true);
-						  cc.sendPluginResult(pluginResult);
-					  }
+				  public void sendResultError(String error) {
+					  PluginResult pluginResult = new PluginResult(PluginResult.Status.JSON_EXCEPTION, error);
+					  pluginResult.setKeepCallback(true);
+					  cc.sendPluginResult(pluginResult);
 				  }
-
-				  @Override
-				  public void OnAssetRegistered(String asset, String info) {
-					  JSONObject jsonObject = new JSONObject();
-					  Log.i(TAG, formatWalletName(masterWalletID, chainID) + " asset => " + asset + ", info: " + info);
-					  try {
-						  jsonObject.put("asset", asset);
-						  jsonObject.put("info", info);
-						  jsonObject.put("MasterWalletID", masterWalletID);
-						  jsonObject.put("ChaiID", chainID);
-						  jsonObject.put("Action", "OnAssetRegistered");
-
-						  PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, jsonObject);
-						  pluginResult.setKeepCallback(true);
-						  cc.sendPluginResult(pluginResult);
-					  } catch (JSONException e) {
-						  e.printStackTrace();
-
-						  PluginResult pluginResult = new PluginResult(PluginResult.Status.JSON_EXCEPTION, e.toString());
-						  pluginResult.setKeepCallback(true);
-						  cc.sendPluginResult(pluginResult);
-					  }
-				  }
-
-				  @Override
-				  public void OnConnectStatusChanged(String status) {
-					  JSONObject jsonObject = new JSONObject();
-					  Log.i(TAG, formatWalletName(masterWalletID, chainID) + " status => " + status);
-					  try {
-						  jsonObject.put("status", status);
-						  jsonObject.put("MasterWalletID", masterWalletID);
-						  jsonObject.put("ChaiID", chainID);
-						  jsonObject.put("Action", "OnConnectStatusChanged");
-
-						  PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, jsonObject);
-						  pluginResult.setKeepCallback(true);
-						  cc.sendPluginResult(pluginResult);
-					  } catch (JSONException e) {
-						  e.printStackTrace();
-
-						  PluginResult pluginResult = new PluginResult(PluginResult.Status.JSON_EXCEPTION, e.toString());
-						  pluginResult.setKeepCallback(true);
-						  cc.sendPluginResult(pluginResult);
-					  }
-				  }
-			  });
+			  }));
 		  } catch (WalletException e) {
 			  exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " add callback");
 		  }
