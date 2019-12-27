@@ -83,6 +83,10 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         exec(success, error, "Wallet", "exportWalletWithMnemonic", args);
     };
 
+    syncStart(args, success, error) {
+        exec(success, error, "Wallet", "syncStart", args);
+    };
+
     getBalanceInfo(args, success, error) {
         exec(success, error, "Wallet", "getBalanceInfo", args);
     };

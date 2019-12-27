@@ -364,6 +364,9 @@
 					  break;
 
 				  // SubWallet
+				  case "syncStart":
+					  this.syncStart(args, cc);
+					  break;
 				  case "getBalanceInfo":
 					  this.getBalanceInfo(args, cc);
 					  break;
@@ -415,25 +418,25 @@
 					  this.createIdTransaction(args, cc);
 					  break;
 					case "getResolveDIDInfo":
-					  	this.getResolveDIDInfo(args, cc);
-					  	break;
+						this.getResolveDIDInfo(args, cc);
+						break;
 					case "getAllDID":
-					  	this.getAllDID(args, cc);
-					  	break;
+						this.getAllDID(args, cc);
+						break;
 					case "didSign":
-					  	this.didSign(args, cc);
-					  	break;
+						this.didSign(args, cc);
+						break;
 					case "didSignDigest":
-					  	this.didSignDigest(args, cc);
+						this.didSignDigest(args, cc);
 						  break;
 					case "verifySignature":
-					  	this.verifySignature(args, cc);
-					  	break;
+						this.verifySignature(args, cc);
+						break;
 					case "getPublicKeyDID":
-					  	this.getPublicKeyDID(args, cc);
-					  	break;
+						this.getPublicKeyDID(args, cc);
+						break;
 					case "generateDIDInfoPayload":
-					  	this.generateDIDInfoPayload(args, cc);
+						this.generateDIDInfoPayload(args, cc);
 					  	break;
 
 				  // Main chain subwallet
@@ -1098,6 +1101,31 @@
 		  }
 	  }
 
+
+	  public void syncStart(JSONArray args, CallbackContext cc) throws JSONException {
+		  int idx = 0;
+
+		  String masterWalletID = args.getString(idx++);
+		  String chainID        = args.getString(idx++);
+
+		  if (args.length() != idx) {
+			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+			  return;
+		  }
+
+		  try {
+			  SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+			  if (subWallet == null) {
+				  errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+				  return;
+			  }
+			  subWallet.SyncStart();
+			  cc.success("SyncStart OK");
+		  } catch (WalletException e) {
+			  exceptionProcess(e, cc, "Get " + formatWalletName(masterWalletID, chainID) + " balance info");
+		  }
+	  }
+
 	  // args[0]: String masterWalletID
 	  // args[1]: String chainID
 	  public void getBalanceInfo(JSONArray args, CallbackContext cc) throws JSONException {
@@ -1596,6 +1624,7 @@
 		  String masterWalletID = args.getString(idx++);
 		  String chainID        = args.getString(idx++);
 		  String payloadJson    = args.getString(idx++);
+		  String memo           = args.getString(idx++);
 
 		  if (args.length() != idx) {
 			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
@@ -1616,7 +1645,7 @@
 
 			  IDChainSubWallet idchainSubWallet = (IDChainSubWallet)subWallet;
 
-			  cc.success(idchainSubWallet.CreateIDTransaction(masterWalletID, payloadJson));
+			  cc.success(idchainSubWallet.CreateIDTransaction(payloadJson, memo));
 		  } catch (WalletException e) {
 			  exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " create ID tx");
 		  }

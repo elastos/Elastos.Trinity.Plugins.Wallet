@@ -48,6 +48,7 @@ declare module WalletPlugin {
         importWalletWithMnemonic:(args, success, error)=>void;
         exportWalletWithKeystore:(args, success, error)=>void;
         exportWalletWithMnemonic:(args, success, error)=>void;
+        syncStart:(args, success, error)=>void;
         getBalanceInfo:(args, success, error)=>void;
         getBalance:(args, success, error)=>void;
         createAddress:(args, success, error)=>void;
