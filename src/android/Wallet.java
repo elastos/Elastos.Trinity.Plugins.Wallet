@@ -367,6 +367,9 @@
 				  case "syncStart":
 					  this.syncStart(args, cc);
 					  break;
+					case "syncStop":
+					  this.syncStop(args, cc);
+					  break;
 				  case "getBalanceInfo":
 					  this.getBalanceInfo(args, cc);
 					  break;
@@ -1125,6 +1128,30 @@
 			  exceptionProcess(e, cc, "Get " + formatWalletName(masterWalletID, chainID) + " balance info");
 		  }
 	  }
+
+	  public void syncStop(JSONArray args, CallbackContext cc) throws JSONException {
+		int idx = 0;
+
+		String masterWalletID = args.getString(idx++);
+		String chainID        = args.getString(idx++);
+
+		if (args.length() != idx) {
+			errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+			return;
+		}
+
+		try {
+			SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+			if (subWallet == null) {
+				errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+				return;
+			}
+			subWallet.SyncStop();
+			cc.success("SyncStop OK");
+		} catch (WalletException e) {
+			exceptionProcess(e, cc, "Get " + formatWalletName(masterWalletID, chainID) + " balance info");
+		}
+	}
 
 	  // args[0]: String masterWalletID
 	  // args[1]: String chainID
