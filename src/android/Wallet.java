@@ -166,7 +166,7 @@
 		  if (!destDir.exists()) {
 			  destDir.mkdirs();
 		  }
-		  mMasterWalletManager = new MasterWalletManager(rootPath, "TestNet"
+		  mMasterWalletManager = new MasterWalletManager(rootPath, "MainNet"
 				  , "", dataPaht);
 	  }
 
