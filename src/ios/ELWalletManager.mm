@@ -1045,7 +1045,7 @@ void ElISubWalletCallback::OnBalanceChanged(const std::string &asset, const std:
         return [self errorProcess:command code:errCodeInvalidMasterWallet msg:msg];
     }
 
-    Json json = mMasterWalletManager->ExportKeystore(masterWallet, backupPassword, payPassword);
+    Json json = mMasterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword, payPassword);
     String str = json.dump();
     NSString *jsonString = [self stringWithCString:json.dump()];
     return [self successAsString:command msg:jsonString];
@@ -1071,7 +1071,7 @@ void ElISubWalletCallback::OnBalanceChanged(const std::string &asset, const std:
         return [self errorProcess:command code:errCodeInvalidMasterWallet msg:msg];
     }
 
-    Json json = mMasterWalletManager->ExportMnemonic(masterWallet, backupPassword);
+    Json json = mMasterWalletManager->ExportWalletWithMnemonic(masterWallet, backupPassword);
 
     NSString *jsonString = [self stringWithCString:json.dump()];
     return [self successAsString:command msg:jsonString];
