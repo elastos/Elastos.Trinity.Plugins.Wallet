@@ -2202,18 +2202,20 @@
 	  // args[0]: String masterWalletID
 	  // args[1]: String chainID
 	  // args[2]: String fromAddress
-	  // args[3]: long   stake
+	  // args[3]: String stake
 	  // args[4]: String publicKeys JSONArray
 	  // args[5]: String memo
+      // args[6]: String invalidCandidates JSONArray
 	  public void createVoteProducerTransaction(JSONArray args, CallbackContext cc) throws JSONException {
 		  int idx = 0;
 
-		  String masterWalletID = args.getString(idx++);
-		  String chainID        = args.getString(idx++);
-		  String fromAddress    = args.getString(idx++);
-		  String stake          = args.getString(idx++);
-		  String publicKeys     = args.getString(idx++);
-		  String memo           = args.getString(idx++);
+		  String masterWalletID       = args.getString(idx++);
+		  String chainID              = args.getString(idx++);
+		  String fromAddress          = args.getString(idx++);
+		  String stake                = args.getString(idx++);
+		  String publicKeys           = args.getString(idx++);
+		  String memo                 = args.getString(idx++);
+          String invalidCandidates    = args.getString(idx++);
 
 		  if (args.length() != idx) {
 			  errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
@@ -2236,7 +2238,7 @@
 
 			  MainchainSubWallet mainchainSubWallet = (MainchainSubWallet)subWallet;
 
-			  String txJson = mainchainSubWallet.CreateVoteProducerTransaction(fromAddress, stake, publicKeys, memo);
+			  String txJson = mainchainSubWallet.CreateVoteProducerTransaction(fromAddress, stake, publicKeys, memo, invalidCandidates);
 
 			  cc.success(txJson);
 		  } catch (WalletException e) {
