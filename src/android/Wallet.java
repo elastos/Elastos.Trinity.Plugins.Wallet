@@ -941,12 +941,11 @@
 			  }
 
 			  ArrayList<SubWallet> subWallets = masterWallet.GetAllSubWallets();
-
-			  mMasterWalletManager.DestroyWallet(masterWalletID);
-
 			  for (int i = 0; subWallets != null && i < subWallets.size(); i++) {
 				  subWallets.get(i).RemoveCallback();
 			  }
+
+			  mMasterWalletManager.DestroyWallet(masterWalletID);
 
 			  cc.success("Destroy " + formatWalletName(masterWalletID) + " OK");
 		  } catch (WalletException e) {
