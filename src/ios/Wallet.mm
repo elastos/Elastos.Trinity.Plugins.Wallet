@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-#import "ELWalletManager.h"
+#import "Wallet.h"
 #import <Cordova/CDVCommandDelegate.h>
 #import "WrapSwift.h"
 
