@@ -22,22 +22,16 @@
 
 #import <Foundation/Foundation.h>
 #import <Cordova/CDV.h>
-//#import "MyUtil.h"
 #import "IMasterWallet.h"
-//#import "IDidManager.h"
-//#import "DIDManagerSupervisor.h"
 #import "MasterWalletManager.h"
 #import "ISidechainSubWallet.h"
 #import "IMainchainSubWallet.h"
 #import "IIDChainSubWallet.h"
-//#import "IDidManager.h"
-//#import "idid.h"
 #import <string.h>
 #import <map>
 #import "TrinityPlugin.h"
 
 typedef Elastos::ElaWallet::IMasterWallet IMasterWallet;
-//typedef Elastos::DID::DIDManagerSupervisor DIDManagerSupervisor;
 typedef Elastos::ElaWallet::MasterWalletManager MasterWalletManager;
 typedef Elastos::ElaWallet::ISubWallet ISubWallet;
 typedef std::string String;
@@ -52,19 +46,11 @@ typedef Elastos::ElaWallet::IMainchainSubWallet IMainchainSubWallet;
 typedef std::vector<ISubWalletCallback *> ISubWalletCallbackVector;
 typedef Elastos::ElaWallet::IIDChainSubWallet IIDChainSubWallet;
 
-//typedef Elastos::DID::IDIDManager IDidManager;
-//typedef Elastos::DID::IDID IDID;
-
-//typedef std::map<String, IDidManager*> DIDManagerMap;
 
 
 @interface Wallet : TrinityPlugin {
-    // Member variables go here.
     NSString *TAG; //= @"Wallet";
-//    DIDManagerMap *mDIDManagerMap;// = new HashMap<String, IDidManager>();
-//    DIDManagerSupervisor *mDIDManagerSupervisor;// = null;
     MasterWalletManager *mMasterWalletManager;// = null;
-    // IDidManager mDidManager = null;
     NSString *mRootPath;// = null;
 
     NSString *keySuccess;//   = "success";
@@ -89,11 +75,6 @@ typedef Elastos::ElaWallet::IIDChainSubWallet IIDChainSubWallet;
     int errCodeActionNotFound           ;//  = 10013;
 
     int errCodeWalletException         ;//   = 20000;
-
-    ISubWalletVector *isubWalletVector;
-    ISubWalletCallbackVector *isubWalletCallBackVector;
-
-//    Map<String, IDidManager> mDIDManagerMap = new HashMap<String, IDidManager>();
 }
 - (void)initialize:(TrinityPlugin*)plugin;
 - (void)coolMethod:(CDVInvokedUrlCommand *)command;

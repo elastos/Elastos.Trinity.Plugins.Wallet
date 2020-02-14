@@ -26,8 +26,6 @@
 
 #pragma mark - ElISubWalletCallback C++
 
-//typedef void (*MessageHandler)(const char *msg);
-
 using namespace Elastos::ElaWallet;
 class ElISubWalletCallback: public ISubWalletCallback
 {
@@ -267,25 +265,6 @@ void ElISubWalletCallback::OnConnectStatusChanged(const std::string &status)
     }
     return nil;
 }
-- (void)createDIDManager:(IMasterWallet *)masterWallet
-{
-
-}
-
-//- (IDidManager *)getDIDManager:(String)masterWalletID
-//{
-//    DIDManagerMap managerMap = *mDIDManagerMap;
-//    DIDManagerMap::iterator iter;
-//    //面对关联式容器，应该使用其所提供的find函数来搜索元素，会比使用STL算法find()更有效率。因为STL算法find()只是循环搜索。
-//    iter = managerMap.find(masterWalletID);
-//    if(iter == managerMap.end())
-//    {
-//        return nil;
-//    }
-//
-//    IDidManager *manager = managerMap[masterWalletID];
-//    return manager;
-//}
 
 #pragma mark -
 
@@ -448,10 +427,7 @@ void ElISubWalletCallback::OnConnectStatusChanged(const std::string &status)
     //
     TAG = @"Wallet";
 
-    //    mDIDManagerMap  = new DIDManagerMap();
-    //    mDIDManagerSupervisor = NULL;
     mMasterWalletManager = NULL;
-    //private IDidManager mDidManager = null;
     mRootPath = NULL;
 
     keySuccess   = @"success";
@@ -471,8 +447,6 @@ void ElISubWalletCallback::OnConnectStatusChanged(const std::string &status)
     errCodeImportFromKeyStore         = 10008;
     errCodeImportFromMnemonic         = 10009;
     errCodeSubWalletInstance          = 10010;
-    errCodeInvalidDIDManager          = 10011;
-    errCodeInvalidDID                 = 10012;
     errCodeActionNotFound             = 10013;
 
     errCodeWalletException            = 20000;
@@ -567,7 +541,6 @@ void ElISubWalletCallback::OnConnectStatusChanged(const std::string &status)
     }
 
     NSString *jsonString = [self getBasicInfo:masterWallet];
-    [self createDIDManager:masterWallet];
     return [self successAsString:command msg:jsonString];
 
 }
@@ -663,26 +636,15 @@ void ElISubWalletCallback::OnConnectStatusChanged(const std::string &status)
     if (args.count != idx) {
         return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
     }
-    ISubWallet *getSubWallet = [self getSubWallet:masterWalletID :chainID];
-    if (getSubWallet == nil) {
+    ISubWallet *subWallet = [self getSubWallet:masterWalletID :chainID];
+    if (subWallet == nil) {
         NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletNameWithString:masterWalletID other:chainID]];
 
         return [self errorProcess:command code:errCodeInvalidSubWallet msg:msg];
     }
-    if(isubWalletVector == nil)
-    {
-        isubWalletVector = new ISubWalletVector();
-    }
 
-    if(isubWalletCallBackVector == nil)
-    {
-        isubWalletCallBackVector = new ISubWalletCallbackVector();
-    }
     ElISubWalletCallback *subCallback =  new ElISubWalletCallback(self.commandDelegate, masterWalletID, chainID, command);
-    getSubWallet->AddCallback(subCallback);
-
-    isubWalletVector->push_back(getSubWallet);
-    isubWalletCallBackVector->push_back(subCallback);
+    subWallet->AddCallback(subCallback);
 }
 
 - (void)getBalance:(CDVInvokedUrlCommand *)command
@@ -951,7 +913,6 @@ void ElISubWalletCallback::OnConnectStatusChanged(const std::string &status)
         return [self errorProcess:command code:errCodeImportFromKeyStore msg:msg];
     }
     NSString *jsonString = [self getBasicInfo:masterWallet];
-    [self createDIDManager:masterWallet];
     return [self successAsString:command msg:jsonString];
 }
 
@@ -977,7 +938,6 @@ void ElISubWalletCallback::OnConnectStatusChanged(const std::string &status)
         return [self errorProcess:command code:errCodeImportFromMnemonic msg:msg];
     }
     NSString *jsonString = [self getBasicInfo:masterWallet];
-    [self createDIDManager:masterWallet];
     return [self successAsString:command msg:jsonString];
 
 }
@@ -1035,7 +995,6 @@ void ElISubWalletCallback::OnConnectStatusChanged(const std::string &status)
         return [self errorProcess:command code:errCodeCreateMasterWallet msg:msg];
     }
     NSString *jsonString = [self getBasicInfo:masterWallet];
-    [self createDIDManager:masterWallet];
     return [self successAsString:command msg:jsonString];
 
 }
@@ -1066,7 +1025,6 @@ void ElISubWalletCallback::OnConnectStatusChanged(const std::string &status)
         return [self errorProcess:command code:errCodeCreateMasterWallet msg:msg];
     }
     NSString *jsonString = [self getBasicInfo:masterWallet];
-    [self createDIDManager:masterWallet];
     return [self successAsString:command msg:jsonString];
 }
 
@@ -1122,7 +1080,6 @@ void ElISubWalletCallback::OnConnectStatusChanged(const std::string &status)
         return [self errorProcess:command code:errCodeCreateMasterWallet msg:msg];
     }
     NSString *jsonString = [self getBasicInfo:masterWallet];
-    [self createDIDManager:masterWallet];
     return [self successAsString:command msg:jsonString];
 
 }
@@ -1210,39 +1167,36 @@ void ElISubWalletCallback::OnConnectStatusChanged(const std::string &status)
 
 }
 
-//- (void)destroyWallet:(CDVInvokedUrlCommand *)command
-//{
-//    int idx = 0;
-//    NSArray *args = command.arguments;
-//
-//    String masterWalletID = [self cstringWithString:args[idx++]];
-//
-//    if (args.count != idx) {
-//
-//        return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
-//    }
-//    IMasterWallet *masterWallet = [self getIMasterWallet:masterWalletID];
-//    if (masterWallet == nil) {
-//        NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletName:masterWalletID]];
-//        return [self errorProcess:command code:errCodeInvalidMasterWallet msg:msg];
-//    }
-//
-//    ISubWalletVector subWallets = masterWallet->GetAllSubWallets();
-//
-//        IDidManager DIDManager = getDIDManager(masterWalletID);
-//        if (DIDManager != null) {
-//            // TODO destroy did manager
-//        }
-//    if (mMasterWalletManager == nil) {
-//        NSString *msg = [NSString stringWithFormat:@"%@", @"Master wallet manager has not initialize"];
-//        return [self errorProcess:command code:errCodeInvalidMasterWalletManager msg:msg];
-//    }
-//    [self removeListener];
-//    mMasterWalletManager->DestroyWallet(masterWalletID);
-//    NSString *msg = [NSString stringWithFormat:@"Destroy %@ OK", [self formatWalletName:masterWalletID]];
-//    return [self successAsString:command msg:msg];
-//
-//}
+- (void)destroyWallet:(CDVInvokedUrlCommand *)command
+{
+    int idx = 0;
+    NSArray *args = command.arguments;
+
+    String masterWalletID = [self cstringWithString:args[idx++]];
+
+    if (args.count != idx) {
+
+        return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
+    }
+    IMasterWallet *masterWallet = [self getIMasterWallet:masterWalletID];
+    if (masterWallet == nil) {
+        NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletName:masterWalletID]];
+        return [self errorProcess:command code:errCodeInvalidMasterWallet msg:msg];
+    }
+
+    ISubWalletVector subWallets = masterWallet->GetAllSubWallets();
+    for (int i = 0; i < subWallets.size(); i++) {
+        subWallets[i]->RemoveCallback();
+    }
+
+    if (mMasterWalletManager == nil) {
+        NSString *msg = [NSString stringWithFormat:@"%@", @"Master wallet manager has not initialize"];
+        return [self errorProcess:command code:errCodeInvalidMasterWalletManager msg:msg];
+    }
+    mMasterWalletManager->DestroyWallet(masterWalletID);
+    NSString *msg = [NSString stringWithFormat:@"Destroy %@ OK", [self formatWalletName:masterWalletID]];
+    return [self successAsString:command msg:msg];
+}
 
 - (void)createTransaction:(CDVInvokedUrlCommand *)command
 {
@@ -1352,7 +1306,6 @@ void ElISubWalletCallback::OnConnectStatusChanged(const std::string &status)
 //         NSString *msg = [NSString stringWithFormat:@"%@ %@ %@", @"Import", [self formatWalletName:masterWalletID], @"with keystore"];
 //         return [self errorProcess:command code:errCodeImportFromKeyStore msg:msg];
 //     }
-//     [self createDIDManager:masterWallet];
 //     NSString *jsonString = [self getBasicInfo:masterWallet];
 //     return [self successAsString:command msg:jsonString];
 
