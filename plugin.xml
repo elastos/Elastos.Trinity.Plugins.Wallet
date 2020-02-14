@@ -21,9 +21,8 @@
                 <param name="ios-package" value="Wallet" />
             </feature>
         </config-file>
-        <!-- <source-file src="src/ios/Wallet.m" /> -->
-        <source-file src="src/ios/ELWalletManager.mm" />
-        <header-file src="src/ios/ELWalletManager.h" />
+        <source-file src="src/ios/Wallet.mm" />
+        <header-file src="src/ios/Wallet.h" />
         <header-file src="src/ios/libspvsdk/include/IIDChainSubWallet.h" />
         <header-file src="src/ios/libspvsdk/include/IMainchainSubWallet.h" />
         <header-file src="src/ios/libspvsdk/include/IMasterWallet.h" />
