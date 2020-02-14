@@ -34,6 +34,7 @@
 //#import "idid.h"
 #import <string.h>
 #import <map>
+#import "TrinityPlugin.h"
 
 typedef Elastos::ElaWallet::IMasterWallet IMasterWallet;
 //typedef Elastos::DID::DIDManagerSupervisor DIDManagerSupervisor;
@@ -57,7 +58,7 @@ typedef Elastos::ElaWallet::IIDChainSubWallet IIDChainSubWallet;
 //typedef std::map<String, IDidManager*> DIDManagerMap;
 
 
-@interface ELWalletManager : NSObject {
+@interface Wallet : TrinityPlugin {
     // Member variables go here.
     NSString *TAG; //= @"Wallet";
 //    DIDManagerMap *mDIDManagerMap;// = new HashMap<String, IDidManager>();
@@ -92,63 +93,69 @@ typedef Elastos::ElaWallet::IIDChainSubWallet IIDChainSubWallet;
     ISubWalletVector *isubWalletVector;
     ISubWalletCallbackVector *isubWalletCallBackVector;
 
-
 //    Map<String, IDidManager> mDIDManagerMap = new HashMap<String, IDidManager>();
 }
-- (void)pluginInitialize:(NSString *)path;
-- (CDVPluginResult *)coolMethod:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)print:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)getAllMasterWallets:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)createMasterWallet:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)generateMnemonic:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)createSubWallet:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)getAllSubWallets:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)registerWalletListener:(CDVInvokedUrlCommand *)command :(id <CDVCommandDelegate>) delegate;
-- (CDVPluginResult *)getBalance:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)getSupportedChains:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)getMasterWalletBasicInfo:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)getAllTransaction:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)createAddress:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)getGenesisAddress:(CDVInvokedUrlCommand *)command;
-// - (CDVPluginResult *)getMasterWalletPublicKey:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)exportWalletWithKeystore:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)exportWalletWithMnemonic:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)changePassword:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)importWalletWithKeystore:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)importWalletWithMnemonic:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)getMultiSignPubKeyWithMnemonic:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)createMultiSignMasterWalletWithMnemonic:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)createMultiSignMasterWallet:(CDVInvokedUrlCommand *)command;
-// - (CDVPluginResult *)getMultiSignPubKeyWithPrivKey:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)createMultiSignMasterWalletWithPrivKey:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)getAllAddress:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)isAddressValid:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)createDepositTransaction:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)destroyWallet:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)createTransaction:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)signTransaction:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)publishTransaction:(CDVInvokedUrlCommand *)command;
-// - (CDVPluginResult *)importWalletWithOldKeystore:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)getTransactionSignedSigners:(CDVInvokedUrlCommand *)command;
-// - (CDVPluginResult *)getSubWalletPublicKey:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)removeWalletListener:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)createIdTransaction:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)createWithdrawTransaction:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)getMasterWallet:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)destroySubWallet:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)getVersion:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)generateProducerPayload:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)generateCancelProducerPayload:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)createRegisterProducerTransaction:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)createUpdateProducerTransaction:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)createCancelProducerTransaction:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)createRetrieveDepositTransaction:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)getPublicKeyForVote:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)createVoteProducerTransaction:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)getVotedProducerList:(CDVInvokedUrlCommand *)command;
-- (CDVPluginResult *)getRegisteredProducerInfo:(CDVInvokedUrlCommand *)command;
+- (void)initialize:(TrinityPlugin*)plugin;
+- (void)coolMethod:(CDVInvokedUrlCommand *)command;
+- (void)print:(CDVInvokedUrlCommand *)command;
+- (void)getAllMasterWallets:(CDVInvokedUrlCommand *)command;
+- (void)createMasterWallet:(CDVInvokedUrlCommand *)command;
+- (void)generateMnemonic:(CDVInvokedUrlCommand *)command;
+- (void)createSubWallet:(CDVInvokedUrlCommand *)command;
+- (void)getAllSubWallets:(CDVInvokedUrlCommand *)command;
+- (void)registerWalletListener:(CDVInvokedUrlCommand *)command :(id <CDVCommandDelegate>) delegate;
+- (void)getBalance:(CDVInvokedUrlCommand *)command;
+- (void)getSupportedChains:(CDVInvokedUrlCommand *)command;
+- (void)getMasterWalletBasicInfo:(CDVInvokedUrlCommand *)command;
+- (void)getAllTransaction:(CDVInvokedUrlCommand *)command;
+- (void)createAddress:(CDVInvokedUrlCommand *)command;
+- (void)getGenesisAddress:(CDVInvokedUrlCommand *)command;
+// - (void)getMasterWalletPublicKey:(CDVInvokedUrlCommand *)command;
+- (void)exportWalletWithKeystore:(CDVInvokedUrlCommand *)command;
+- (void)exportWalletWithMnemonic:(CDVInvokedUrlCommand *)command;
+- (void)changePassword:(CDVInvokedUrlCommand *)command;
+- (void)importWalletWithKeystore:(CDVInvokedUrlCommand *)command;
+- (void)importWalletWithMnemonic:(CDVInvokedUrlCommand *)command;
+- (void)getMultiSignPubKeyWithMnemonic:(CDVInvokedUrlCommand *)command;
+- (void)createMultiSignMasterWalletWithMnemonic:(CDVInvokedUrlCommand *)command;
+- (void)createMultiSignMasterWallet:(CDVInvokedUrlCommand *)command;
+// - (void)getMultiSignPubKeyWithPrivKey:(CDVInvokedUrlCommand *)command;
+- (void)createMultiSignMasterWalletWithPrivKey:(CDVInvokedUrlCommand *)command;
+- (void)getAllAddress:(CDVInvokedUrlCommand *)command;
+- (void)isAddressValid:(CDVInvokedUrlCommand *)command;
+- (void)createDepositTransaction:(CDVInvokedUrlCommand *)command;
+- (void)destroyWallet:(CDVInvokedUrlCommand *)command;
+- (void)createTransaction:(CDVInvokedUrlCommand *)command;
+- (void)signTransaction:(CDVInvokedUrlCommand *)command;
+- (void)publishTransaction:(CDVInvokedUrlCommand *)command;
+// - (void)importWalletWithOldKeystore:(CDVInvokedUrlCommand *)command;
+- (void)getTransactionSignedSigners:(CDVInvokedUrlCommand *)command;
+// - (void)getSubWalletPublicKey:(CDVInvokedUrlCommand *)command;
+- (void)removeWalletListener:(CDVInvokedUrlCommand *)command;
+- (void)createIdTransaction:(CDVInvokedUrlCommand *)command;
+- (void)createWithdrawTransaction:(CDVInvokedUrlCommand *)command;
+- (void)getMasterWallet:(CDVInvokedUrlCommand *)command;
+- (void)destroySubWallet:(CDVInvokedUrlCommand *)command;
+- (void)getVersion:(CDVInvokedUrlCommand *)command;
+- (void)generateProducerPayload:(CDVInvokedUrlCommand *)command;
+- (void)generateCancelProducerPayload:(CDVInvokedUrlCommand *)command;
+- (void)createRegisterProducerTransaction:(CDVInvokedUrlCommand *)command;
+- (void)createUpdateProducerTransaction:(CDVInvokedUrlCommand *)command;
+- (void)createCancelProducerTransaction:(CDVInvokedUrlCommand *)command;
+- (void)createRetrieveDepositTransaction:(CDVInvokedUrlCommand *)command;
+- (void)getPublicKeyForVote:(CDVInvokedUrlCommand *)command;
+- (void)createVoteProducerTransaction:(CDVInvokedUrlCommand *)command;
+- (void)getVotedProducerList:(CDVInvokedUrlCommand *)command;
+- (void)getRegisteredProducerInfo:(CDVInvokedUrlCommand *)command;
+
+- (void)syncStart:(CDVInvokedUrlCommand *)command;
+- (void)syncStop:(CDVInvokedUrlCommand *)command;
+- (void)getResolveDIDInfo:(CDVInvokedUrlCommand *)command;
+- (void)didSign:(CDVInvokedUrlCommand *)command;
+- (void)didSignDigest:(CDVInvokedUrlCommand *)command;
+- (void)verifySignature:(CDVInvokedUrlCommand *)command;
+- (void)getPublicKeyDID:(CDVInvokedUrlCommand *)command;
+- (void)generateDIDInfoPayload:(CDVInvokedUrlCommand *)command;
+
 
 @end
-
-
-

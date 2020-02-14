@@ -21,10 +21,9 @@
                 <param name="ios-package" value="Wallet" />
             </feature>
         </config-file>
-        <source-file src="src/ios/Wallet.mm" />
+        <!-- <source-file src="src/ios/Wallet.m" /> -->
         <source-file src="src/ios/ELWalletManager.mm" />
         <header-file src="src/ios/ELWalletManager.h" />
-        <header-file src="src/ios/libspvsdk/include/IIDAgent.h" />
         <header-file src="src/ios/libspvsdk/include/IIDChainSubWallet.h" />
         <header-file src="src/ios/libspvsdk/include/IMainchainSubWallet.h" />
         <header-file src="src/ios/libspvsdk/include/IMasterWallet.h" />
@@ -35,7 +34,7 @@
         <header-file src="src/ios/libspvsdk/include/ITokenchainSubWallet.h" />
         <header-file src="src/ios/libspvsdk/include/nlohmann/json.hpp" />
         <header-file src="src/ios/libspvsdk/include/MasterWalletManager.h" />
-        <source-file src="src/ios/libspvsdk/libs/libspvsdk.a" framework="true" />
+        <source-file src="src/ios/libspvsdk/lib/libspvsdk_uber_fat.a" framework="true" />
     </platform>
 </plugin>
 

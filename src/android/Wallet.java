@@ -162,8 +162,8 @@
 		  if (!destDir.exists()) {
 			  destDir.mkdirs();
 		  }
-		  String dataPaht = rootPath + "/data";
-		  destDir = new File(dataPaht);
+		  String dataPath = rootPath + "/data";
+		  destDir = new File(dataPath);
 		  if (!destDir.exists()) {
 			  destDir.mkdirs();
 		  }
@@ -172,7 +172,7 @@
 		  	  netType = "MainNet";
 		  }
 		  mMasterWalletManager = new MasterWalletManager(rootPath, netType
-				  , "", dataPaht);
+				  , "", dataPath);
 	  }
 
 
