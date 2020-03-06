@@ -86,6 +86,7 @@ typedef Elastos::ElaWallet::IIDChainSubWallet IIDChainSubWallet;
 - (void)getAllSubWallets:(CDVInvokedUrlCommand *)command;
 - (void)registerWalletListener:(CDVInvokedUrlCommand *)command :(id <CDVCommandDelegate>) delegate;
 - (void)getBalance:(CDVInvokedUrlCommand *)command;
+- (void)getBalanceInfo:(CDVInvokedUrlCommand *)command;
 - (void)getSupportedChains:(CDVInvokedUrlCommand *)command;
 - (void)getMasterWalletBasicInfo:(CDVInvokedUrlCommand *)command;
 - (void)getAllTransaction:(CDVInvokedUrlCommand *)command;
