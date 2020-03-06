@@ -38,7 +38,7 @@ public:
     CDVPluginResult *successAsDict(CDVInvokedUrlCommand *command, NSDictionary* dict);
     CDVPluginResult *successAsString(CDVInvokedUrlCommand *command, NSString* str);
     CDVPluginResult *errorProcess(CDVInvokedUrlCommand *command, int code, id msg);
-    
+
     void OnTransactionStatusChanged(const std::string &txid, const std::string &status, const nlohmann::json &desc, uint32_t confirms);
     void OnBalanceChanged(const std::string &asset, const std::string & balance);
     void OnBlockSyncProgress(const nlohmann::json &progressInfo);
@@ -78,10 +78,10 @@ ElISubWalletCallback::~ElISubWalletCallback()
 
 CDVPluginResult *ElISubWalletCallback::successAsDict(CDVInvokedUrlCommand *command, NSDictionary* dict)
 {
-    
+
     [dict setValue:mMasterWalletID forKey:@"MasterWalletID"];
     [dict setValue:mSubWalletID forKey:@"ChainID"];
-    
+
     CDVPluginResult* pluginResult = nil;
     pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dict];
     pluginResult.keepCallback = [NSNumber numberWithBool:YES];
@@ -661,16 +661,37 @@ void ElISubWalletCallback::OnConnectStatusChanged(const std::string &status)
     ISubWallet *subWallet = [self getSubWallet:masterWalletID :chainID];
     if (subWallet == nil) {
         NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletNameWithString:masterWalletID other:chainID]];
-        return [self errorProcess:command code:errCodeCreateSubWallet msg:msg];
+        return [self errorProcess:command code:errCodeInvalidSubWallet msg:msg];
     }
 
     String balance = subWallet->GetBalance();
     NSString *balanceStr = [self stringWithCString:balance];
 
     return [self successAsString:command msg:balanceStr];
-
-
 }
+
+- (void)getBalanceInfo:(CDVInvokedUrlCommand *)command
+{
+    NSArray *args = command.arguments;
+    int idx = 0;
+
+    String masterWalletID = [self cstringWithString:args[idx++]];;
+    String chainID        = [self cstringWithString:args[idx++]];;
+
+    if (args.count != idx) {
+        return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
+    }
+    ISubWallet *subWallet = [self getSubWallet:masterWalletID :chainID];
+    if (subWallet == nil) {
+        NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletNameWithString:masterWalletID other:chainID]];
+        return [self errorProcess:command code:errCodeInvalidSubWallet msg:msg];
+    }
+
+    Json json = subWallet->GetBalanceInfo();
+    NSString *jsonString = [self stringWithJson:json];
+    return [self successAsString:command msg:jsonString];
+}
+
 - (void)getSupportedChains:(CDVInvokedUrlCommand *)command
 {
     NSArray *args = command.arguments;
@@ -694,7 +715,7 @@ void ElISubWalletCallback::OnConnectStatusChanged(const std::string &status)
         NSString *sstring = [self stringWithCString:string];
         [stringArray addObject:sstring];
     }
-    
+
     CDVPluginResult*  pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:stringArray];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
