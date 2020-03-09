@@ -325,7 +325,7 @@ void ElISubWalletCallback::OnConnectStatusChanged(const std::string &status)
     return dict;
 }
 
-- (NSString *)dicToJSONString:(NSDictionary *)dict
+- (NSString *)dictToJSONString:(NSDictionary *)dict
 {
     NSData *data = [NSJSONSerialization dataWithJSONObject:dict
                                                    options:kNilOptions
@@ -357,6 +357,14 @@ void ElISubWalletCallback::OnConnectStatusChanged(const std::string &status)
 
 - (Json)jsonWithString:(NSString *)string
 {
+    String std = [self cstringWithString:string];
+    Json json = Json::parse(std);
+    return json;
+}
+
+- (Json)jsonWithDict:(NSDictionary *)dict
+{
+    NSString *string = [self dictToJSONString:dict];
     String std = [self cstringWithString:string];
     Json json = Json::parse(std);
     return json;
@@ -856,7 +864,6 @@ void ElISubWalletCallback::OnConnectStatusChanged(const std::string &status)
     }
 
     Json json = masterWallet->ExportKeystore(backupPassword, payPassword);
-    String str = json.dump();
     NSString *jsonString = [self stringWithCString:json.dump()];
     return [self successAsString:command msg:jsonString];
 
@@ -1164,7 +1171,7 @@ void ElISubWalletCallback::OnConnectStatusChanged(const std::string &status)
     String fromAddress    = [self cstringWithString:args[idx++]];
     String lockedAddress      = [self cstringWithString:args[idx++]];
     String amount         = [self cstringWithString:args[idx++]];
-    String sideChainAddress  = [self jsonWithString:args[idx++]];
+    String sideChainAddress  = [self cstringWithString:args[idx++]];
     String memo           = [self cstringWithString:args[idx++]];
 
     if (args.count != idx) {        return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
@@ -1389,7 +1396,7 @@ void ElISubWalletCallback::OnConnectStatusChanged(const std::string &status)
     int idx = 0;
 
     String masterWalletID = [self cstringWithString:args[idx++]];
-    String chainID       = [self cstringWithString:args[idx++]];
+    String chainID        = [self cstringWithString:args[idx++]];
 
     if (args.count != idx) {
         return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
@@ -1413,7 +1420,7 @@ void ElISubWalletCallback::OnConnectStatusChanged(const std::string &status)
 
     String masterWalletID = [self cstringWithString:args[idx++]];
     String chainID        = [self cstringWithString:args[idx++]];
-    Json payloadJson      = [self jsonWithString:args[idx++]];
+    Json payloadJson      = [self jsonWithDict:args[idx++]];
     String memo           = [self cstringWithString:args[idx++]];
 
     if (args.count != idx) {
@@ -1445,7 +1452,7 @@ void ElISubWalletCallback::OnConnectStatusChanged(const std::string &status)
     String chainID        = [self cstringWithString:args[idx++]];
     String fromAddress    = [self cstringWithString:args[idx++]];
     String amount         = [self cstringWithString:args[idx++]];
-    String mainchainAddress  = [self jsonWithString:args[idx++]];
+    String mainchainAddress  = [self cstringWithString:args[idx++]];
     String memo           = [self cstringWithString:args[idx++]];
 
     if (args.count != idx) {        return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
@@ -1761,7 +1768,7 @@ void ElISubWalletCallback::OnConnectStatusChanged(const std::string &status)
     String stake      = [self cstringWithString:args[idx++]];
     Json publicKeys = [self jsonWithString:args[idx++]];
     String memo           = [self cstringWithString:args[idx++]];
-    String invalidCandidates = "[]";
+    Json invalidCandidates = Json::parse("[]");
 
     if (args.count != idx) {
         return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
@@ -1779,7 +1786,7 @@ void ElISubWalletCallback::OnConnectStatusChanged(const std::string &status)
         return [self errorProcess:command code:errCodeSubWalletInstance msg:msg];
     }
 
-    String txJson = mainchainSubWallet->CreateVoteProducerTransaction(fromAddress, stake, publicKeys, memo, invalidCandidates);
+    Json txJson = mainchainSubWallet->CreateVoteProducerTransaction(fromAddress, stake, publicKeys, memo, invalidCandidates);
     NSString *jsonString = [self stringWithJson:txJson];
     return [self successAsString:command msg:jsonString];
 }
