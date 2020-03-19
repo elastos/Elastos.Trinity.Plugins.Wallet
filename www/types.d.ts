@@ -112,5 +112,16 @@ declare module WalletPlugin {
         getPublicKeyForVote(args, success, error);
         createRetrieveDepositTransaction(args, success, error);
         createUpdateProducerTransaction(args, success, error);
+        //CR
+        generateCRInfoPayload(args, success, error);
+        generateUnregisterCRPayload(args, success, error);
+        createRegisterCRTransaction(args, success, error);
+        createUpdateCRTransaction(args, success, error);
+        createUnregisterCRTransaction(args, success, error);
+        createRetrieveCRDepositTransaction(args, success, error);
+        createVoteCRTransaction(args, success, error);
+        getVotedCRList(args, success, error);
+        getRegisteredCRInfo(args, success, error);
+        // getVoteInfo(args, success, error);
     }
 }
