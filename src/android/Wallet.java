@@ -32,7 +32,7 @@
   import org.elastos.spvcore.MasterWalletManager;
   import org.elastos.spvcore.SubWalletCallback;
   import org.elastos.spvcore.WalletException;
-  import org.elastos.trinity.runtime.ConfigManager;
+  import org.elastos.trinity.runtime.PreferenceManager;
   import org.elastos.trinity.runtime.TrinityPlugin;
 
 
@@ -167,15 +167,10 @@
 		  if (!destDir.exists()) {
 			  destDir.mkdirs();
 		  }
-		  String netType = ConfigManager.getShareInstance().getStringValue("wallet.netType", "MainNet");
-		  if (netType == null) {
-		  	  netType = "MainNet";
-		  }
-		  mMasterWalletManager = new MasterWalletManager(rootPath, netType
-				  , "", dataPath);
+		  String netType = PreferenceManager.getShareInstance().getWalletNetworkType();
+		  String config = PreferenceManager.getShareInstance().getWalletNetworkConfig();
+		  mMasterWalletManager = new MasterWalletManager(rootPath, netType, config, dataPath);
 	  }
-
-
 
 	  private String formatWalletName(String masterWalletID) {
 		  return masterWalletID;
