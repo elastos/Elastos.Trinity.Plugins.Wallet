@@ -352,6 +352,47 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
     createUpdateProducerTransaction(args, success, error) {
         exec(success, error, "Wallet", "createUpdateProducerTransaction", args);
     };
+
+    //CR
+    generateCRInfoPayload(args, success, error) {
+        exec(success, error, "Wallet", "generateCRInfoPayload", args);
+    };
+
+    generateUnregisterCRPayload(args, success, error) {
+        exec(success, error, "Wallet", "generateUnregisterCRPayload", args);
+    };
+
+    createRegisterCRTransaction(args, success, error) {
+        exec(success, error, "Wallet", "createRegisterCRTransaction", args);
+    };
+
+    createUpdateCRTransaction(args, success, error) {
+        exec(success, error, "Wallet", "createUpdateCRTransaction", args);
+    };
+
+    createUnregisterCRTransaction(args, success, error) {
+        exec(success, error, "Wallet", "createUnregisterCRTransaction", args);
+    };
+
+    createRetrieveCRDepositTransaction(args, success, error) {
+        exec(success, error, "Wallet", "createRetrieveCRDepositTransaction", args);
+    };
+
+    createVoteCRTransaction(args, success, error) {
+        exec(success, error, "Wallet", "createVoteCRTransaction", args);
+    };
+
+    getVotedCRList(args, success, error) {
+        exec(success, error, "Wallet", "getVotedCRList", args);
+    };
+
+    getRegisteredCRInfo(args, success, error) {
+        exec(success, error, "Wallet", "getRegisteredCRInfo", args);
+    };
+
+    // getVoteInfo(args, success, error) {
+    //     exec(success, error, "Wallet", "getVoteInfo", args);
+    // };
 }
 
 var walletManager = new WalletManagerImpl();
