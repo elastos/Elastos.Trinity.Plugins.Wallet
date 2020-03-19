@@ -470,9 +470,10 @@ void ElISubWalletCallback::OnConnectStatusChanged(const std::string &status)
     if (![fm fileExistsAtPath:dataPath]) {
         [fm createDirectoryAtPath:dataPath withIntermediateDirectories:true attributes:NULL error:NULL];
     }
-    NSString* netType = [WrapSwift getStringValue:@"wallet.netType" :@"MainNet"];
+    NSString* netType = [WrapSwift getWalletNetworkType];
+    NSString* config = [WrapSwift getWalletNetworkConfig];
     mMasterWalletManager = new MasterWalletManager([rootPath UTF8String], [netType UTF8String]
-            , "", [dataPath UTF8String]);
+            , [config UTF8String], [dataPath UTF8String]);
 
     [super pluginInitialize];
 }
@@ -2076,4 +2077,3 @@ String const IDChain = "IDChain";
 }
 
 @end
-
