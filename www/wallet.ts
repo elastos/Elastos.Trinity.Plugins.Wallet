@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018-2020 Elastos Foundation
+* Copyright (c) 2019 Elastos Foundation
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -131,10 +131,6 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         exec(success, error, "Wallet", "checkSign", args);
     };
 
-    deriveIdAndKeyForPurpose(args, success, error) {
-        exec(success, error, "Wallet", "deriveIdAndKeyForPurpose", args);
-    };
-
     getAllMasterWallets(args, success, error) {
         _exec(success, error, "Wallet", "getAllMasterWallets", args);
     };
@@ -151,14 +147,6 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         exec(success, error, "Wallet", "generateMnemonic", args);
     };
 
-    getWalletId(args, success, error) {
-        exec(success, error, "Wallet", "getWalletId", args);
-    };
-
-    getAllChainIds(args, success, error) {
-        exec(success, error, "Wallet", "getAllChainIds", args);
-    };
-
     getSupportedChains(args, success, error) {
         exec(success, error, "Wallet", "getSupportedChains", args);
     };
@@ -169,10 +157,6 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
 
     changePassword(args, success, error) {
         exec(success, error, "Wallet", "changePassword", args);
-    };
-
-    sendRawTransaction(args, success, error) {
-        exec(success, error, "Wallet", "sendRawTransaction", args);
     };
 
     createTransaction(args, success, error) {
@@ -239,14 +223,6 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         exec(success, error, "Wallet", "getGenesisAddress", args);
     };
 
-    didGenerateProgram(args, success, error) {
-        exec(success, error, "Wallet", "didGenerateProgram", args);
-    };
-
-    getAllCreatedSubWallets(args, success, error) {
-        exec(success, error, "Wallet", "getAllCreatedSubWallets", args);
-    };
-
     createMultiSignMasterWalletWithPrivKey(args, success, error) {
         exec(success, error, "Wallet", "createMultiSignMasterWalletWithPrivKey", args);
 
@@ -259,6 +235,10 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
 
     getMasterWalletBasicInfo(args, success, error) {
         _exec(success, error, "Wallet", "getMasterWalletBasicInfo", args);
+    };
+
+    createConsolidateTransaction(args, success, error) {
+        _exec(success, error, "Wallet", "createConsolidateTransaction", args);
     };
 
     signTransaction(args, success, error) {
@@ -283,10 +263,6 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
 
     removeWalletListener(args, success, error) {
         exec(success, error, "Wallet", "removeWalletListener", args);
-    };
-
-    disposeNative(args, success, error) {
-        exec(success, error, "Wallet", "disposeNative", args);
     };
 
     // getMultiSignPubKeyWithMnemonic(args, success, error) {
@@ -390,9 +366,44 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         exec(success, error, "Wallet", "getRegisteredCRInfo", args);
     };
 
-    // getVoteInfo(args, success, error) {
-    //     exec(success, error, "Wallet", "getVoteInfo", args);
-    // };
+    getVoteInfo(args, success, error) {
+        exec(success, error, "Wallet", "getVoteInfo", args);
+    };
+
+    //Proposal
+    sponsorProposalDigest(args, success, error) {
+        exec(success, error, "Wallet", "sponsorProposalDigest", args);
+    };
+    CRSponsorProposalDigest(args, success, error) {
+        exec(success, error, "Wallet", "CRSponsorProposalDigest", args);
+    };
+    createCRCProposalTransaction(args, success, error) {
+        exec(success, error, "Wallet", "createCRCProposalTransaction", args);
+    };
+    generateCRCProposalReview(args, success, error) {
+        exec(success, error, "Wallet", "generateCRCProposalReview", args);
+    };
+    createCRCProposalReviewTransaction(args, success, error) {
+        exec(success, error, "Wallet", "createCRCProposalReviewTransaction", args);
+    };
+    createVoteCRCProposalTransaction(args, success, error) {
+        exec(success, error, "Wallet", "createVoteCRCProposalTransaction", args);
+    };
+    createImpeachmentCRCTransaction(args, success, error) {
+        exec(success, error, "Wallet", "createImpeachmentCRCTransaction", args);
+    };
+    leaderProposalTrackDigest(args, success, error) {
+        exec(success, error, "Wallet", "leaderProposalTrackDigest", args);
+    };
+    newLeaderProposalTrackDigest(args, success, error) {
+        exec(success, error, "Wallet", "newLeaderProposalTrackDigest", args);
+    };
+    secretaryGeneralProposalTrackDigest(args, success, error) {
+        exec(success, error, "Wallet", "secretaryGeneralProposalTrackDigest", args);
+    };
+    createProposalTrackingTransaction(args, success, error) {
+        exec(success, error, "Wallet", "createProposalTrackingTransaction", args);
+    };
 }
 
 var walletManager = new WalletManagerImpl();
