@@ -386,6 +386,9 @@ public class Wallet extends TrinityPlugin {
                 case "createTransaction":
                     this.createTransaction(args, cc);
                     break;
+                case "createConsolidateTransaction":
+                    this.createConsolidateTransaction(args, cc);
+                    break;
                 case "signTransaction":
                     this.signTransaction(args, cc);
                     break;
@@ -474,7 +477,6 @@ public class Wallet extends TrinityPlugin {
                 case "getRegisteredProducerInfo":
                     this.getRegisteredProducerInfo(args, cc);
                     break;
-
                 //CR
                 case "generateCRInfoPayload":
                     this.generateCRInfoPayload(args, cc);
@@ -503,9 +505,43 @@ public class Wallet extends TrinityPlugin {
                 case "getRegisteredCRInfo":
                     this.getRegisteredCRInfo(args, cc);
                     break;
-                // case "getVoteInfo":
-                //     this.getVoteInfo(args, cc);
-                //     break;
+                case "getVoteInfo":
+                    this.getVoteInfo(args, cc);
+                    break;
+                //Proposal
+                case "sponsorProposalDigest":
+                    this.sponsorProposalDigest(args, cc);
+                    break;
+                case "CRSponsorProposalDigest":
+                    this.CRSponsorProposalDigest(args, cc);
+                    break;
+                case "createCRCProposalTransaction":
+                    this.createCRCProposalTransaction(args, cc);
+                    break;
+                case "generateCRCProposalReview":
+                    this.generateCRCProposalReview(args, cc);
+                    break;
+                case "createCRCProposalReviewTransaction":
+                    this.createCRCProposalReviewTransaction(args, cc);
+                    break;
+                case "createVoteCRCProposalTransaction":
+                    this.createVoteCRCProposalTransaction(args, cc);
+                    break;
+                case "createImpeachmentCRCTransaction":
+                    this.createImpeachmentCRCTransaction(args, cc);
+                    break;
+                case "leaderProposalTrackDigest":
+                    this.leaderProposalTrackDigest(args, cc);
+                    break;
+                case "newLeaderProposalTrackDigest":
+                    this.newLeaderProposalTrackDigest(args, cc);
+                    break;
+                case "secretaryGeneralProposalTrackDigest":
+                    this.secretaryGeneralProposalTrackDigest(args, cc);
+                    break;
+                case "createProposalTrackingTransaction":
+                    this.createProposalTrackingTransaction(args, cc);
+                    break;
 
                 // Side chain subwallet
                 case "createWithdrawTransaction":
@@ -1307,7 +1343,6 @@ public class Wallet extends TrinityPlugin {
     // args[0]: String masterWalletID
     // args[1]: String chainID
     // args[2]: String address
-    // args[3]: int balanceType (0: Default, 1: Voted, 2: Total)
     public void getBalanceWithAddress(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
 
@@ -1369,6 +1404,36 @@ public class Wallet extends TrinityPlugin {
             cc.success(tx);
         } catch (WalletException e) {
             exceptionProcess(e, cc, "Create " + formatWalletName(masterWalletID, chainID) + " transaction");
+        }
+    }
+
+    // args[0]: String masterWalletID
+    // args[1]: String chainID
+    // args[2]: String memo
+    // return: String txJson
+    public void createConsolidateTransaction(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+
+        String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
+        String memo = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+                return;
+            }
+
+            String result = subWallet.CreateConsolidateTransaction(memo);
+            cc.success(result);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, "create " + formatWalletName(masterWalletID, chainID) + " Consolidate transaction");
         }
     }
 
@@ -1952,7 +2017,6 @@ public class Wallet extends TrinityPlugin {
             }
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
-
             String txJson = mainchainSubWallet.CreateDepositTransaction(fromAddress, sideChainID, amount,
                     sideChainAddress, memo);
 
@@ -2003,7 +2067,6 @@ public class Wallet extends TrinityPlugin {
             }
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
-
             String payloadJson = mainchainSubWallet.GenerateProducerPayload(publicKey, nodePublicKey, nickName, url,
                     IPAddress, location, payPasswd);
             cc.success(payloadJson);
@@ -2043,7 +2106,6 @@ public class Wallet extends TrinityPlugin {
             }
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
-
             String payloadJson = mainchainSubWallet.GenerateCancelProducerPayload(publicKey, payPasswd);
             cc.success(payloadJson);
         } catch (WalletException e) {
@@ -2086,7 +2148,6 @@ public class Wallet extends TrinityPlugin {
             }
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
-
             String txJson = mainchainSubWallet.CreateRegisterProducerTransaction(fromAddress, payloadJson, amount,
                     memo);
             cc.success(txJson);
@@ -2128,7 +2189,6 @@ public class Wallet extends TrinityPlugin {
             }
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
-
             String txJson = mainchainSubWallet.CreateUpdateProducerTransaction(fromAddress, payloadJson, memo);
             cc.success(txJson);
         } catch (WalletException e) {
@@ -2169,7 +2229,6 @@ public class Wallet extends TrinityPlugin {
             }
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
-
             String txJson = mainchainSubWallet.CreateCancelProducerTransaction(fromAddress, payloadJson, memo);
             cc.success(txJson);
         } catch (WalletException e) {
@@ -2208,7 +2267,6 @@ public class Wallet extends TrinityPlugin {
             }
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
-
             String txJson = mainchainSubWallet.CreateRetrieveDepositTransaction(amount, memo);
             cc.success(txJson);
         } catch (WalletException e) {
@@ -2243,7 +2301,6 @@ public class Wallet extends TrinityPlugin {
             }
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
-
             String publicKey = mainchainSubWallet.GetOwnerPublicKey();
             cc.success(publicKey);
         } catch (WalletException e) {
@@ -2289,10 +2346,8 @@ public class Wallet extends TrinityPlugin {
             }
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
-
             String txJson = mainchainSubWallet.CreateVoteProducerTransaction(fromAddress, stake, publicKeys, memo,
                     invalidCandidates);
-
             cc.success(txJson);
         } catch (WalletException e) {
             exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " create vote producer transaction");
@@ -2325,9 +2380,7 @@ public class Wallet extends TrinityPlugin {
             }
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
-
             String list = mainchainSubWallet.GetVotedProducerList();
-
             cc.success(list);
         } catch (WalletException e) {
             exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " get voted producer list");
@@ -2361,7 +2414,6 @@ public class Wallet extends TrinityPlugin {
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
             String info = mainchainSubWallet.GetRegisteredProducerInfo();
-
             cc.success(info);
         } catch (WalletException e) {
             exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " get registerd producer info");
@@ -2405,10 +2457,7 @@ public class Wallet extends TrinityPlugin {
             }
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
-
-            // String payloadJson = mainchainSubWallet.GenerateCRInfoPayload(crPublicKey, did, nickName, url, location);
-            // TODO: upgrade spv sdk
-            String payloadJson = mainchainSubWallet.GenerateCRInfoPayload(crPublicKey, nickName, url, location);
+            String payloadJson = mainchainSubWallet.GenerateCRInfoPayload(crPublicKey, did, nickName, url, location);
             cc.success(payloadJson);
         } catch (WalletException e) {
             exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " generate CR Info payload");
@@ -2444,7 +2493,6 @@ public class Wallet extends TrinityPlugin {
             }
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
-
             String payloadJson = mainchainSubWallet.GenerateUnregisterCRPayload(did);
             cc.success(payloadJson);
         } catch (WalletException e) {
@@ -2487,7 +2535,6 @@ public class Wallet extends TrinityPlugin {
             }
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
-
             String txJson = mainchainSubWallet.CreateRegisterCRTransaction(fromAddress, payloadJson, amount,
                     memo);
             cc.success(txJson);
@@ -2529,7 +2576,6 @@ public class Wallet extends TrinityPlugin {
             }
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
-
             String txJson = mainchainSubWallet.CreateUpdateCRTransaction(fromAddress, payloadJson, memo);
             cc.success(txJson);
         } catch (WalletException e) {
@@ -2570,7 +2616,6 @@ public class Wallet extends TrinityPlugin {
             }
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
-
             String txJson = mainchainSubWallet.CreateUnregisterCRTransaction(fromAddress, payloadJson, memo);
             cc.success(txJson);
         } catch (WalletException e) {
@@ -2611,7 +2656,6 @@ public class Wallet extends TrinityPlugin {
             }
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
-
             String txJson = mainchainSubWallet.CreateRetrieveCRDepositTransaction(crPublicKey, amount, memo);
             cc.success(txJson);
         } catch (WalletException e) {
@@ -2622,7 +2666,7 @@ public class Wallet extends TrinityPlugin {
     // args[0]: String masterWalletID
     // args[1]: String chainID (only main chain ID 'ELA')
     // args[2]: String fromAddress
-    // args[3]: String publicKeys JSONArray
+    // args[3]: String votes JSONObject
     // args[4]: String memo
     // args[5]: String invalidCandidates
     public void createVoteCRTransaction(JSONArray args, CallbackContext cc) throws JSONException {
@@ -2631,7 +2675,7 @@ public class Wallet extends TrinityPlugin {
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         String fromAddress = args.getString(idx++);
-        String publicKeys = args.getString(idx++);
+        String votes = args.getString(idx++);
         String memo = args.getString(idx++);
         String invalidCandidates = args.getString(idx++);
 
@@ -2654,8 +2698,7 @@ public class Wallet extends TrinityPlugin {
             }
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
-
-            String txJson = mainchainSubWallet.CreateVoteCRTransaction(fromAddress, publicKeys, memo, invalidCandidates);
+            String txJson = mainchainSubWallet.CreateVoteCRTransaction(fromAddress, votes, memo, invalidCandidates);
             cc.success(txJson);
         } catch (WalletException e) {
             exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " create vote CR transaction");
@@ -2688,9 +2731,7 @@ public class Wallet extends TrinityPlugin {
             }
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
-
             String list = mainchainSubWallet.GetVotedCRList();
-
             cc.success(list);
         } catch (WalletException e) {
             exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " get voted CR list");
@@ -2730,10 +2771,11 @@ public class Wallet extends TrinityPlugin {
             exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " get registerd CR info");
         }
     }
-/*
+
     // args[0]: String masterWalletID
     // args[1]: String chainID (only main chain ID 'ELA')
-    // args[2]: String type
+    // args[2]: String type, if the type is empty, a summary of all types of votes will return.
+    //              Otherwise, the details of the specified type will return.
     public void getVoteInfo(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
         String masterWalletID = args.getString(idx++);
@@ -2759,15 +2801,450 @@ public class Wallet extends TrinityPlugin {
             }
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
-
             String list = mainchainSubWallet.GetVoteInfo(type);
-
             cc.success(list);
         } catch (WalletException e) {
             exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " get vote info list");
         }
     }
-*/
+
+    //Proposal
+    // args[0]: String masterWalletID
+    // args[1]: String chainID
+    // args[2]: int type
+    // args[3]: String categoryData
+    // args[4]: String sponsorPublicKey
+    // args[5]: String draftHash
+    // args[6]: String budgets
+    // args[7]: String recipient
+    public void sponsorProposalDigest(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
+        byte type = (byte)args.getInt(idx++);
+        String categoryData = args.getString(idx++);
+        String sponsorPublicKey = args.getString(idx++);
+        String draftHash = args.getString(idx++);
+        String budgets = args.getString(idx++);
+        String recipient = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+                return;
+            }
+
+            if (!(subWallet instanceof MainchainSubWallet)) {
+                errorProcess(cc, errCodeSubWalletInstance,
+                        formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+                return;
+            }
+
+            MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+            String stringJson = mainchainSubWallet.SponsorProposalDigest(type, categoryData,
+                    sponsorPublicKey, draftHash, budgets, recipient);
+            cc.success(stringJson);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " sponsorProposalDigest");
+        }
+    }
+
+    // args[0]: String masterWalletID
+    // args[1]: String chainID
+    // args[2]: String sponsorSignedProposal
+    // args[3]: String crSponsorDID
+    // args[4]: String crOpinionHash
+    public void CRSponsorProposalDigest(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
+        String sponsorSignedProposal = args.getString(idx++);
+        String crSponsorDID = args.getString(idx++);
+        String crOpinionHash = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+                return;
+            }
+
+            if (!(subWallet instanceof MainchainSubWallet)) {
+                errorProcess(cc, errCodeSubWalletInstance,
+                        formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+                return;
+            }
+
+            MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+            String stringJson = mainchainSubWallet.CRSponsorProposalDigest(sponsorSignedProposal,
+                    crSponsorDID, crOpinionHash);
+            cc.success(stringJson);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " CRSponsorProposalDigest");
+        }
+    }
+
+    // args[0]: String masterWalletID
+    // args[1]: String chainID
+    // args[2]: String crSignedProposal
+    // args[3]: String memo
+    public void createCRCProposalTransaction(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
+        String crSignedProposal = args.getString(idx++);
+        String memo = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+                return;
+            }
+
+            if (!(subWallet instanceof MainchainSubWallet)) {
+                errorProcess(cc, errCodeSubWalletInstance,
+                        formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+                return;
+            }
+
+            MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+            String stringJson = mainchainSubWallet.CreateCRCProposalTransaction(crSignedProposal, memo);
+            cc.success(stringJson);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " CreateCRCProposalTransaction");
+        }
+    }
+
+    // args[0]: String masterWalletID
+    // args[1]: String chainID
+    // args[2]: String proposalHash
+    // args[3]: int voteResult
+    // args[4]: String did
+    public void generateCRCProposalReview(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
+        String proposalHash = args.getString(idx++);
+        byte voteResult = (byte)args.getInt(idx++);
+        String did = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+                return;
+            }
+
+            if (!(subWallet instanceof MainchainSubWallet)) {
+                errorProcess(cc, errCodeSubWalletInstance,
+                        formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+                return;
+            }
+
+            MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+            String stringJson = mainchainSubWallet.GenerateCRCProposalReview(proposalHash, voteResult, did);
+            cc.success(stringJson);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " GenerateCRCProposalReview");
+        }
+    }
+
+    // args[0]: String masterWalletID
+    // args[1]: String chainID
+    // args[2]: String proposalReview
+    // args[3]: String memo
+    public void createCRCProposalReviewTransaction(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
+        String proposalReview = args.getString(idx++);
+        String memo = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+                return;
+            }
+
+            if (!(subWallet instanceof MainchainSubWallet)) {
+                errorProcess(cc, errCodeSubWalletInstance,
+                        formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+                return;
+            }
+
+            MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+            String stringJson = mainchainSubWallet.CreateCRCProposalReviewTransaction(proposalReview, memo);
+            cc.success(stringJson);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " CreateCRCProposalReviewTransaction");
+        }
+    }
+
+    // args[0]: String masterWalletID
+    // args[1]: String chainID
+    // args[2]: String fromAddress
+    // args[3]: String votes JSON object
+    // args[4]: String memo
+    // args[5]: String invalidCandidates
+    public void createVoteCRCProposalTransaction(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
+        String fromAddress = args.getString(idx++);
+        String votes = args.getString(idx++);
+        String memo = args.getString(idx++);
+        String invalidCandidates = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+                return;
+            }
+
+            if (!(subWallet instanceof MainchainSubWallet)) {
+                errorProcess(cc, errCodeSubWalletInstance,
+                        formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+                return;
+            }
+
+            MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+            String stringJson = mainchainSubWallet.CreateVoteCRCProposalTransaction(fromAddress, votes, memo, invalidCandidates);
+            cc.success(stringJson);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " CreateVoteCRCProposalTransaction");
+        }
+    }
+
+    // args[0]: String masterWalletID
+    // args[1]: String chainID
+    // args[2]: String fromAddress
+    // args[3]: String votes JSON object
+    // args[4]: String memo
+    // args[5]: String invalidCandidates
+    public void createImpeachmentCRCTransaction(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
+        String fromAddress = args.getString(idx++);
+        String votes = args.getString(idx++);
+        String memo = args.getString(idx++);
+        String invalidCandidates = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+                return;
+            }
+
+            if (!(subWallet instanceof MainchainSubWallet)) {
+                errorProcess(cc, errCodeSubWalletInstance,
+                        formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+                return;
+            }
+
+            MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+            String stringJson = mainchainSubWallet.CreateImpeachmentCRCTransaction(fromAddress, votes, memo, invalidCandidates);
+            cc.success(stringJson);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " CreateImpeachmentCRCTransaction");
+        }
+    }
+
+    // args[0]: String masterWalletID
+    // args[1]: String chainID
+    // args[2]: int type
+    // args[3]: String proposalHash
+    // args[4]: String documentHash
+    // args[5]: int stage
+    // args[6]: String appropriation
+    // args[7]: String leaderPubKey
+    // args[8]: String newLeaderPubKey
+    public void leaderProposalTrackDigest(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
+        byte type = (byte)args.getInt(idx++);
+        String proposalHash = args.getString(idx++);
+        String documentHash = args.getString(idx++);
+        byte stage = (byte)args.getInt(idx++);
+        String appropriation = args.getString(idx++);
+        String leaderPubKey = args.getString(idx++);
+        String newLeaderPubKey = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+                return;
+            }
+
+            if (!(subWallet instanceof MainchainSubWallet)) {
+                errorProcess(cc, errCodeSubWalletInstance,
+                        formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+                return;
+            }
+
+            MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+            String stringJson = mainchainSubWallet.LeaderProposalTrackDigest(type, proposalHash,
+                    documentHash, stage, appropriation, leaderPubKey, newLeaderPubKey);
+            cc.success(stringJson);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " LeaderProposalTrackDigest");
+        }
+    }
+
+    // args[0]: String masterWalletID
+    // args[1]: String chainID
+    // args[2]: String leaderSignedProposalTracking
+    public void newLeaderProposalTrackDigest(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
+        String leaderSignedProposalTracking = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+                return;
+            }
+
+            if (!(subWallet instanceof MainchainSubWallet)) {
+                errorProcess(cc, errCodeSubWalletInstance,
+                        formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+                return;
+            }
+
+            MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+            String stringJson = mainchainSubWallet.NewLeaderProposalTrackDigest(leaderSignedProposalTracking);
+            cc.success(stringJson);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " NewLeaderProposalTrackDigest");
+        }
+    }
+
+    // args[0]: String masterWalletID
+    // args[1]: String chainID
+    // args[2]: String leaderSignedProposalTracking
+    public void secretaryGeneralProposalTrackDigest(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
+        String leaderSignedProposalTracking = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+                return;
+            }
+
+            if (!(subWallet instanceof MainchainSubWallet)) {
+                errorProcess(cc, errCodeSubWalletInstance,
+                        formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+                return;
+            }
+
+            MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+            String stringJson = mainchainSubWallet.SecretaryGeneralProposalTrackDigest(leaderSignedProposalTracking);
+            cc.success(stringJson);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " SecretaryGeneralProposalTrackDigest");
+        }
+    }
+
+    // args[0]: String masterWalletID
+    // args[1]: String chainID
+    // args[2]: String leaderSignedProposalTracking
+    // args[3]: String memo
+    public void createProposalTrackingTransaction(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
+        String leaderSignedProposalTracking = args.getString(idx++);
+        String memo = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+                return;
+            }
+
+            if (!(subWallet instanceof MainchainSubWallet)) {
+                errorProcess(cc, errCodeSubWalletInstance,
+                        formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+                return;
+            }
+
+            MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+            String stringJson = mainchainSubWallet.CreateProposalTrackingTransaction(leaderSignedProposalTracking, memo);
+            cc.success(stringJson);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " CreateProposalTrackingTransaction");
+        }
+    }
+
     // args[0]: String masterWalletID
     public void getSupportedChains(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;

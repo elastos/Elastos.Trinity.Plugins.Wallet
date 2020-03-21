@@ -108,6 +108,7 @@ typedef Elastos::ElaWallet::IIDChainSubWallet IIDChainSubWallet;
 - (void)createDepositTransaction:(CDVInvokedUrlCommand *)command;
 - (void)destroyWallet:(CDVInvokedUrlCommand *)command;
 - (void)createTransaction:(CDVInvokedUrlCommand *)command;
+- (void)createConsolidateTransaction:(CDVInvokedUrlCommand *)command;
 - (void)signTransaction:(CDVInvokedUrlCommand *)command;
 - (void)publishTransaction:(CDVInvokedUrlCommand *)command;
 // - (void)importWalletWithOldKeystore:(CDVInvokedUrlCommand *)command;
@@ -129,6 +130,30 @@ typedef Elastos::ElaWallet::IIDChainSubWallet IIDChainSubWallet;
 - (void)createVoteProducerTransaction:(CDVInvokedUrlCommand *)command;
 - (void)getVotedProducerList:(CDVInvokedUrlCommand *)command;
 - (void)getRegisteredProducerInfo:(CDVInvokedUrlCommand *)command;
+
+//CR
+- (void)generateCRInfoPayload:(CDVInvokedUrlCommand *)command;
+- (void)generateUnregisterCRPayload:(CDVInvokedUrlCommand *)command;
+- (void)createRegisterCRTransaction:(CDVInvokedUrlCommand *)command;
+- (void)createUpdateCRTransaction:(CDVInvokedUrlCommand *)command;
+- (void)createUnregisterCRTransaction:(CDVInvokedUrlCommand *)command;
+- (void)createRetrieveCRDepositTransaction:(CDVInvokedUrlCommand *)command;
+- (void)createVoteCRTransaction:(CDVInvokedUrlCommand *)command;
+- (void)getVotedCRList:(CDVInvokedUrlCommand *)command;
+- (void)getRegisteredCRInfo:(CDVInvokedUrlCommand *)command;
+- (void)getVoteInfo:(CDVInvokedUrlCommand *)command;
+
+- (void)sponsorProposalDigest:(CDVInvokedUrlCommand *)command;
+- (void)CRSponsorProposalDigest:(CDVInvokedUrlCommand *)command;
+- (void)createCRCProposalTransaction:(CDVInvokedUrlCommand *)command;
+- (void)generateCRCProposalReview:(CDVInvokedUrlCommand *)command;
+- (void)createCRCProposalReviewTransaction:(CDVInvokedUrlCommand *)command;
+- (void)createVoteCRCProposalTransaction:(CDVInvokedUrlCommand *)command;
+- (void)createImpeachmentCRCTransaction:(CDVInvokedUrlCommand *)command;
+- (void)leaderProposalTrackDigest:(CDVInvokedUrlCommand *)command;
+- (void)newLeaderProposalTrackDigest:(CDVInvokedUrlCommand *)command;
+- (void)secretaryGeneralProposalTrackDigest:(CDVInvokedUrlCommand *)command;
+- (void)createProposalTrackingTransaction:(CDVInvokedUrlCommand *)command;
 
 - (void)syncStart:(CDVInvokedUrlCommand *)command;
 - (void)syncStop:(CDVInvokedUrlCommand *)command;
