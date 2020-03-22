@@ -386,6 +386,9 @@ public class Wallet extends TrinityPlugin {
                 case "createTransaction":
                     this.createTransaction(args, cc);
                     break;
+                case "getAllUTXOs":
+                    this.getAllUTXOs(args, cc);
+                    break;
                 case "createConsolidateTransaction":
                     this.createConsolidateTransaction(args, cc);
                     break;
@@ -1404,6 +1407,40 @@ public class Wallet extends TrinityPlugin {
             cc.success(tx);
         } catch (WalletException e) {
             exceptionProcess(e, cc, "Create " + formatWalletName(masterWalletID, chainID) + " transaction");
+        }
+    }
+
+    // args[0]: String masterWalletID
+    // args[1]: String chainID
+    // args[2]: int start
+    // args[3]: int count
+    // args[4]: String address
+    // return: String all utxo in json format
+    public void getAllUTXOs(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+
+        String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
+        int start = args.getInt(idx++);
+        int count = args.getInt(idx++);
+        String address = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+                return;
+            }
+
+            String result = subWallet.GetAllUTXOs(start, count, address);
+            cc.success(result);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, "get " + formatWalletName(masterWalletID, chainID) + " all UTXOs");
         }
     }
 
