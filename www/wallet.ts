@@ -237,6 +237,10 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         _exec(success, error, "Wallet", "getMasterWalletBasicInfo", args);
     };
 
+    getAllUTXOs(args, success, error) {
+        _exec(success, error, "Wallet", "getAllUTXOs", args);
+    };
+
     createConsolidateTransaction(args, success, error) {
         _exec(success, error, "Wallet", "createConsolidateTransaction", args);
     };

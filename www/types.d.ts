@@ -313,6 +313,17 @@ declare module WalletPlugin {
         createTransaction(args, success, error);
 
         /**
+         * Get all UTXO list. Include locked and pending and deposit utxos.
+         * @param masterWalletID is the unique identification of a master wallet object.
+         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
+         * @param start specify start index of all utxos list.
+         * @param count specify count of utxos we need.
+         * @param address to filter the specify address's utxos. If empty, all utxo of all addresses wil be returned.
+         * @return return all utxo in json format
+         */
+        getAllUTXOs(args, success, error);
+
+        /**
          * Create a transaction to combine as many UTXOs as possible until transaction size reaches the max size.
          * @param masterWalletID is the unique identification of a master wallet object.
          * @param chainID unique identity of a sub wallet. Chain id should not be empty.
