@@ -34,13 +34,38 @@
 */
 
 declare module WalletPlugin {
-    // const enum VoteType {
-    //     Delegate,
-    //     CRC,
-    //     CRCProposal,
-    //     CRCImpeachment,
-    //     Max,
-    // }
+    const enum VoteType {
+        Delegate,
+        CRC,
+        CRCProposal,
+        CRCImpeachment,
+        Max,
+    }
+
+    const enum CRCProposalType {
+        normal = 0x0000,
+        elip = 0x0100,
+        flowElip = 0x0101,
+        infoElip = 0x0102,
+        mainChainUpgradeCode = 0x0200,
+        sideChainUpgradeCode = 0x0300,
+        registerSideChain = 0x0301,
+        secretaryGeneral = 0x0400,
+        changeSponsor = 0x0401,
+        closeProposal = 0x0402,
+        dappConsensus = 0x0500,
+        maxType
+    }
+
+    const enum CRCProposalTrackingType {
+        common = 0x00,
+        progress = 0x01,
+        progressReject = 0x02,
+        terminated = 0x03,
+        proposalLeader = 0x04,
+        appropriation = 0x05,
+        maxType
+    }
 
     interface WalletManager {
         // TODO: define types for all arguments and callback parameters
