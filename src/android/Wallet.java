@@ -348,9 +348,6 @@ public class Wallet extends TrinityPlugin {
                 case "destroySubWallet":
                     this.destroySubWallet(args, cc);
                     break;
-//                case "getMasterWalletPublicKey":
-//                    this.getMasterWalletPublicKey(args, cc);
-//                    break;
                 case "isAddressValid":
                     this.isAddressValid(args, cc);
                     break;
@@ -380,6 +377,9 @@ public class Wallet extends TrinityPlugin {
                 case "getAllAddress":
                     this.getAllAddress(args, cc);
                     break;
+                case "getAllPublicKeys":
+                    this.getAllPublicKeys(args, cc);
+                    break;
                 case "getBalanceWithAddress":
                     this.getBalanceWithAddress(args, cc);
                     break;
@@ -404,15 +404,6 @@ public class Wallet extends TrinityPlugin {
                 case "getAllTransaction":
                     this.getAllTransaction(args, cc);
                     break;
-                case "subWalletSign":
-                    this.sign(args, cc);
-                    break;
-                case "subWalletCheckSign":
-                    this.checkSign(args, cc);
-                    break;
-//                case "getSubWalletPublicKey":
-//                    this.getSubWalletPublicKey(args, cc);
-//                    break;
                 case "registerWalletListener":
                     this.registerWalletListener(args, cc);
                     break;
@@ -468,8 +459,8 @@ public class Wallet extends TrinityPlugin {
                 case "createRetrieveDepositTransaction":
                     this.createRetrieveDepositTransaction(args, cc);
                     break;
-                case "getPublicKeyForVote":
-                    this.getPublicKeyForVote(args, cc);
+                case "getOwnerPublicKey":
+                    this.getOwnerPublicKey(args, cc);
                     break;
                 case "createVoteProducerTransaction":
                     this.createVoteProducerTransaction(args, cc);
@@ -1345,6 +1336,36 @@ public class Wallet extends TrinityPlugin {
 
     // args[0]: String masterWalletID
     // args[1]: String chainID
+    // args[2]: int start
+    // args[3]: int count
+    public void getAllPublicKeys(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+
+        String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
+        int start = args.getInt(idx++);
+        int count = args.getInt(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+                return;
+            }
+            String allAddresses = subWallet.GetAllPublicKeys(start, count);
+            cc.success(allAddresses);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, "Get " + formatWalletName(masterWalletID, chainID) + " all publickeys");
+        }
+    }
+
+    // args[0]: String masterWalletID
+    // args[1]: String chainID
     // args[2]: String address
     public void getBalanceWithAddress(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
@@ -1598,130 +1619,6 @@ public class Wallet extends TrinityPlugin {
             exceptionProcess(e, cc, "Get " + formatWalletName(masterWalletID, chainID) + " all transaction");
         }
     }
-
-    // args[0]: String masterWalletID
-    // args[1]: String chainID
-    // args[2]: String message
-    // args[3]: String payPassword
-    public void sign(JSONArray args, CallbackContext cc) throws JSONException {
-        int idx = 0;
-
-        String masterWalletID = args.getString(idx++);
-        String chainID = args.getString(idx++);
-        String message = args.getString(idx++);
-        String payPassword = args.getString(idx++);
-
-        if (args.length() != idx) {
-            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-            return;
-        }
-
-        try {
-            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
-            if (subWallet == null) {
-                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
-                return;
-            }
-
-            cc.success(subWallet.Sign(message, payPassword));
-        } catch (WalletException e) {
-            exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " sign");
-        }
-    }
-
-    // args[0]: String masterWalletID
-    // args[1]: String chainID
-    // args[2]: String publicKey
-    // args[3]: String message
-    // args[4]: String signature
-    public void checkSign(JSONArray args, CallbackContext cc) throws JSONException {
-        int idx = 0;
-
-        String masterWalletID = args.getString(idx++);
-        String chainID = args.getString(idx++);
-        String publicKey = args.getString(idx++);
-        String message = args.getString(idx++);
-        String signature = args.getString(idx++);
-
-        if (args.length() != idx) {
-            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-            return;
-        }
-
-        try {
-            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
-            if (subWallet == null) {
-                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
-                return;
-            }
-
-            Boolean result = subWallet.CheckSign(publicKey, message, signature);
-
-            cc.success(result.toString());
-        } catch (WalletException e) {
-            exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " verify sign");
-        }
-    }
-
-    // // args[0]: String masterWalletID
-    // // args[1]: String chainID
-    // // return: String publicKey
-    // public void getSubWalletPublicKey(JSONArray args, CallbackContext cc) throws
-    // JSONException {
-    // int idx = 0;
-    //
-    // String masterWalletID = args.getString(idx++);
-    // String chainID = args.getString(idx++);
-    //
-    // if (args.length() != idx) {
-    // errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-    // return;
-    // }
-    //
-    // try {
-    // SubWallet subWallet = getSubWallet(masterWalletID, chainID);
-    // if (subWallet == null) {
-    // errorProcess(cc, errCodeInvalidSubWallet, "Get " +
-    // formatWalletName(masterWalletID, chainID));
-    // return;
-    // }
-    // String pubKey = subWallet.GetPublicKey();
-    //
-    // cc.success(pubKey);
-    // } catch (WalletException e) {
-    // exceptionProcess(e, cc, "Get " + formatWalletName(masterWalletID, chainID) +
-    // " public key");
-    // }
-    // }
-
-    // // args[0]: String masterWalletID
-    // public void getMasterWalletPublicKey(JSONArray args, CallbackContext cc)
-    // throws JSONException {
-    // int idx = 0;
-    //
-    // String masterWalletID = args.getString(idx++);
-    //
-    // if (args.length() != idx) {
-    // errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-    // return;
-    // }
-    //
-    // try {
-    // MasterWallet masterWallet = getIMasterWallet(masterWalletID);
-    // if (masterWallet == null) {
-    // errorProcess(cc, errCodeInvalidMasterWallet, "Get " +
-    // formatWalletName(masterWalletID));
-    // return;
-    // }
-    //
-    // String pubKey = masterWallet.GetPublicKey();
-    //
-    // cc.success(pubKey);
-    // } catch (WalletException e) {
-    // exceptionProcess(e, cc, "Get " + formatWalletName(masterWalletID) + " public
-    // key");
-    // }
-    // }
 
     // args[0]: String masterWalletID
     // args[1]: String chainID
@@ -2313,7 +2210,7 @@ public class Wallet extends TrinityPlugin {
 
     // args[0]: String masterWalletID
     // args[1]: String chainID
-    public void getPublicKeyForVote(JSONArray args, CallbackContext cc) throws JSONException {
+    public void getOwnerPublicKey(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
 
         String masterWalletID = args.getString(idx++);

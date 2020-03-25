@@ -1087,6 +1087,30 @@ void ElISubWalletCallback::OnConnectStatusChanged(const std::string &status)
     return [self successAsString:command msg:jsonString];
 }
 
+- (void)getAllPublicKeys:(CDVInvokedUrlCommand *)command
+{
+    NSArray *args = command.arguments;
+    int idx = 0;
+
+    String masterWalletID = [self cstringWithString:args[idx++]];
+    String chainID        = [self cstringWithString:args[idx++]];
+    int start             = [args[idx++] intValue];
+    int count             = [args[idx++] intValue];
+
+    if (args.count != idx) {
+        return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
+    }
+    ISubWallet *subWallet = [self getSubWallet:masterWalletID :chainID];
+    if (subWallet == nil) {
+        NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletNameWithString:masterWalletID other:chainID]];
+        return [self errorProcess:command code:errCodeInvalidSubWallet msg:msg];
+    }
+
+    Json json = subWallet->GetAllPublicKeys(start, count);
+    NSString *jsonString = [self stringWithCString:json.dump()];
+    return [self successAsString:command msg:jsonString];
+}
+
 - (void)isAddressValid:(CDVInvokedUrlCommand *)command
 {
     NSArray *args = command.arguments;
@@ -1689,7 +1713,7 @@ void ElISubWalletCallback::OnConnectStatusChanged(const std::string &status)
     return [self successAsString:command msg:jsonString];
 }
 
-- (void)getPublicKeyForVote:(CDVInvokedUrlCommand *)command
+- (void)getOwnerPublicKey:(CDVInvokedUrlCommand *)command
 {
     int idx = 0;
     NSArray *args = command.arguments;

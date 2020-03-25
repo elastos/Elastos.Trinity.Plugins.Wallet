@@ -107,6 +107,10 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         _exec(success, error, "Wallet", "getAllAddress", args);
     };
 
+    getAllPublicKeys(args, success, error) {
+        _exec(success, error, "Wallet", "getAllPublicKeys", args);
+    };
+
     getBalanceWithAddress(args, success, error) {
         exec(success, error, "Wallet", "getBalanceWithAddress", args);
     };
@@ -121,14 +125,6 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
 
     getAllTransaction(args, success, error) {
         _exec(success, error, "Wallet", "getAllTransaction", args);
-    };
-
-    sign(args, success, error) {
-        exec(success, error, "Wallet", "sign", args);
-    };
-
-    checkSign(args, success, error) {
-        exec(success, error, "Wallet", "checkSign", args);
     };
 
     getAllMasterWallets(args, success, error) {
@@ -253,14 +249,6 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         _exec(success, error, "Wallet", "publishTransaction", args);
     };
 
-    // getMasterWalletPublicKey(args, success, error) {
-    //     exec(success, error, "Wallet", "getMasterWalletPublicKey", args);
-    // };
-
-    // getSubWalletPublicKey(args, success, error) {
-    //     exec(success, error, "Wallet", "getSubWalletPublicKey", args);
-    // };
-
     createMultiSignMasterWalletWithMnemonic(args, success, error) {
         exec(success, error, "Wallet", "createMultiSignMasterWalletWithMnemonic", args);
     };
@@ -321,8 +309,8 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         exec(success, error, "Wallet", "generateCancelProducerPayload", args);
     };
 
-    getPublicKeyForVote(args, success, error) {
-        exec(success, error, "Wallet", "getPublicKeyForVote", args);
+    getOwnerPublicKey(args, success, error) {
+        exec(success, error, "Wallet", "getOwnerPublicKey", args);
     };
 
     createRetrieveDepositTransaction(args, success, error) {
