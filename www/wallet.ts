@@ -323,7 +323,7 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
 
     //CR
     generateCRInfoPayload(args, success, error) {
-        exec(success, error, "Wallet", "generateCRInfoPayload", args);
+        _exec(success, error, "Wallet", "generateCRInfoPayload", args);
     };
 
     generateUnregisterCRPayload(args, success, error) {

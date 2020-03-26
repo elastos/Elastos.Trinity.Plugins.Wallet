@@ -140,7 +140,6 @@ declare module WalletPlugin {
          * @param keystoreContent specify key store content in json format.
          * @param backupPassword use to encrypt key store file. Backup password should between 8 and 128, otherwise will throw invalid argument exception.
          * @param payPassword use to encrypt important things(such as private key) in memory. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
-         * @param phrasePassword combine with random seed to generate root key and chain code. Phrase password can be empty or between 8 and 128, otherwise will throw invalid argument exception.
          * @return If success will return a pointer of master wallet interface.
          */
         importWalletWithKeystore(args, success, error);
@@ -162,7 +161,6 @@ declare module WalletPlugin {
          */
         getAllMasterWallets(args, success, error);
 
-
         /**
          * Destroy a master wallet.
          * @param masterWalletID A pointer of master wallet interface create or imported by wallet factory object.
@@ -179,6 +177,7 @@ declare module WalletPlugin {
 
         /**
          * Get basic info of master wallet
+         * @param masterWalletID is the unique identification of a master wallet object.
          * @return basic information. Such as:
          * {"M":1,"N":1,"Readonly":false,"SingleAddress":false,"Type":"Standard", "HasPassPhrase": false}
          */
@@ -186,6 +185,7 @@ declare module WalletPlugin {
 
         /**
          * Get wallet existing sub wallets.
+         * @param masterWalletID is the unique identification of a master wallet object.
          * @return existing sub wallets by array.
          */
         getAllSubWallets(args, success, error);
@@ -301,7 +301,6 @@ declare module WalletPlugin {
          * @param chainID unique identity of a sub wallet. Chain id should not be empty.
          * @param start specify start index of all addresses list.
          * @param count specify count of addresses we need.
-         * @param internal indicate if addresses are change(internal) address or not.
          * @return addresses in JSON format.
          *
          * example:
@@ -402,11 +401,15 @@ declare module WalletPlugin {
 
         /**
          * Add a sub wallet callback object listened to current sub wallet.
+         * @param masterWalletID is the unique identification of a master wallet object.
+         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
          */
         registerWalletListener(args, success, error);
 
         /**
          * Remove a sub wallet callback object listened to current sub wallet.
+         * @param masterWalletID is the unique identification of a master wallet object.
+         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
          */
         removeWalletListener(args, success, error);
 
@@ -463,7 +466,6 @@ declare module WalletPlugin {
         /**
          * Get all DID derived of current subwallet.
          * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
          * @param start specify start index of all DID list.
          * @param count specify count of DID we need.
          * @return If success return all DID in JSON format.
@@ -480,7 +482,6 @@ declare module WalletPlugin {
         /**
          * Sign message with private key of did.
          * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
          * @param did will sign the message with public key of this did.
          * @param message to be signed.
          * @param payPassword pay password.
@@ -491,7 +492,6 @@ declare module WalletPlugin {
         /**
          * Sign message with private key of did.
          * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
          * @param did will sign the message with public key of this did.
          * @param digest hex string of sha256
          * @param payPassword pay password.
@@ -502,7 +502,6 @@ declare module WalletPlugin {
         /**
          * Verify signature with specify public key
          * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
          * @param publicKey public key.
          * @param message message to be verified.
          * @param signature signature to be verified.
@@ -513,7 +512,6 @@ declare module WalletPlugin {
         /**
          * Get DID by public key
          * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
          * @param pubkey public key
          * @return did string
          */
@@ -522,7 +520,6 @@ declare module WalletPlugin {
         /**
          * Generate payload for operation the did.
          * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
          * @param inputInfo to generate DIDInfoPayload json fomat,able used to CreateIDTransaction. Content such as
          * {
             "id": "innnNZJLqmJ8uKfVHKFxhdqVtvipNHzmZs",
