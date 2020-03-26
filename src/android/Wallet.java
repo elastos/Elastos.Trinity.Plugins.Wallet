@@ -1250,7 +1250,6 @@ public class Wallet extends TrinityPlugin {
 
     // args[0]: String masterWalletID
     // args[1]: String chainID
-    // args[2]: int BalanceType (0: Default, 1: Voted, 2: Total)
     public void getBalance(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
 
@@ -1889,6 +1888,7 @@ public class Wallet extends TrinityPlugin {
         }
     }
 
+    // to be removed
     public void generateDIDInfoPayload(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
 
