@@ -2013,7 +2013,7 @@ void ElISubWalletCallback::OnConnectStatusChanged(const std::string &status)
     String masterWalletID  = [self cstringWithString:args[idx++]];
     String chainID         = [self cstringWithString:args[idx++]];
     String fromAddress     = [self cstringWithString:args[idx++]];
-    Json publicKeys        = [self jsonWithString:args[idx++]];
+    Json publicKeys        = [self jsonWithDict:args[idx++]];
     String memo            = [self cstringWithString:args[idx++]];
     Json invalidCandidates = [self jsonWithString:args[idx++]];
 
