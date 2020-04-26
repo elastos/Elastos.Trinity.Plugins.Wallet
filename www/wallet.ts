@@ -179,12 +179,12 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         exec(success, error, "Wallet", "createIdTransaction", args);
     };
 
-    getResolveDIDInfo(args, success, error) {
-        exec(success, error, "Wallet", "getResolveDIDInfo", args);
-    };
-
     getAllDID(args, success, error) {
         exec(success, error, "Wallet", "getAllDID", args);
+    };
+
+    getAllCID(args, success, error) {
+        exec(success, error, "Wallet", "getAllCID", args);
     };
 
     didSign(args, success, error) {
@@ -203,8 +203,8 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         exec(success, error, "Wallet", "getPublicKeyDID", args);
     };
 
-    generateDIDInfoPayload(args, success, error) {
-        exec(success, error, "Wallet", "generateDIDInfoPayload", args);
+    getPublicKeyCID(args, success, error) {
+        exec(success, error, "Wallet", "getPublicKeyCID", args);
     };
 
     createDepositTransaction(args, success, error) {
@@ -363,38 +363,44 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
     };
 
     //Proposal
-    sponsorProposalDigest(args, success, error) {
-        exec(success, error, "Wallet", "sponsorProposalDigest", args);
+    proposalOwnerDigest(args, success, error) {
+        exec(success, error, "Wallet", "proposalOwnerDigest", args);
     };
-    CRSponsorProposalDigest(args, success, error) {
-        exec(success, error, "Wallet", "CRSponsorProposalDigest", args);
+    proposalCRCouncilMemberDigest(args, success, error) {
+        exec(success, error, "Wallet", "proposalCRCouncilMemberDigest", args);
     };
-    createCRCProposalTransaction(args, success, error) {
-        exec(success, error, "Wallet", "createCRCProposalTransaction", args);
+    createProposalTransaction(args, success, error) {
+        exec(success, error, "Wallet", "createProposalTransaction", args);
     };
-    generateCRCProposalReview(args, success, error) {
-        exec(success, error, "Wallet", "generateCRCProposalReview", args);
+    proposalReviewDigest(args, success, error) {
+        exec(success, error, "Wallet", "proposalReviewDigest", args);
     };
-    createCRCProposalReviewTransaction(args, success, error) {
-        exec(success, error, "Wallet", "createCRCProposalReviewTransaction", args);
+    createProposalReviewTransaction(args, success, error) {
+        exec(success, error, "Wallet", "createProposalReviewTransaction", args);
+    };
+    proposalTrackingOwnerDigest(args, success, error) {
+        exec(success, error, "Wallet", "proposalTrackingOwnerDigest", args);
+    };
+    proposalTrackingNewOwnerDigest(args, success, error) {
+        exec(success, error, "Wallet", "proposalTrackingNewOwnerDigest", args);
+    };
+    proposalTrackingSecretaryDigest(args, success, error) {
+        exec(success, error, "Wallet", "proposalTrackingSecretaryDigest", args);
+    };
+    createProposalTrackingTransaction(args, success, error) {
+        exec(success, error, "Wallet", "createProposalTrackingTransaction", args);
+    };
+    proposalWithdrawDigest(args, success, error) {
+        exec(success, error, "Wallet", "proposalWithdrawDigest", args);
+    };
+    createProposalWithdrawTransaction(args, success, error) {
+        exec(success, error, "Wallet", "createProposalWithdrawTransaction", args);
     };
     createVoteCRCProposalTransaction(args, success, error) {
         exec(success, error, "Wallet", "createVoteCRCProposalTransaction", args);
     };
     createImpeachmentCRCTransaction(args, success, error) {
         exec(success, error, "Wallet", "createImpeachmentCRCTransaction", args);
-    };
-    leaderProposalTrackDigest(args, success, error) {
-        exec(success, error, "Wallet", "leaderProposalTrackDigest", args);
-    };
-    newLeaderProposalTrackDigest(args, success, error) {
-        exec(success, error, "Wallet", "newLeaderProposalTrackDigest", args);
-    };
-    secretaryGeneralProposalTrackDigest(args, success, error) {
-        exec(success, error, "Wallet", "secretaryGeneralProposalTrackDigest", args);
-    };
-    createProposalTrackingTransaction(args, success, error) {
-        exec(success, error, "Wallet", "createProposalTrackingTransaction", args);
     };
 }
 
