@@ -123,11 +123,11 @@
 - (NSString *)destroyWallet:(NSString *)masterWalletID
                       error:(NSError **)error;
 
-#pragma mark -  没有使用的api
-
-- (NSString *)getBalanceInfo:(NSString *)masterWalletID
+- (NSArray *)getBalanceInfo:(NSString *)masterWalletID
                      chainID:(NSString *)chainID
                        error:(NSError **)error;
+
+#pragma mark -  没有使用的api
 
 - (NSArray *)getSupportedChains:(NSString *)masterWalletID
                           error:(NSError **)error;

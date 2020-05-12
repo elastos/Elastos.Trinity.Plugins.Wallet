@@ -352,6 +352,24 @@ static SPVWallet * _instance;
     return dic;
 }
 
+
+- (NSArray *)arraytWithJson:(Json)json
+{
+    NSString *jsonString = [self stringWithCString:json.dump()];
+    if (jsonString == nil) {
+        return nil;
+    }
+    NSData *jsonData = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
+    NSError *err;
+    NSArray *array = [NSJSONSerialization JSONObjectWithData:jsonData
+                                                        options:NSJSONReadingMutableContainers
+                                                          error:&err];
+    if(err) {
+        return nil;
+    }
+    return array;
+}
+
 - (NSString *)stringWithJson:(Json)json
 {
     return [self stringWithCString:json.dump()];
@@ -528,7 +546,7 @@ static SPVWallet * _instance;
     return [self stringWithCString:balance];
 }
 
-- (NSString *)getBalanceInfo:(NSString *)masterWalletID
+- (NSArray *)getBalanceInfo:(NSString *)masterWalletID
                      chainID:(NSString *)chainID
                        error:(NSError **)error
 {
@@ -544,7 +562,7 @@ static SPVWallet * _instance;
     }
 
     Json json = subWallet->GetBalanceInfo();
-    return [self stringWithJson:json];
+    return [self arraytWithJson:json];
 }
 
 - (NSArray *)getSupportedChains:(NSString *)masterWalletID
