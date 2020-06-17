@@ -73,6 +73,7 @@ typedef Elastos::ElaWallet::IIDChainSubWallet IIDChainSubWallet;
     int errCodeInvalidDIDManager      ;//    = 10011;
     int errCodeInvalidDID               ;//  = 10012;
     int errCodeActionNotFound           ;//  = 10013;
+    int errCodeGetAllMasterWallets      ;//  = 10014;
 
     int errCodeWalletException         ;//   = 20000;
 }
@@ -108,7 +109,6 @@ typedef Elastos::ElaWallet::IIDChainSubWallet IIDChainSubWallet;
 - (void)isAddressValid:(CDVInvokedUrlCommand *)command;
 - (void)createDepositTransaction:(CDVInvokedUrlCommand *)command;
 - (void)destroyWallet:(CDVInvokedUrlCommand *)command;
-- (void)createTransaction:(CDVInvokedUrlCommand *)command;
 - (void)createTransaction:(CDVInvokedUrlCommand *)command;
 - (void)getAllUTXOs:(CDVInvokedUrlCommand *)command;
 - (void)signTransaction:(CDVInvokedUrlCommand *)command;
