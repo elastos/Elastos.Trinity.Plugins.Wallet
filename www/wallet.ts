@@ -369,6 +369,9 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
     proposalCRCouncilMemberDigest(args, success, error) {
         exec(success, error, "Wallet", "proposalCRCouncilMemberDigest", args);
     };
+    calculateProposalHash(args, success, error) {
+      exec(success, error, "Wallet", "calculateProposalHash", args);
+    };
     createProposalTransaction(args, success, error) {
         exec(success, error, "Wallet", "createProposalTransaction", args);
     };

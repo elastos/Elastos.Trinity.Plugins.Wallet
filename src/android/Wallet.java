@@ -509,6 +509,9 @@ public class Wallet extends TrinityPlugin {
                 case "proposalCRCouncilMemberDigest":
                     this.proposalCRCouncilMemberDigest(args, cc);
                     break;
+                case "calculateProposalHash":
+                    this.calculateProposalHash(args, cc);
+                    break;
                 case "createProposalTransaction":
                     this.createProposalTransaction(args, cc);
                     break;
@@ -2815,6 +2818,41 @@ public class Wallet extends TrinityPlugin {
             exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " ProposalCRCouncilMemberDigest");
         }
     }
+
+    // args[0]: String masterWalletID
+    // args[1]: String chainID
+    // args[2]: String payload
+    public void calculateProposalHash(JSONArray args, CallbackContext cc) throws JSONException {
+      int idx = 0;
+      String masterWalletID = args.getString(idx++);
+      String chainID = args.getString(idx++);
+      String payload = args.getString(idx++);
+
+      if (args.length() != idx) {
+          errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+          return;
+      }
+
+      try {
+          SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+          if (subWallet == null) {
+              errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+              return;
+          }
+
+          if (!(subWallet instanceof MainchainSubWallet)) {
+              errorProcess(cc, errCodeSubWalletInstance,
+                      formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+              return;
+          }
+
+          MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+          String stringJson = mainchainSubWallet.CalculateProposalHash(payload);
+          cc.success(stringJson);
+      } catch (WalletException e) {
+          exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " CalculateProposalHash");
+      }
+  }
 
     // args[0]: String masterWalletID
     // args[1]: String chainID
