@@ -36,7 +36,15 @@
         <header-file src="src/ios/libspvsdk/include/ITokenchainSubWallet.h" />
         <header-file src="src/ios/libspvsdk/include/nlohmann/json.hpp" />
         <header-file src="src/ios/libspvsdk/include/MasterWalletManager.h" />
-        <source-file src="src/ios/libspvsdk/lib/libspvsdk_uber_fat.a" framework="true" />
+        <source-file src="src/ios/libspvsdk/lib/libboost_filesystem.a" framework="true" />
+        <source-file src="src/ios/libspvsdk/lib/libboost_system.a" framework="true" />
+        <source-file src="src/ios/libspvsdk/lib/libboost_thread.a" framework="true" />
+        <source-file src="src/ios/libspvsdk/lib/libcrypto.a" framework="true" />
+        <source-file src="src/ios/libspvsdk/lib/libfruit.a" framework="true" />
+        <source-file src="src/ios/libspvsdk/lib/libspdlog.a" framework="true" />
+        <source-file src="src/ios/libspvsdk/lib/libspvsdk.a" framework="true" />
+        <source-file src="src/ios/libspvsdk/lib/libsqlite3.a" framework="true" />
+        <source-file src="src/ios/libspvsdk/lib/libssl.a" framework="true" />
     </platform>
 </plugin>
 
