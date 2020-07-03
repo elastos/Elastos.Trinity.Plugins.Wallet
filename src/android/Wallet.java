@@ -154,7 +154,8 @@ public class Wallet extends TrinityPlugin {
     @Override
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
         super.initialize(cordova, webView);
-        String rootPath = getDataPath() + "spv";
+        // String rootPath = getDataPath() + "spv";
+        String rootPath = cordova.getActivity().getFilesDir() + "/spv";
         File destDir = new File(rootPath);
         if (!destDir.exists()) {
             destDir.mkdirs();
@@ -2823,36 +2824,36 @@ public class Wallet extends TrinityPlugin {
     // args[1]: String chainID
     // args[2]: String payload
     public void calculateProposalHash(JSONArray args, CallbackContext cc) throws JSONException {
-      int idx = 0;
-      String masterWalletID = args.getString(idx++);
-      String chainID = args.getString(idx++);
-      String payload = args.getString(idx++);
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
+        String payload = args.getString(idx++);
 
-      if (args.length() != idx) {
-          errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-          return;
-      }
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
 
-      try {
-          SubWallet subWallet = getSubWallet(masterWalletID, chainID);
-          if (subWallet == null) {
-              errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
-              return;
-          }
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+                return;
+            }
 
-          if (!(subWallet instanceof MainchainSubWallet)) {
-              errorProcess(cc, errCodeSubWalletInstance,
-                      formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
-              return;
-          }
+            if (!(subWallet instanceof MainchainSubWallet)) {
+                errorProcess(cc, errCodeSubWalletInstance,
+                        formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+                return;
+            }
 
-          MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
-          String stringJson = mainchainSubWallet.CalculateProposalHash(payload);
-          cc.success(stringJson);
-      } catch (WalletException e) {
-          exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " CalculateProposalHash");
-      }
-  }
+            MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+            String stringJson = mainchainSubWallet.CalculateProposalHash(payload);
+            cc.success(stringJson);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " CalculateProposalHash");
+        }
+    }
 
     // args[0]: String masterWalletID
     // args[1]: String chainID
