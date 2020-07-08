@@ -154,8 +154,8 @@ public class Wallet extends TrinityPlugin {
     @Override
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
         super.initialize(cordova, webView);
-        // String rootPath = getDataPath() + "spv";
-        String rootPath = cordova.getActivity().getFilesDir() + "/spv";
+        String rootPath = getDataPath() + "spv";
+        // String rootPath = cordova.getActivity().getFilesDir() + "/spv";
         File destDir = new File(rootPath);
         if (!destDir.exists()) {
             destDir.mkdirs();
