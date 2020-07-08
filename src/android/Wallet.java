@@ -45,6 +45,8 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
+
 import android.util.Log;
 
 /**
@@ -52,15 +54,12 @@ import android.util.Log;
  */
 public class Wallet extends TrinityPlugin {
 
-    // static {
-    // System.loadLibrary("spvsdk");
-    // System.loadLibrary("spvsdk_jni");
-    // }
-
     private static final String TAG = "Wallet";
 
-    private MasterWalletManager mMasterWalletManager = null;
-    // private IDidManager mDidManager = null;
+    private static HashMap<String, CallbackContext> subwalletListenerMap = new HashMap<>();
+    private static int walletRefCount = 0;
+    // only wallet dapp can use this plugin
+    private static MasterWalletManager mMasterWalletManager = null;
     private String keySuccess = "success";
     private String keyError = "error";
     private String keyCode = "code";
@@ -134,18 +133,25 @@ public class Wallet extends TrinityPlugin {
     @Override
     public void onDestroy() {
         Log.i(TAG, "onDestroy");
-        if (mMasterWalletManager != null) {
-            ArrayList<MasterWallet> masterWalletList = mMasterWalletManager.GetAllMasterWallets();
-            for (int i = 0; i < masterWalletList.size(); i++) {
-                MasterWallet masterWallet = masterWalletList.get(i);
-                ArrayList<SubWallet> subWallets = masterWallet.GetAllSubWallets();
-                for (int j = 0; j < subWallets.size(); ++j) {
-                    subWallets.get(j).RemoveCallback();
-                }
-            }
 
-            mMasterWalletManager.Dispose();
-            mMasterWalletManager = null;
+        walletRefCount--;
+
+        if (mMasterWalletManager != null) {
+            subwalletListenerMap.remove(did + modeId);
+
+            if (walletRefCount == 0) {
+                ArrayList<MasterWallet> masterWalletList = mMasterWalletManager.GetAllMasterWallets();
+                for (int i = 0; i < masterWalletList.size(); i++) {
+                    MasterWallet masterWallet = masterWalletList.get(i);
+                    ArrayList<SubWallet> subWallets = masterWallet.GetAllSubWallets();
+                    for (int j = 0; j < subWallets.size(); ++j) {
+                        subWallets.get(j).SyncStop();
+                        subWallets.get(j).RemoveCallback();
+                    }
+                }
+                mMasterWalletManager.Dispose();
+                mMasterWalletManager = null;
+            }
         }
 
         super.onDestroy();
@@ -154,8 +160,16 @@ public class Wallet extends TrinityPlugin {
     @Override
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
         super.initialize(cordova, webView);
+
+        walletRefCount++;
+
+        if (mMasterWalletManager != null) {
+            return;
+        }
+
         String rootPath = getDataPath() + "spv";
         // String rootPath = cordova.getActivity().getFilesDir() + "/spv";
+
         File destDir = new File(rootPath);
         if (!destDir.exists()) {
             destDir.mkdirs();
@@ -168,6 +182,56 @@ public class Wallet extends TrinityPlugin {
         String netType = PreferenceManager.getShareInstance().getWalletNetworkType();
         String config = PreferenceManager.getShareInstance().getWalletNetworkConfig();
         mMasterWalletManager = new MasterWalletManager(rootPath, netType, config, dataPath);
+
+        addWalletListener();
+    }
+
+    private void addWalletListener() {
+        ArrayList<MasterWallet> masterWalletList = mMasterWalletManager.GetAllMasterWallets();
+        for (int i = 0; i < masterWalletList.size(); i++) {
+            String masterWalletID = masterWalletList.get(i).GetID();
+            MasterWallet masterWallet = mMasterWalletManager.GetMasterWallet(masterWalletID);
+            ArrayList<SubWallet> subWalletList = masterWallet.GetAllSubWallets();
+
+            for (int j = 0; j < subWalletList.size(); j++) {
+                String chainID = subWalletList.get(j).GetChainID();
+                addSubWalletListener(masterWalletID, chainID);
+                // subWalletList.get(j).SyncStart();
+            }
+        }
+    }
+
+    private void addSubWalletListener(String masterWalletID, String chainID) {
+        SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+        if (subWallet == null) {
+            return;
+        }
+        Log.d(TAG, "addSubWalletListener:" + masterWalletID + " " + chainID);
+        subWallet.AddCallback(new SubWalletCallback(masterWalletID, chainID, new ISubWalletListener() {
+            @Override
+            public void sendResultSuccess(JSONObject jsonObject) {
+                Log.d(TAG, jsonObject.toString());
+
+                if (subwalletListenerMap.isEmpty()) return;
+
+                PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, jsonObject);
+                pluginResult.setKeepCallback(true);
+                for(CallbackContext cc : subwalletListenerMap.values()){
+                    cc.sendPluginResult(pluginResult);
+                }
+            }
+
+            @Override
+            public void sendResultError(String error) {
+                if (subwalletListenerMap.isEmpty()) return;
+
+                PluginResult pluginResult = new PluginResult(PluginResult.Status.JSON_EXCEPTION, error);
+                pluginResult.setKeepCallback(true);
+                for(CallbackContext cc : subwalletListenerMap.values()){
+                    cc.sendPluginResult(pluginResult);
+                }
+            }
+        }));
     }
 
     private String formatWalletName(String masterWalletID) {
@@ -293,12 +357,6 @@ public class Wallet extends TrinityPlugin {
                 case "generateMnemonic":
                     this.generateMnemonic(args, cc);
                     break;
-//                case "getMultiSignPubKeyWithMnemonic":
-//                    this.getMultiSignPubKeyWithMnemonic(args, cc);
-//                    break;
-//                case "getMultiSignPubKeyWithPrivKey":
-//                    this.getMultiSignPubKeyWithPrivKey(args, cc);
-//                    break;
                 case "createMasterWallet":
                     this.createMasterWallet(args, cc);
                     break;
@@ -320,9 +378,6 @@ public class Wallet extends TrinityPlugin {
                 case "importWalletWithKeystore":
                     this.importWalletWithKeystore(args, cc);
                     break;
-//                case "importWalletWithOldKeystore":
-//                    this.importWalletWithOldKeystore(args, cc);
-//                    break;
                 case "importWalletWithMnemonic":
                     this.importWalletWithMnemonic(args, cc);
                     break;
@@ -594,6 +649,9 @@ public class Wallet extends TrinityPlugin {
                 errorProcess(cc, errCodeCreateSubWallet, "Create " + formatWalletName(masterWalletID, chainID));
                 return;
             }
+
+            addSubWalletListener(masterWalletID, chainID);
+            // subWallet.SyncStart();
 
             cc.success(subWallet.GetBasicInfo());
         } catch (WalletException e) {
@@ -983,9 +1041,9 @@ public class Wallet extends TrinityPlugin {
                 return;
             }
 
-            masterWallet.DestroyWallet(subWallet);
-
             subWallet.RemoveCallback();
+            subWallet.SyncStop();
+            masterWallet.DestroyWallet(subWallet);
 
             cc.success("Destroy " + formatWalletName(masterWalletID, chainID) + " OK");
         } catch (WalletException e) {
@@ -1011,9 +1069,11 @@ public class Wallet extends TrinityPlugin {
                 return;
             }
 
-            ArrayList<SubWallet> subWallets = masterWallet.GetAllSubWallets();
-            for (int i = 0; subWallets != null && i < subWallets.size(); i++) {
-                subWallets.get(i).RemoveCallback();
+            ArrayList<SubWallet> subWalletList = masterWallet.GetAllSubWallets();
+            for (int i = 0; subWalletList != null && i < subWalletList.size(); i++) {
+                subWalletList.get(i).SyncStop();
+                subWalletList.get(i).RemoveCallback();
+                masterWallet.DestroyWallet(subWalletList.get(i));
             }
 
             mMasterWalletManager.DestroyWallet(masterWalletID);
@@ -1629,71 +1689,14 @@ public class Wallet extends TrinityPlugin {
         }
     }
 
-    // args[0]: String masterWalletID
-    // args[1]: String chainID
     public void registerWalletListener(JSONArray args, CallbackContext cc) throws JSONException {
-        int idx = 0;
-
-        String masterWalletID = args.getString(idx++);
-        String chainID = args.getString(idx++);
-
-        if (args.length() != idx) {
-            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-            return;
-        }
-
-        try {
-            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
-            if (subWallet == null) {
-                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
-                return;
-            }
-
-            subWallet.AddCallback(new SubWalletCallback(masterWalletID, chainID, new ISubWalletListener() {
-                @Override
-                public void sendResultSuccess(JSONObject jsonObject) {
-                    PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, jsonObject);
-                    pluginResult.setKeepCallback(true);
-                    cc.sendPluginResult(pluginResult);
-                }
-
-                @Override
-                public void sendResultError(String error) {
-                    PluginResult pluginResult = new PluginResult(PluginResult.Status.JSON_EXCEPTION, error);
-                    pluginResult.setKeepCallback(true);
-                    cc.sendPluginResult(pluginResult);
-                }
-            }));
-        } catch (WalletException e) {
-            exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " add callback");
-        }
+        subwalletListenerMap.put(did + modeId, cc);
+        Log.d(TAG, "registerWalletListener:" + subwalletListenerMap.size());
     }
 
-    // args[0]: String masterWalletID
-    // args[1]: String chainID
-    public void removeWalletListener(JSONArray args, CallbackContext cc) throws JSONException {
-        int idx = 0;
-
-        String masterWalletID = args.getString(idx++);
-        String chainID = args.getString(idx++);
-
-        if (args.length() != idx) {
-            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-            return;
-        }
-        try {
-            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
-            if (subWallet == null) {
-                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
-                return;
-            }
-
-            subWallet.RemoveCallback();
-
-            cc.success(formatWalletName(masterWalletID, chainID) + " remove listener");
-        } catch (WalletException e) {
-            exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " remove listener");
-        }
+    public void removeWalletListener(JSONArray args, CallbackContext cc) {
+        subwalletListenerMap.remove(did + modeId);
+        cc.success("remove listener");
     }
 
     // args[0]: String masterWalletID
@@ -3428,5 +3431,4 @@ public class Wallet extends TrinityPlugin {
             exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " get genesis address");
         }
     }
-
 }
