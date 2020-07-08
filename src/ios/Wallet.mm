@@ -462,8 +462,8 @@ void ElISubWalletCallback::OnConnectStatusChanged(const std::string &status)
 
     errCodeWalletException            = 20000;
 
-    NSString* rootPath = [NSHomeDirectory() stringByAppendingString:@"/Documents/spv"];
-    // NSString* rootPath = [[self getDataPath] stringByAppendingString:@"spv"];
+    // NSString* rootPath = [NSHomeDirectory() stringByAppendingString:@"/Documents/spv"];
+    NSString* rootPath = [[self getDataPath] stringByAppendingString:@"spv"];
     NSFileManager *fm = [NSFileManager defaultManager];
     if (![fm fileExistsAtPath:rootPath]) {
         [fm createDirectoryAtPath:rootPath withIntermediateDirectories:true attributes:NULL error:NULL];
