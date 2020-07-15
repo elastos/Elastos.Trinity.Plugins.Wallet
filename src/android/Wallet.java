@@ -1691,7 +1691,6 @@ public class Wallet extends TrinityPlugin {
 
     public void registerWalletListener(JSONArray args, CallbackContext cc) throws JSONException {
         subwalletListenerMap.put(did + modeId, cc);
-        Log.d(TAG, "registerWalletListener:" + subwalletListenerMap.size());
     }
 
     public void removeWalletListener(JSONArray args, CallbackContext cc) {
