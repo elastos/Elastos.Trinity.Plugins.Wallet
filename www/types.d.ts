@@ -401,15 +401,11 @@ declare module WalletPlugin {
 
         /**
          * Add a sub wallet callback object listened to current sub wallet.
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
          */
         registerWalletListener(args, success, error);
 
         /**
          * Remove a sub wallet callback object listened to current sub wallet.
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
          */
         removeWalletListener(args, success, error);
 

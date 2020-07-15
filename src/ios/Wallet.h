@@ -46,11 +46,13 @@ typedef Elastos::ElaWallet::IMainchainSubWallet IMainchainSubWallet;
 typedef std::vector<ISubWalletCallback *> ISubWalletCallbackVector;
 typedef Elastos::ElaWallet::IIDChainSubWallet IIDChainSubWallet;
 
-
+static int walletRefCount = 0;
+static NSMutableDictionary *subwalletListenerMDict = [[NSMutableDictionary alloc] init];
+static MasterWalletManager *mMasterWalletManager = nil;
 
 @interface Wallet : TrinityPlugin {
     NSString *TAG; //= @"Wallet";
-    MasterWalletManager *mMasterWalletManager;// = null;
+
     NSString *mRootPath;// = null;
 
     NSString *keySuccess;//   = "success";
@@ -77,7 +79,8 @@ typedef Elastos::ElaWallet::IIDChainSubWallet IIDChainSubWallet;
 
     int errCodeWalletException         ;//   = 20000;
 }
-- (void)initialize:(TrinityPlugin*)plugin;
+
+- (void)pluginInitialize;
 - (void)coolMethod:(CDVInvokedUrlCommand *)command;
 - (void)print:(CDVInvokedUrlCommand *)command;
 - (void)getAllMasterWallets:(CDVInvokedUrlCommand *)command;
@@ -85,7 +88,7 @@ typedef Elastos::ElaWallet::IIDChainSubWallet IIDChainSubWallet;
 - (void)generateMnemonic:(CDVInvokedUrlCommand *)command;
 - (void)createSubWallet:(CDVInvokedUrlCommand *)command;
 - (void)getAllSubWallets:(CDVInvokedUrlCommand *)command;
-- (void)registerWalletListener:(CDVInvokedUrlCommand *)command :(id <CDVCommandDelegate>) delegate;
+- (void)registerWalletListener:(CDVInvokedUrlCommand *)command;
 - (void)getBalance:(CDVInvokedUrlCommand *)command;
 - (void)getBalanceInfo:(CDVInvokedUrlCommand *)command;
 - (void)getSupportedChains:(CDVInvokedUrlCommand *)command;
@@ -98,7 +101,7 @@ typedef Elastos::ElaWallet::IIDChainSubWallet IIDChainSubWallet;
 - (void)changePassword:(CDVInvokedUrlCommand *)command;
 - (void)importWalletWithKeystore:(CDVInvokedUrlCommand *)command;
 - (void)importWalletWithMnemonic:(CDVInvokedUrlCommand *)command;
-- (void)getMultiSignPubKeyWithMnemonic:(CDVInvokedUrlCommand *)command;
+//- (void)getMultiSignPubKeyWithMnemonic:(CDVInvokedUrlCommand *)command;
 - (void)createMultiSignMasterWalletWithMnemonic:(CDVInvokedUrlCommand *)command;
 - (void)createMultiSignMasterWallet:(CDVInvokedUrlCommand *)command;
 - (void)createMultiSignMasterWalletWithPrivKey:(CDVInvokedUrlCommand *)command;
