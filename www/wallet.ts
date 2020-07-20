@@ -35,36 +35,30 @@ function _exec(success, error, obj, fun, args) {
 }
 
 class WalletManagerImpl implements WalletPlugin.WalletManager {
-    print(args, success, error) {
-        exec(success, error, "Wallet", "print", args);
-    };
+    // print(args, success, error) {
+    //     exec(success, error, "Wallet", "print", args);
+    // };
 
-    recoverWallet(args, success, error) {
-        exec(success, error, "Wallet", "recoverWallet", args);
-    };
+    //MasterWalletManager
 
-    createWallet(args, success, error) {
-        exec(success, error, "Wallet", "createWallet", args);
-    };
-
-    start(args, success, error) {
-        exec(success, error, "Wallet", "start", args);
-    };
-
-    stop(args, success, error) {
-        exec(success, error, "Wallet", "stop", args);
-    };
-
-    createSubWallet(args, success, error) {
-        exec(success, error, "Wallet", "createSubWallet", args);
-    };
-
-    recoverSubWallet(args, success, error) {
-        exec(success, error, "Wallet", "createSubWallet", args);
+    generateMnemonic(args, success, error) {
+        exec(success, error, "Wallet", "generateMnemonic", args);
     };
 
     createMasterWallet(args, success, error) {
         exec(success, error, "Wallet", "createMasterWallet", args);
+    };
+
+    createMultiSignMasterWallet(args, success, error) {
+        exec(success, error, "Wallet", "createMultiSignMasterWallet", args);
+    };
+
+    createMultiSignMasterWalletWithPrivKey(args, success, error) {
+        exec(success, error, "Wallet", "createMultiSignMasterWalletWithPrivKey", args);
+    };
+
+    createMultiSignMasterWalletWithMnemonic(args, success, error) {
+        exec(success, error, "Wallet", "createMultiSignMasterWalletWithMnemonic", args);
     };
 
     importWalletWithKeystore(args, success, error) {
@@ -75,6 +69,32 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         exec(success, error, "Wallet", "importWalletWithMnemonic", args);
     };
 
+    getAllMasterWallets(args, success, error) {
+        _exec(success, error, "Wallet", "getAllMasterWallets", args);
+    };
+
+    destroyWallet(args, success, error) {
+        exec(success, error, "Wallet", "destroyWallet", args);
+    };
+
+    getVersion(args, success, error) {
+        exec(success, error, "Wallet", "getVersion", args);
+    };
+
+    //MasterWallet
+
+    getMasterWalletBasicInfo(args, success, error) {
+        _exec(success, error, "Wallet", "getMasterWalletBasicInfo", args);
+    };
+
+    getAllSubWallets(args, success, error) {
+        _exec(success, error, "Wallet", "getAllSubWallets", args);
+    };
+
+    createSubWallet(args, success, error) {
+        exec(success, error, "Wallet", "createSubWallet", args);
+    };
+
     exportWalletWithKeystore(args, success, error) {
         exec(success, error, "Wallet", "exportWalletWithKeystore", args);
     };
@@ -83,12 +103,46 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         exec(success, error, "Wallet", "exportWalletWithMnemonic", args);
     };
 
+    verifyPassPhrase(args, success, error) {
+        exec(success, error, "Wallet", "verifyPassPhrase", args);
+    };
+
+    verifyPayPassword(args, success, error) {
+        exec(success, error, "Wallet", "verifyPayPassword", args);
+    };
+
+    destroySubWallet(args, success, error) {
+        exec(success, error, "Wallet", "destroySubWallet", args);
+    };
+
+    getPubKeyInfo(args, success, error) {
+        exec(success, error, "Wallet", "getPubKeyInfo", args);
+    };
+
+    isAddressValid(args, success, error) {
+        exec(success, error, "Wallet", "isAddressValid", args);
+    };
+
+    getSupportedChains(args, success, error) {
+        exec(success, error, "Wallet", "getSupportedChains", args);
+    };
+
+    changePassword(args, success, error) {
+        exec(success, error, "Wallet", "changePassword", args);
+    };
+
+    //SubWallet
+
     syncStart(args, success, error) {
-        exec(success, error, "Wallet", "syncStart", args);
+      exec(success, error, "Wallet", "syncStart", args);
     };
 
     syncStop(args, success, error) {
         exec(success, error, "Wallet", "syncStop", args);
+    };
+
+    reSync(args, success, error) {
+        exec(success, error, "Wallet", "reSync", args);
     };
 
     getBalanceInfo(args, success, error) {
@@ -97,6 +151,10 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
 
     getBalance(args, success, error) {
         exec(success, error, "Wallet", "getBalance", args);
+    };
+
+    getBalanceWithAddress(args, success, error) {
+        exec(success, error, "Wallet", "getBalanceWithAddress", args);
     };
 
     createAddress(args, success, error) {
@@ -111,69 +169,53 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         _exec(success, error, "Wallet", "getAllPublicKeys", args);
     };
 
-    getBalanceWithAddress(args, success, error) {
-        exec(success, error, "Wallet", "getBalanceWithAddress", args);
+    createTransaction(args, success, error) {
+        exec(success, error, "Wallet", "createTransaction", args);
     };
 
-    // generateMultiSignTransaction(args, success, error) {
-    //     exec(success, error, "Wallet", "generateMultiSignTransaction", args);
-    // };
+    getAllUTXOs(args, success, error) {
+        _exec(success, error, "Wallet", "getAllUTXOs", args);
+    };
 
-    // createMultiSignAddress(args, success, error) {
-    //     exec(success, error, "Wallet", "createMultiSignAddress", args);
-    // };
+    createConsolidateTransaction(args, success, error) {
+        _exec(success, error, "Wallet", "createConsolidateTransaction", args);
+    };
+
+    signTransaction(args, success, error) {
+        exec(success, error, "Wallet", "signTransaction", args);
+    };
+
+    getTransactionSignedInfo(args, success, error) {
+        _exec(success, error, "Wallet", "getTransactionSignedInfo", args);
+    };
+
+    publishTransaction(args, success, error) {
+        _exec(success, error, "Wallet", "publishTransaction", args);
+    };
 
     getAllTransaction(args, success, error) {
         _exec(success, error, "Wallet", "getAllTransaction", args);
-    };
-
-    getAllMasterWallets(args, success, error) {
-        _exec(success, error, "Wallet", "getAllMasterWallets", args);
     };
 
     registerWalletListener(args, success, error) {
         exec(success, error, "Wallet", "registerWalletListener", args);
     };
 
-    isAddressValid(args, success, error) {
-        exec(success, error, "Wallet", "isAddressValid", args);
+    removeWalletListener(args, success, error) {
+        exec(success, error, "Wallet", "removeWalletListener", args);
     };
 
-    generateMnemonic(args, success, error) {
-        exec(success, error, "Wallet", "generateMnemonic", args);
+    //SideChainSubWallet
+
+    createWithdrawTransaction(args, success, error) {
+        exec(success, error, "Wallet", "createWithdrawTransaction", args);
     };
 
-    getSupportedChains(args, success, error) {
-        exec(success, error, "Wallet", "getSupportedChains", args);
+    getGenesisAddress(args, success, error) {
+        exec(success, error, "Wallet", "getGenesisAddress", args);
     };
 
-    getAllSubWallets(args, success, error) {
-        _exec(success, error, "Wallet", "getAllSubWallets", args);
-    };
-
-    changePassword(args, success, error) {
-        exec(success, error, "Wallet", "changePassword", args);
-    };
-
-    createTransaction(args, success, error) {
-        exec(success, error, "Wallet", "createTransaction", args);
-    };
-
-    createDID(args, success, error) {
-        exec(success, error, "Wallet", "createDID", args);
-    };
-
-    getDIDList(args, success, error) {
-        exec(success, error, "Wallet", "getDIDList", args);
-    };
-
-    destoryDID(args, success, error) {
-        exec(success, error, "Wallet", "destoryDID", args);
-    };
-
-    destroyWallet(args, success, error) {
-        exec(success, error, "Wallet", "destroyWallet", args);
-    };
+    // IDChainSubWallet
 
     createIdTransaction(args, success, error) {
         exec(success, error, "Wallet", "createIdTransaction", args);
@@ -207,98 +249,22 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         exec(success, error, "Wallet", "getPublicKeyCID", args);
     };
 
+    //MainchainSubWallet
+
     createDepositTransaction(args, success, error) {
         exec(success, error, "Wallet", "createDepositTransaction", args);
-    };
-
-    createWithdrawTransaction(args, success, error) {
-        exec(success, error, "Wallet", "createWithdrawTransaction", args);
-    };
-
-    getGenesisAddress(args, success, error) {
-        exec(success, error, "Wallet", "getGenesisAddress", args);
-    };
-
-    createMultiSignMasterWalletWithPrivKey(args, success, error) {
-        exec(success, error, "Wallet", "createMultiSignMasterWalletWithPrivKey", args);
-
-    };
-
-    createMultiSignMasterWallet(args, success, error) {
-        exec(success, error, "Wallet", "createMultiSignMasterWallet", args);
-
-    };
-
-    getMasterWalletBasicInfo(args, success, error) {
-        _exec(success, error, "Wallet", "getMasterWalletBasicInfo", args);
-    };
-
-    getAllUTXOs(args, success, error) {
-        _exec(success, error, "Wallet", "getAllUTXOs", args);
-    };
-
-    createConsolidateTransaction(args, success, error) {
-        _exec(success, error, "Wallet", "createConsolidateTransaction", args);
-    };
-
-    signTransaction(args, success, error) {
-        exec(success, error, "Wallet", "signTransaction", args);
-    };
-
-    publishTransaction(args, success, error) {
-        _exec(success, error, "Wallet", "publishTransaction", args);
-    };
-
-    createMultiSignMasterWalletWithMnemonic(args, success, error) {
-        exec(success, error, "Wallet", "createMultiSignMasterWalletWithMnemonic", args);
-    };
-
-    removeWalletListener(args, success, error) {
-        exec(success, error, "Wallet", "removeWalletListener", args);
-    };
-
-    // getMultiSignPubKeyWithMnemonic(args, success, error) {
-    //     exec(success, error, "Wallet", "getMultiSignPubKeyWithMnemonic", args);
-    // };
-
-    // getMultiSignPubKeyWithPrivKey(args, success, error) {
-    //     exec(success, error, "Wallet", "getMultiSignPubKeyWithPrivKey", args);
-    // };
-
-    getTransactionSignedSigners(args, success, error) {
-        _exec(success, error, "Wallet", "getTransactionSignedSigners", args);
-    };
-
-    // importWalletWithOldKeystore(args, success, error) {
-    //     exec(success, error, "Wallet", "importWalletWithOldKeystore", args);
-    // };
-
-    getVersion(args, success, error) {
-        exec(success, error, "Wallet", "getVersion", args);
-    };
-
-    destroySubWallet(args, success, error) {
-        exec(success, error, "Wallet", "destroySubWallet", args);
     };
 
     getVotedProducerList(args, success, error) {
         exec(success, error, "Wallet", "getVotedProducerList", args);
     };
 
-    createVoteProducerTransaction(args, success, error) {
-        exec(success, error, "Wallet", "createVoteProducerTransaction", args);
-    };
-
-    createCancelProducerTransaction(args, success, error) {
-        exec(success, error, "Wallet", "createCancelProducerTransaction", args);
-    };
-
     getRegisteredProducerInfo(args, success, error) {
         exec(success, error, "Wallet", "getRegisteredProducerInfo", args);
     };
 
-    createRegisterProducerTransaction(args, success, error) {
-        exec(success, error, "Wallet", "createRegisterProducerTransaction", args);
+    createVoteProducerTransaction(args, success, error) {
+        exec(success, error, "Wallet", "createVoteProducerTransaction", args);
     };
 
     generateProducerPayload(args, success, error) {
@@ -309,16 +275,24 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         exec(success, error, "Wallet", "generateCancelProducerPayload", args);
     };
 
-    getOwnerPublicKey(args, success, error) {
-        exec(success, error, "Wallet", "getOwnerPublicKey", args);
+    createRegisterProducerTransaction(args, success, error) {
+        exec(success, error, "Wallet", "createRegisterProducerTransaction", args);
+    };
+
+    createUpdateProducerTransaction(args, success, error) {
+        exec(success, error, "Wallet", "createUpdateProducerTransaction", args);
+    };
+
+    createCancelProducerTransaction(args, success, error) {
+        exec(success, error, "Wallet", "createCancelProducerTransaction", args);
     };
 
     createRetrieveDepositTransaction(args, success, error) {
         exec(success, error, "Wallet", "createRetrieveDepositTransaction", args);
     };
 
-    createUpdateProducerTransaction(args, success, error) {
-        exec(success, error, "Wallet", "createUpdateProducerTransaction", args);
+    getOwnerPublicKey(args, success, error) {
+        exec(success, error, "Wallet", "getOwnerPublicKey", args);
     };
 
     //CR
@@ -346,6 +320,10 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         exec(success, error, "Wallet", "createRetrieveCRDepositTransaction", args);
     };
 
+    getRegisteredCRInfo(args, success, error) {
+        exec(success, error, "Wallet", "getRegisteredCRInfo", args);
+    };
+
     createVoteCRTransaction(args, success, error) {
         exec(success, error, "Wallet", "createVoteCRTransaction", args);
     };
@@ -354,8 +332,11 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         exec(success, error, "Wallet", "getVotedCRList", args);
     };
 
-    getRegisteredCRInfo(args, success, error) {
-        exec(success, error, "Wallet", "getRegisteredCRInfo", args);
+    createVoteCRCProposalTransaction(args, success, error) {
+        exec(success, error, "Wallet", "createVoteCRCProposalTransaction", args);
+    };
+    createImpeachmentCRCTransaction(args, success, error) {
+        exec(success, error, "Wallet", "createImpeachmentCRCTransaction", args);
     };
 
     getVoteInfo(args, success, error) {
@@ -398,12 +379,6 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
     };
     createProposalWithdrawTransaction(args, success, error) {
         exec(success, error, "Wallet", "createProposalWithdrawTransaction", args);
-    };
-    createVoteCRCProposalTransaction(args, success, error) {
-        exec(success, error, "Wallet", "createVoteCRCProposalTransaction", args);
-    };
-    createImpeachmentCRCTransaction(args, success, error) {
-        exec(success, error, "Wallet", "createImpeachmentCRCTransaction", args);
     };
 }
 
