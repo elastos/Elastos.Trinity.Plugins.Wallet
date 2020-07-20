@@ -98,7 +98,10 @@ static MasterWalletManager *mMasterWalletManager = nil;
 - (void)getGenesisAddress:(CDVInvokedUrlCommand *)command;
 - (void)exportWalletWithKeystore:(CDVInvokedUrlCommand *)command;
 - (void)exportWalletWithMnemonic:(CDVInvokedUrlCommand *)command;
+- (void)verifyPassPhrase:(CDVInvokedUrlCommand *)command;
+- (void)verifyPayPassword:(CDVInvokedUrlCommand *)command;
 - (void)changePassword:(CDVInvokedUrlCommand *)command;
+- (void)getPubKeyInfo:(CDVInvokedUrlCommand *)command;
 - (void)importWalletWithKeystore:(CDVInvokedUrlCommand *)command;
 - (void)importWalletWithMnemonic:(CDVInvokedUrlCommand *)command;
 //- (void)getMultiSignPubKeyWithMnemonic:(CDVInvokedUrlCommand *)command;
@@ -161,6 +164,7 @@ static MasterWalletManager *mMasterWalletManager = nil;
 
 - (void)syncStart:(CDVInvokedUrlCommand *)command;
 - (void)syncStop:(CDVInvokedUrlCommand *)command;
+- (void)reSync:(CDVInvokedUrlCommand *)command;
 - (void)getAllDID:(CDVInvokedUrlCommand *)command;
 - (void)didSign:(CDVInvokedUrlCommand *)command;
 - (void)didSignDigest:(CDVInvokedUrlCommand *)command;

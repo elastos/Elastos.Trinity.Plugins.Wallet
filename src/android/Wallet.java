@@ -342,13 +342,13 @@ public class Wallet extends TrinityPlugin {
                 return false;
             }
             switch (action) {
-                case "coolMethod":
-                    String message = args.getString(0);
-                    this.coolMethod(message, cc);
-                    break;
-                case "print":
-                    this.print(args.getString(0), cc);
-                    break;
+                // case "coolMethod":
+                //     String message = args.getString(0);
+                //     this.coolMethod(message, cc);
+                //     break;
+                // case "print":
+                //     this.print(args.getString(0), cc);
+                //     break;
 
                 // Master wallet manager
                 case "getVersion":
@@ -404,6 +404,15 @@ public class Wallet extends TrinityPlugin {
                 case "destroySubWallet":
                     this.destroySubWallet(args, cc);
                     break;
+                case "verifyPassPhrase":
+                    this.verifyPassPhrase(args, cc);
+                    break;
+                case "verifyPayPassword":
+                    this.verifyPayPassword(args, cc);
+                    break;
+                case "getPubKeyInfo":
+                    this.getPubKeyInfo(args, cc);
+                    break;
                 case "isAddressValid":
                     this.isAddressValid(args, cc);
                     break;
@@ -420,6 +429,9 @@ public class Wallet extends TrinityPlugin {
                     break;
                 case "syncStop":
                     this.syncStop(args, cc);
+                    break;
+                case "reSync":
+                    this.reSync(args, cc);
                     break;
                 case "getBalanceInfo":
                     this.getBalanceInfo(args, cc);
@@ -451,8 +463,8 @@ public class Wallet extends TrinityPlugin {
                 case "signTransaction":
                     this.signTransaction(args, cc);
                     break;
-                case "getTransactionSignedSigners":
-                    this.getTransactionSignedSigners(args, cc);
+                case "getTransactionSignedInfo":
+                    this.getTransactionSignedInfo(args, cc);
                     break;
                 case "publishTransaction":
                     this.publishTransaction(args, cc);
@@ -1265,7 +1277,7 @@ public class Wallet extends TrinityPlugin {
             subWallet.SyncStart();
             cc.success("SyncStart OK");
         } catch (WalletException e) {
-            exceptionProcess(e, cc, "Get " + formatWalletName(masterWalletID, chainID) + " balance info");
+            exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " sync start");
         }
     }
 
@@ -1289,9 +1301,33 @@ public class Wallet extends TrinityPlugin {
             subWallet.SyncStop();
             cc.success("SyncStop OK");
         } catch (WalletException e) {
-            exceptionProcess(e, cc, "Get " + formatWalletName(masterWalletID, chainID) + " balance info");
+            exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " sync stop");
         }
     }
+
+    public void reSync(JSONArray args, CallbackContext cc) throws JSONException {
+      int idx = 0;
+
+      String masterWalletID = args.getString(idx++);
+      String chainID = args.getString(idx++);
+
+      if (args.length() != idx) {
+          errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+          return;
+      }
+
+      try {
+          SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+          if (subWallet == null) {
+              errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+              return;
+          }
+          subWallet.Resync();
+          cc.success("Resync OK");
+      } catch (WalletException e) {
+          exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " resync");
+      }
+  }
 
     // args[0]: String masterWalletID
     // args[1]: String chainID
@@ -1467,7 +1503,7 @@ public class Wallet extends TrinityPlugin {
     // args[0]: String masterWalletID
     // args[1]: String chainID
     // args[2]: String fromAddress
-    // args[3]: String toAddress
+    // args[3]: String targetAddress
     // args[4]: String amount
     // args[5]: String memo
     public void createTransaction(JSONArray args, CallbackContext cc) throws JSONException {
@@ -1476,7 +1512,7 @@ public class Wallet extends TrinityPlugin {
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         String fromAddress = args.getString(idx++);
-        String toAddress = args.getString(idx++);
+        String targetAddress = args.getString(idx++);
         String amount = args.getString(idx++);
         String memo = args.getString(idx++);
 
@@ -1492,7 +1528,7 @@ public class Wallet extends TrinityPlugin {
                 return;
             }
 
-            String tx = subWallet.CreateTransaction(fromAddress, toAddress, amount, memo);
+            String tx = subWallet.CreateTransaction(fromAddress, targetAddress, amount, memo);
 
             cc.success(tx);
         } catch (WalletException e) {
@@ -1599,7 +1635,7 @@ public class Wallet extends TrinityPlugin {
     // args[0]: String masterWalletID
     // args[1]: String chainID
     // args[2]: String txJson
-    public void getTransactionSignedSigners(JSONArray args, CallbackContext cc) throws JSONException {
+    public void getTransactionSignedInfo(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
 
         String masterWalletID = args.getString(idx++);
@@ -3299,6 +3335,62 @@ public class Wallet extends TrinityPlugin {
     }
 
     // args[0]: String masterWalletID
+    // args[1]: String passPhrase
+    // args[2]: String payPassword
+    public void verifyPassPhrase(JSONArray args, CallbackContext cc) throws JSONException {
+      int idx = 0;
+
+      String masterWalletID = args.getString(idx++);
+      String passPhrase = args.getString(idx++);
+      String payPassword = args.getString(idx++);
+
+      if (args.length() != idx) {
+          errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+          return;
+      }
+
+      try {
+          MasterWallet masterWallet = getIMasterWallet(masterWalletID);
+          if (masterWallet == null) {
+              errorProcess(cc, errCodeInvalidMasterWallet, "Get " + formatWalletName(masterWalletID));
+              return;
+          }
+
+          masterWallet.VerifyPassPhrase(passPhrase, payPassword);
+          cc.success("VerifyPassPhrase OK");
+      } catch (WalletException e) {
+          exceptionProcess(e, cc, formatWalletName(masterWalletID) + " verify passPhrase");
+      }
+    }
+
+    // args[0]: String masterWalletID
+    // args[1]: String payPassword
+    public void verifyPayPassword(JSONArray args, CallbackContext cc) throws JSONException {
+      int idx = 0;
+
+      String masterWalletID = args.getString(idx++);
+      String payPassword = args.getString(idx++);
+
+      if (args.length() != idx) {
+          errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+          return;
+      }
+
+      try {
+          MasterWallet masterWallet = getIMasterWallet(masterWalletID);
+          if (masterWallet == null) {
+              errorProcess(cc, errCodeInvalidMasterWallet, "Get " + formatWalletName(masterWalletID));
+              return;
+          }
+
+          masterWallet.VerifyPayPassword(payPassword);
+          cc.success("verify PayPassword OK");
+      } catch (WalletException e) {
+          exceptionProcess(e, cc, formatWalletName(masterWalletID) + " verify PayPassword");
+      }
+    }
+
+    // args[0]: String masterWalletID
     // args[1]: String oldPassword
     // args[2]: String newPassword
     public void changePassword(JSONArray args, CallbackContext cc) throws JSONException {
@@ -3327,28 +3419,30 @@ public class Wallet extends TrinityPlugin {
         }
     }
 
-    private JSONObject parseOneParam(String key, Object value) throws JSONException {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put(key, value);
-        return jsonObject;
-    }
+    // args[0]: String masterWalletID
+    public void getPubKeyInfo(JSONArray args, CallbackContext cc) throws JSONException {
+      int idx = 0;
 
-    private void coolMethod(String message, CallbackContext cc) {
-        if (message != null && message.length() > 0) {
-            cc.success(message);
-        } else {
-            cc.error("Expected one non-empty string argument.");
-        }
-    }
+      String masterWalletID = args.getString(idx++);
 
-    public void print(String text, CallbackContext cc) throws JSONException {
-        if (text == null) {
-            cc.error("Text not can be null");
-        } else {
-            // LogUtil.i(TAG, text);
-            cc.success(parseOneParam("text", text));
-        }
-    }
+      if (args.length() != idx) {
+          errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+          return;
+      }
+
+      try {
+          MasterWallet masterWallet = getIMasterWallet(masterWalletID);
+          if (masterWallet == null) {
+              errorProcess(cc, errCodeInvalidMasterWallet, "Get " + formatWalletName(masterWalletID));
+              return;
+          }
+
+          masterWallet.GetPubKeyInfo();
+          cc.success("GetPubKeyInfo OK");
+      } catch (WalletException e) {
+          exceptionProcess(e, cc, formatWalletName(masterWalletID) + " Get PubKey Info");
+      }
+  }
 
     // SidechainSubWallet
 
@@ -3430,4 +3524,28 @@ public class Wallet extends TrinityPlugin {
             exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " get genesis address");
         }
     }
+
+    // private JSONObject parseOneParam(String key, Object value) throws JSONException {
+    //     JSONObject jsonObject = new JSONObject();
+    //     jsonObject.put(key, value);
+    //     return jsonObject;
+    // }
+
+    // private void coolMethod(String message, CallbackContext cc) {
+    //     if (message != null && message.length() > 0) {
+    //         cc.success(message);
+    //     } else {
+    //         cc.error("Expected one non-empty string argument.");
+    //     }
+    // }
+
+    // public void print(String text, CallbackContext cc) throws JSONException {
+    //     if (text == null) {
+    //         cc.error("Text not can be null");
+    //     } else {
+    //         // LogUtil.i(TAG, text);
+    //         cc.success(parseOneParam("text", text));
+    //     }
+    // }
+
 }
