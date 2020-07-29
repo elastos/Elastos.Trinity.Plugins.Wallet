@@ -1413,6 +1413,7 @@ public class Wallet extends TrinityPlugin {
     // args[1]: String chainID
     // args[2]: int start
     // args[3]: int count
+    // args[4]: bool internal
     public void getAllAddress(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
 
@@ -1420,6 +1421,7 @@ public class Wallet extends TrinityPlugin {
         String chainID = args.getString(idx++);
         int start = args.getInt(idx++);
         int count = args.getInt(idx++);
+        boolean internal = args.getBoolean(idx++);
 
         if (args.length() != idx) {
             errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
@@ -1432,7 +1434,7 @@ public class Wallet extends TrinityPlugin {
                 errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
                 return;
             }
-            String allAddresses = subWallet.GetAllAddress(start, count);
+            String allAddresses = subWallet.GetAllAddress(start, count, internal);
             cc.success(allAddresses);
         } catch (WalletException e) {
             exceptionProcess(e, cc, "Get " + formatWalletName(masterWalletID, chainID) + " all addresses");

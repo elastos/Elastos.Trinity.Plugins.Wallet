@@ -1236,6 +1236,7 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     String chainID        = [self cstringWithString:args[idx++]];
     int start             = [args[idx++] intValue];
     int count             = [args[idx++] intValue];
+    Boolean internal      = [args[idx++] boolValue];
 
     if (args.count != idx) {
         return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
@@ -1247,7 +1248,7 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     }
 
     try {
-        Json json = subWallet->GetAllAddress(start, count);
+        Json json = subWallet->GetAllAddress(start, count, internal);
         NSString *jsonString = [self stringWithCString:json.dump()];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
