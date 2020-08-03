@@ -478,6 +478,9 @@ public class Wallet extends TrinityPlugin {
                 case "removeWalletListener":
                     this.removeWalletListener(args, cc);
                     break;
+                case "getLastBlockInfo":
+                    this.getLastBlockInfo(args, cc);
+                    break;
 
                 // ID chain subwallet
                 case "createIdTransaction":
@@ -1734,6 +1737,33 @@ public class Wallet extends TrinityPlugin {
     public void removeWalletListener(JSONArray args, CallbackContext cc) {
         subwalletListenerMap.remove(did + modeId);
         cc.success("remove listener");
+    }
+
+    // args[0]: String masterWalletID
+    // args[1]: String chainID
+    public void getLastBlockInfo(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+
+        String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+                return;
+            }
+
+            String txJson = subWallet.GetLastBlockInfo();
+            cc.success(txJson);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, "Get " + formatWalletName(masterWalletID, chainID) + " Last Block Info");
+        }
     }
 
     // args[0]: String masterWalletID

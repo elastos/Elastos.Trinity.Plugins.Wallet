@@ -94,6 +94,7 @@ static MasterWalletManager *mMasterWalletManager = nil;
 - (void)getSupportedChains:(CDVInvokedUrlCommand *)command;
 - (void)getMasterWalletBasicInfo:(CDVInvokedUrlCommand *)command;
 - (void)getAllTransaction:(CDVInvokedUrlCommand *)command;
+- (void)getLastBlockInfo:(CDVInvokedUrlCommand *)command;
 - (void)createAddress:(CDVInvokedUrlCommand *)command;
 - (void)getGenesisAddress:(CDVInvokedUrlCommand *)command;
 - (void)exportWalletWithKeystore:(CDVInvokedUrlCommand *)command;

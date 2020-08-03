@@ -205,6 +205,10 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         exec(success, error, "Wallet", "removeWalletListener", args);
     };
 
+    getLastBlockInfo(args, success, error) {
+        _exec(success, error, "Wallet", "getLastBlockInfo", args);
+    };
+
     //SideChainSubWallet
 
     createWithdrawTransaction(args, success, error) {
