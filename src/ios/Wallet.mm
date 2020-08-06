@@ -874,7 +874,7 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     }
 
     try {
-        Json json = subWallet->getLastBlockInfo();
+        Json json = subWallet->GetLastBlockInfo();
         NSString *jsonString = [self stringWithCString:json.dump()];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
