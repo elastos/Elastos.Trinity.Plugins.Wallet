@@ -131,6 +131,10 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         exec(success, error, "Wallet", "changePassword", args);
     };
 
+    resetPassword(args, success, error) {
+        exec(success, error, "Wallet", "resetPassword", args);
+    };
+
     //SubWallet
 
     syncStart(args, success, error) {
@@ -253,6 +257,16 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         exec(success, error, "Wallet", "getPublicKeyCID", args);
     };
 
+    //ETHSideChainSubWallet
+
+    createTransfer(args, success, error) {
+        exec(success, error, "Wallet", "createTransfer", args);
+    };
+
+    createTransferGeneric(args, success, error) {
+        exec(success, error, "Wallet", "CreateTransferGeneric", args);
+    };
+
     //MainchainSubWallet
 
     createDepositTransaction(args, success, error) {
@@ -326,6 +340,14 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
 
     getRegisteredCRInfo(args, success, error) {
         exec(success, error, "Wallet", "getRegisteredCRInfo", args);
+    };
+
+    CRCouncilMemberClaimNodeDigest(args, success, error) {
+        exec(success, error, "Wallet", "CRCouncilMemberClaimNodeDigest", args);
+    };
+
+    createCRCouncilMemberClaimNodeTransaction(args, success, error) {
+        exec(success, error, "Wallet", "createCRCouncilMemberClaimNodeTransaction", args);
     };
 
     createVoteCRTransaction(args, success, error) {
