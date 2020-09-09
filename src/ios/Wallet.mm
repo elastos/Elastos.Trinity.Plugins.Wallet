@@ -98,7 +98,7 @@ CDVPluginResult *ElISubWalletCallback::successAsString(NSString* str)
 CDVPluginResult *ElISubWalletCallback::errorProcess(int code, id msg)
 {
     NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
-    [dict setValue:[NSNumber numberWithInteger:code] forKey:keyCode];
+    [dict setValue:[NSNumber numberWithInt:code] forKey:keyCode];
     [dict setValue:msg forKey:keyMessage];
 
     CDVPluginResult* pluginResult = nil;
@@ -301,7 +301,7 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
 - (void)errorProcess:(CDVInvokedUrlCommand *)command  code : (int) code msg:(id) msg
 {
     NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
-    [dict setValue:[NSNumber numberWithInteger:code] forKey:keyCode];
+    [dict setValue:[NSNumber numberWithInt:code] forKey:keyCode];
     [dict setValue:msg forKey:keyMessage];
 
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:dict];
