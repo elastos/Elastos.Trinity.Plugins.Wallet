@@ -70,6 +70,8 @@ public class Wallet extends TrinityPlugin {
     public static final String IDChain = "IDChain";
     public static final String ETHSC = "ETHSC";
 
+    private String jsonrpcUrl = "";
+
     private int errCodeParseJsonInAction = 10000;
     private int errCodeInvalidArg = 10001;
     private int errCodeInvalidMasterWallet = 10002;
@@ -185,6 +187,7 @@ public class Wallet extends TrinityPlugin {
         String config = PreferenceManager.getShareInstance().getWalletNetworkConfig();
         mMasterWalletManager = new MasterWalletManager(rootPath, netType, config, dataPath);
 
+        jsonrpcUrl = PreferenceManager.getShareInstance().getStringValue("sidechain.eth.rpcapi", "");
         addWalletListener();
     }
 
@@ -209,7 +212,7 @@ public class Wallet extends TrinityPlugin {
             return;
         }
         Log.d(TAG, "addSubWalletListener:" + masterWalletID + " " + chainID);
-        subWallet.AddCallback(new SubWalletCallback(masterWalletID, chainID, new ISubWalletListener() {
+        subWallet.AddCallback(new SubWalletCallback(masterWalletID, chainID, jsonrpcUrl, new ISubWalletListener() {
             @Override
             public void sendResultSuccess(JSONObject jsonObject) {
                 Log.d(TAG, jsonObject.toString());
