@@ -67,10 +67,16 @@ declare module WalletPlugin {
         maxType
     }
 
-    interface WalletManager {
-        // TODO: define types for all arguments and callback parameters
-        // print(args, success, error);
+    const enum EthereumAmountUnit {
+        TOKEN_DECIMAL = 0,
+        TOKEN_INTEGER = 1,
 
+        ETHER_WEI = 0,
+        ETHER_GWEI = 3,
+        ETHER_ETHER = 6,
+    }
+
+    interface WalletManager {
         //MasterWalletManager
 
         /**
