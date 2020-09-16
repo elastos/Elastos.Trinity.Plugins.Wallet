@@ -525,6 +525,9 @@ public class Wallet extends TrinityPlugin {
                 case "createTransferGeneric":
                     this.createTransferGeneric(args, cc);
                     break;
+                case "deleteTransfer":
+                    this.deleteTransfer(args, cc);
+                    break;
 
                 // Main chain subwallet
                 case "createDepositTransaction":
@@ -2086,7 +2089,34 @@ public class Wallet extends TrinityPlugin {
             }
             cc.success(ethscSubWallet.CreateTransferGeneric(targetAddress, amount, amountUnit, gasPrice, gasPriceUnit, gasLimit, data));
         } catch (WalletException e) {
-            exceptionProcess(e, cc, formatWalletName(masterWalletID, ETHSC) + " create transfer");
+            exceptionProcess(e, cc, formatWalletName(masterWalletID, ETHSC) + " create transfer generic");
+        }
+    }
+
+    // args[0]: String masterWalletID
+    // args[1]: String tx: json object, must have ID
+    public void deleteTransfer(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+
+        String masterWalletID = args.getString(idx++);
+        String targetAddress = args.getString(idx++);
+        String tx = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            EthSidechainSubWallet ethscSubWallet = getEthChainSubWallet(masterWalletID);
+            if (ethscSubWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, ETHSC));
+                return;
+            }
+            ethscSubWallet.DeleteTransfer(tx);
+            cc.success("DeleteTransfer OK");
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, formatWalletName(masterWalletID, ETHSC) + " delete transfer");
         }
     }
 

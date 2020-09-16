@@ -600,6 +600,14 @@ declare module WalletPlugin {
          */
         createTransferGeneric(args, success, error);
 
+        /**
+         *
+         * @param masterWalletID is the unique identification of a master wallet object.
+         * @param tx  The transaction in JSON format.(must have ID)
+         * @return
+         */
+        deleteTransfer(args, success, error);
+
         //MainchainSubWallet
 
         /**

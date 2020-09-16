@@ -267,6 +267,10 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         exec(success, error, "Wallet", "createTransferGeneric", args);
     };
 
+    deleteTransfer(args, success, error) {
+        exec(success, error, "Wallet", "deleteTransfer", args);
+    };
+
     //MainchainSubWallet
 
     createDepositTransaction(args, success, error) {
