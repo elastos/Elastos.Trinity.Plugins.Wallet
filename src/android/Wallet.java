@@ -2099,7 +2099,6 @@ public class Wallet extends TrinityPlugin {
         int idx = 0;
 
         String masterWalletID = args.getString(idx++);
-        String targetAddress = args.getString(idx++);
         String tx = args.getString(idx++);
 
         if (args.length() != idx) {
