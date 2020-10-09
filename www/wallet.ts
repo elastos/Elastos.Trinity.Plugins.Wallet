@@ -271,24 +271,45 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         exec(success, error, "Wallet", "deleteTransfer", args);
     };
 
+    getTokenTransactions(args, success, error) {
+        exec(success, error, "Wallet", "getTokenTransactions", args);
+    };
+
     //MainchainSubWallet
 
     createDepositTransaction(args, success, error) {
         exec(success, error, "Wallet", "createDepositTransaction", args);
     };
 
-    getVotedProducerList(args, success, error) {
-        exec(success, error, "Wallet", "getVotedProducerList", args);
-    };
-
-    getRegisteredProducerInfo(args, success, error) {
-        exec(success, error, "Wallet", "getRegisteredProducerInfo", args);
-    };
-
+    // Vote
     createVoteProducerTransaction(args, success, error) {
         exec(success, error, "Wallet", "createVoteProducerTransaction", args);
     };
 
+    createVoteCRTransaction(args, success, error) {
+        exec(success, error, "Wallet", "createVoteCRTransaction", args);
+    };
+
+    createVoteCRCProposalTransaction(args, success, error) {
+        exec(success, error, "Wallet", "createVoteCRCProposalTransaction", args);
+    };
+    createImpeachmentCRCTransaction(args, success, error) {
+        exec(success, error, "Wallet", "createImpeachmentCRCTransaction", args);
+    };
+
+    getVotedProducerList(args, success, error) {
+        exec(success, error, "Wallet", "getVotedProducerList", args);
+    };
+
+    getVotedCRList(args, success, error) {
+        exec(success, error, "Wallet", "getVotedCRList", args);
+    };
+
+    getVoteInfo(args, success, error) {
+        exec(success, error, "Wallet", "getVoteInfo", args);
+    };
+
+    // Producer
     generateProducerPayload(args, success, error) {
         exec(success, error, "Wallet", "generateProducerPayload", args);
     };
@@ -317,7 +338,11 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         exec(success, error, "Wallet", "getOwnerPublicKey", args);
     };
 
-    //CR
+    getRegisteredProducerInfo(args, success, error) {
+        exec(success, error, "Wallet", "getRegisteredProducerInfo", args);
+    };
+
+    //CRC
     generateCRInfoPayload(args, success, error) {
         _exec(success, error, "Wallet", "generateCRInfoPayload", args);
     };
@@ -354,26 +379,7 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         exec(success, error, "Wallet", "createCRCouncilMemberClaimNodeTransaction", args);
     };
 
-    createVoteCRTransaction(args, success, error) {
-        exec(success, error, "Wallet", "createVoteCRTransaction", args);
-    };
-
-    getVotedCRList(args, success, error) {
-        exec(success, error, "Wallet", "getVotedCRList", args);
-    };
-
-    createVoteCRCProposalTransaction(args, success, error) {
-        exec(success, error, "Wallet", "createVoteCRCProposalTransaction", args);
-    };
-    createImpeachmentCRCTransaction(args, success, error) {
-        exec(success, error, "Wallet", "createImpeachmentCRCTransaction", args);
-    };
-
-    getVoteInfo(args, success, error) {
-        exec(success, error, "Wallet", "getVoteInfo", args);
-    };
-
-    //Proposal
+    // Proposal
     proposalOwnerDigest(args, success, error) {
         exec(success, error, "Wallet", "proposalOwnerDigest", args);
     };
@@ -392,6 +398,8 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
     createProposalReviewTransaction(args, success, error) {
         exec(success, error, "Wallet", "createProposalReviewTransaction", args);
     };
+
+    // Proposal Tracking
     proposalTrackingOwnerDigest(args, success, error) {
         exec(success, error, "Wallet", "proposalTrackingOwnerDigest", args);
     };
@@ -404,6 +412,41 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
     createProposalTrackingTransaction(args, success, error) {
         exec(success, error, "Wallet", "createProposalTrackingTransaction", args);
     };
+
+    // Proposal Secretary General Election
+    proposalSecretaryGeneralElectionDigest(args, success, error) {
+        exec(success, error, "Wallet", "proposalSecretaryGeneralElectionDigest", args);
+    };
+    proposalSecretaryGeneralElectionCRCouncilMemberDigest(args, success, error) {
+        exec(success, error, "Wallet", "proposalSecretaryGeneralElectionCRCouncilMemberDigest", args);
+    };
+    createSecretaryGeneralElectionTransaction(args, success, error) {
+        exec(success, error, "Wallet", "createSecretaryGeneralElectionTransaction", args);
+    };
+
+    // Proposal Change Owner
+    proposalChangeOwnerDigest(args, success, error) {
+        exec(success, error, "Wallet", "proposalChangeOwnerDigest", args);
+    };
+    proposalChangeOwnerCRCouncilMemberDigest(args, success, error) {
+        exec(success, error, "Wallet", "proposalChangeOwnerCRCouncilMemberDigest", args);
+    };
+    createProposalChangeOwnerTransaction(args, success, error) {
+        exec(success, error, "Wallet", "createProposalChangeOwnerTransaction", args);
+    };
+
+    // Proposal Terminate Proposal
+    terminateProposalOwnerDigest(args, success, error) {
+        exec(success, error, "Wallet", "terminateProposalOwnerDigest", args);
+    };
+    terminateProposalCRCouncilMemberDigest(args, success, error) {
+        exec(success, error, "Wallet", "terminateProposalCRCouncilMemberDigest", args);
+    };
+    createTerminateProposalTransaction(args, success, error) {
+        exec(success, error, "Wallet", "createTerminateProposalTransaction", args);
+    };
+
+    // Proposal Withdraw
     proposalWithdrawDigest(args, success, error) {
         exec(success, error, "Wallet", "proposalWithdrawDigest", args);
     };

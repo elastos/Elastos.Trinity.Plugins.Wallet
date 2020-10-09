@@ -21,6 +21,7 @@
  */
 
 #import "Wallet.h"
+#import "WalletHttprequest.h"
 #import <Cordova/CDVCommandDelegate.h>
 #import "WrapSwift.h"
 
@@ -30,7 +31,7 @@ using namespace Elastos::ElaWallet;
 class ElISubWalletCallback: public ISubWalletCallback
 {
 public:
-    ElISubWalletCallback(String &masterWalletID, String &chainID, NSMutableDictionary *commandDict);
+    ElISubWalletCallback(String &masterWalletID, String &chainID, String &ethscRPC, String &ethscApiMisc, NSMutableDictionary *commandDict);
 
     ~ElISubWalletCallback();
 
@@ -48,22 +49,39 @@ public:
     void OnConnectStatusChanged(const std::string &status);
     void OnETHSCEventHandled(const nlohmann::json &event);
 
+    nlohmann::json GasPrice(int id);
+    nlohmann::json EstimateGas(const std::string &from, const std::string &to, const std::string &amount,
+            const std::string &gasPrice, const std::string &data, int id);
+    nlohmann::json GetBalance(const std::string &address, int id);
+    nlohmann::json SubmitTransaction(const std::string &tx, int id);
+    nlohmann::json GetTransactions(const std::string &address, uint64_t begBlockNumber, uint64_t endBlockNumber, int id);
+    nlohmann::json GetLogs(const std::string &contract, const std::string &address, const std::string &event, uint64_t begBlockNumber, uint64_t endBlockNumber, int id);
+    nlohmann::json GetTokens(int id);
+    nlohmann::json GetBlockNumber(int id);
+    nlohmann::json GetNonce(const std::string &address, int id);
+
+
 private:
     NSString * mMasterWalletID;
     NSString * mSubWalletID;
     NSMutableDictionary *mCommandDict;
+    WalletHttprequest *mHttprequest;
+
     NSString *keySuccess;//   = @"success";
     NSString *keyError;//     = "error";
     NSString *keyCode;//      = "code";
     NSString *keyMessage;//   = "message";
     NSString *keyException;// = "exception";
 };
+
 ElISubWalletCallback::ElISubWalletCallback(String &masterWalletID,
-                                           String &chainID, NSMutableDictionary *commandDict)
+                                           String &chainID, String &ethscRPC, String &ethscApiMisc, NSMutableDictionary *commandDict)
 {
     mMasterWalletID = [NSString stringWithCString:masterWalletID.c_str() encoding:NSUTF8StringEncoding];
     mSubWalletID = [NSString stringWithCString:chainID.c_str() encoding:NSUTF8StringEncoding];
     mCommandDict = commandDict;
+
+    mHttprequest = new WalletHttprequest(ethscRPC, ethscApiMisc);
 
     keySuccess   = @"success";
     keyError     = @"error";
@@ -128,7 +146,7 @@ void ElISubWalletCallback::OnTransactionStatusChanged(const std::string &txid,
 
 void ElISubWalletCallback::OnBlockSyncProgress(const nlohmann::json &progressInfo)
 {
-    NSLog(@" ----OnBlockSyncProgress ----\n");
+//    NSLog(@" ----OnBlockSyncProgress ----\n");
 
     NSString *progressInfoString = [NSString stringWithCString:progressInfo.dump().c_str() encoding:NSUTF8StringEncoding];
 
@@ -202,6 +220,61 @@ void ElISubWalletCallback::OnETHSCEventHandled(const nlohmann::json &event)
     [dict setValue:@"OnETHSCEventHandled" forKey:@"Action"];
 
     SendPluginResult(dict);
+}
+
+nlohmann::json ElISubWalletCallback::GasPrice(int id)
+{
+    NSLog(@" ----GetBlockNumber ----id: %d\n", id);
+    return mHttprequest->GasPrice(id);
+}
+
+nlohmann::json ElISubWalletCallback::EstimateGas(const std::string &from, const std::string &to, const std::string &amount,
+            const std::string &gasPrice, const std::string &data, int id)
+{
+    NSLog(@" ----EstimateGas ----\n");
+    return mHttprequest->EstimateGas(from, to, amount, gasPrice, data, id);
+}
+
+nlohmann::json ElISubWalletCallback::GetBalance(const std::string &address, int id)
+{
+    NSLog(@" ----GetBalance ----\n");
+    return mHttprequest->GetBalance(address, id);
+}
+
+nlohmann::json ElISubWalletCallback::SubmitTransaction(const std::string &tx, int id)
+{
+    NSLog(@" ----SubmitTransaction ----\n");
+    return mHttprequest->SubmitTransaction(tx, id);
+}
+
+nlohmann::json ElISubWalletCallback::GetTransactions(const std::string &address, uint64_t begBlockNumber, uint64_t endBlockNumber, int id)
+{
+    NSLog(@" ----GetTransactions ----\n");
+    return mHttprequest->GetTransactions(address, begBlockNumber, endBlockNumber, id);
+}
+
+nlohmann::json ElISubWalletCallback::GetLogs(const std::string &contract, const std::string &address, const std::string &event, uint64_t begBlockNumber, uint64_t endBlockNumber, int id)
+{
+    NSLog(@" ----GetLogs ----\n");
+    return mHttprequest->GetLogs(contract, address, event, begBlockNumber, endBlockNumber, id);
+}
+
+nlohmann::json ElISubWalletCallback::GetTokens(int id)
+{
+    NSLog(@" ----GetTokens ----\n");
+    return mHttprequest->GetTokens(id);
+}
+
+nlohmann::json ElISubWalletCallback::GetBlockNumber(int id)
+{
+    NSLog(@" ----GetBlockNumber ----\n");
+    return mHttprequest->GetBlockNumber(id);
+}
+
+nlohmann::json ElISubWalletCallback::GetNonce(const std::string &address, int id)
+{
+    NSLog(@" ----GetNonce ----\n");
+    return mHttprequest->GetNonce(address, id);
 }
 
 void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
@@ -475,7 +548,7 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
 
     errCodeWalletException            = 20000;
 
-    // NSString* rootPath = [NSHomeDirectory() stringByAppendingString:@"/Documents/spv"];
+    //  NSString* rootPath = [NSHomeDirectory() stringByAppendingString:@"/Documents/spv"];
     NSString* rootPath = [[self getDataPath] stringByAppendingString:@"spv"];
     NSFileManager *fm = [NSFileManager defaultManager];
     if (![fm fileExistsAtPath:rootPath]) {
@@ -488,6 +561,9 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     }
     NSString* netType = [WrapSwift getWalletNetworkType];
     NSString* config = [WrapSwift getWalletNetworkConfig];
+
+    mEthscjsonrpcUrl = [self cstringWithString:[WrapSwift getPreferenceStringValue:@"sidechain.eth.rpcapi" :@""]];
+    mEthscapimiscUrl = [self cstringWithString:[WrapSwift getPreferenceStringValue:@"sidechain.eth.apimisc" :@""]];
 
     try {
         mMasterWalletManager = new MasterWalletManager([rootPath UTF8String], [netType UTF8String],
@@ -559,7 +635,7 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
         return;
     }
 
-    ElISubWalletCallback *subCallback =  new ElISubWalletCallback(masterWalletID, chainID, subwalletListenerMDict);
+    ElISubWalletCallback *subCallback =  new ElISubWalletCallback(masterWalletID, chainID, mEthscjsonrpcUrl, mEthscapimiscUrl, subwalletListenerMDict);
     subWallet->AddCallback(subCallback);
 }
 
@@ -2237,6 +2313,71 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     }
 }
 
+- (void)CRCouncilMemberClaimNodeDigest:(CDVInvokedUrlCommand *)command
+{
+    int idx = 0;
+    NSArray *args = command.arguments;
+
+    String masterWalletID = [self cstringWithString:args[idx++]];
+    String chainID        = [self cstringWithString:args[idx++]];
+    String payload        = [self cstringWithString:args[idx++]];
+
+    if (args.count != idx) {
+        return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
+    }
+    ISubWallet *subWallet = [self getSubWallet:masterWalletID :chainID];
+    if (subWallet == nil) {
+        NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletNameWithString:masterWalletID other:chainID]];
+        return [self errorProcess:command code:errCodeInvalidSubWallet msg:msg];
+    }
+    IMainchainSubWallet *mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(subWallet);
+    if(mainchainSubWallet == nil) {
+        NSString *msg = [NSString stringWithFormat:@"%@ %@", [self formatWalletNameWithString:masterWalletID other:chainID], @" is not instance of IMainchainSubWallet"];
+        return [self errorProcess:command code:errCodeSubWalletInstance msg:msg];
+    }
+
+    try {
+        Json txJson =  mainchainSubWallet->CRCouncilMemberClaimNodeDigest(payload);
+        NSString *jsonString = [self stringWithJson:txJson];
+        return [self successAsString:command msg:jsonString];
+    } catch (const std:: exception &e) {
+        return [self exceptionProcess:command string:e.what()];
+    }
+}
+
+- (void)createCRCouncilMemberClaimNodeTransaction:(CDVInvokedUrlCommand *)command
+{
+    int idx = 0;
+    NSArray *args = command.arguments;
+
+    String masterWalletID = [self cstringWithString:args[idx++]];
+    String chainID        = [self cstringWithString:args[idx++]];
+    String payload        = [self cstringWithString:args[idx++]];
+    String memo           = [self cstringWithString:args[idx++]];
+
+    if (args.count != idx) {
+        return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
+    }
+    ISubWallet *subWallet = [self getSubWallet:masterWalletID :chainID];
+    if (subWallet == nil) {
+        NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletNameWithString:masterWalletID other:chainID]];
+        return [self errorProcess:command code:errCodeInvalidSubWallet msg:msg];
+    }
+    IMainchainSubWallet *mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(subWallet);
+    if(mainchainSubWallet == nil) {
+        NSString *msg = [NSString stringWithFormat:@"%@ %@", [self formatWalletNameWithString:masterWalletID other:chainID], @" is not instance of IMainchainSubWallet"];
+        return [self errorProcess:command code:errCodeSubWalletInstance msg:msg];
+    }
+
+    try {
+        Json txJson =  mainchainSubWallet->CreateCRCouncilMemberClaimNodeTransaction(payload, memo);
+        NSString *jsonString = [self stringWithJson:txJson];
+        return [self successAsString:command msg:jsonString];
+    } catch (const std:: exception &e) {
+        return [self exceptionProcess:command string:e.what()];
+    }
+}
+
 - (void)createVoteCRTransaction:(CDVInvokedUrlCommand *)command
 {
     int idx = 0;
@@ -2695,9 +2836,6 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
 
     String masterWalletID   = [self cstringWithString:args[idx++]];
     String chainID          = [self cstringWithString:args[idx++]];
-    String recipient        = [self cstringWithString:args[idx++]];
-    String amount           = [self cstringWithString:args[idx++]];
-    String utxo             = [self cstringWithString:args[idx++]];
     String payload          = [self cstringWithString:args[idx++]];
     String memo             = [self cstringWithString:args[idx++]];
 
@@ -2716,7 +2854,7 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     }
 
     try {
-        Json stringJson = mainchainSubWallet->CreateProposalWithdrawTransaction(recipient, amount, utxo, payload, memo);
+        Json stringJson = mainchainSubWallet->CreateProposalWithdrawTransaction(payload, memo);
         NSString *jsonString = [self stringWithJson:stringJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
@@ -2825,6 +2963,54 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     } catch (const std:: exception &e) {
         return [self exceptionProcess:command string:e.what()];
     }
+}
+
+// Proposal Secretary General Election
+- (void)proposalSecretaryGeneralElectionDigest:(CDVInvokedUrlCommand *)command
+{
+    return [self exceptionProcess:command string:"TODO"];
+}
+
+- (void)proposalSecretaryGeneralElectionCRCouncilMemberDigest:(CDVInvokedUrlCommand *)command
+{
+    return [self exceptionProcess:command string:"TODO"];
+}
+
+- (void)createSecretaryGeneralElectionTransaction:(CDVInvokedUrlCommand *)command
+{
+    return [self exceptionProcess:command string:"TODO"];
+}
+
+// Proposal Change Owner
+- (void)proposalChangeOwnerDigest:(CDVInvokedUrlCommand *)command
+{
+    return [self exceptionProcess:command string:"TODO"];
+}
+
+- (void)proposalChangeOwnerCRCouncilMemberDigest:(CDVInvokedUrlCommand *)command
+{
+    return [self exceptionProcess:command string:"TODO"];
+}
+
+- (void)createProposalChangeOwnerTransaction:(CDVInvokedUrlCommand *)command
+{
+    return [self exceptionProcess:command string:"TODO"];
+}
+
+// Proposal Terminate Proposal
+- (void)terminateProposalOwnerDigest:(CDVInvokedUrlCommand *)command
+{
+    return [self exceptionProcess:command string:"TODO"];
+}
+
+- (void)terminateProposalCRCouncilMemberDigest:(CDVInvokedUrlCommand *)command
+{
+    return [self exceptionProcess:command string:"TODO"];
+}
+
+- (void)createTerminateProposalTransaction:(CDVInvokedUrlCommand *)command
+{
+    return [self exceptionProcess:command string:"TODO"];
 }
 
 - (void)syncStart:(CDVInvokedUrlCommand *)command
@@ -3015,7 +3201,7 @@ String const IDChain = "IDChain";
     int idx = 0;
 
     String masterWalletID = [self cstringWithString:args[idx++]];
-    String publicKey            = [self cstringWithString:args[idx++]];
+    String publicKey      = [self cstringWithString:args[idx++]];
 
     if (args.count != idx) {
         return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
@@ -3030,6 +3216,125 @@ String const IDChain = "IDChain";
         String ret = idChainSubWallet->GetPublicKeyDID(publicKey);
         NSString *jsonString = [self stringWithJson:ret];
         return [self successAsString:command msg:jsonString];
+    } catch (const std:: exception &e) {
+        return [self exceptionProcess:command string:e.what()];
+    }
+}
+
+- (void)getPublicKeyCID:(CDVInvokedUrlCommand *)command
+{
+    NSArray *args = command.arguments;
+    int idx = 0;
+
+    String masterWalletID = [self cstringWithString:args[idx++]];
+    String publicKey      = [self cstringWithString:args[idx++]];
+
+    if (args.count != idx) {
+        return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
+    }
+    IIDChainSubWallet* idChainSubWallet = [self getIDChainSubWallet:masterWalletID];
+    if (idChainSubWallet == nil) {
+        NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletNameWithString:masterWalletID other:IDChain]];
+        return [self errorProcess:command code:errCodeInvalidSubWallet msg:msg];
+    }
+
+    try {
+        String ret = idChainSubWallet->GetPublicKeyCID(publicKey);
+        NSString *jsonString = [self stringWithJson:ret];
+        return [self successAsString:command msg:jsonString];
+    } catch (const std:: exception &e) {
+        return [self exceptionProcess:command string:e.what()];
+    }
+}
+
+String const ETHSC = "ETHSC";
+
+- (IEthSidechainSubWallet*) getEthSidechainSubWallet:(String)masterWalletID {
+     ISubWallet* subWallet = [self getSubWallet:masterWalletID :IDChain];
+
+    return dynamic_cast<IEthSidechainSubWallet *>(subWallet);
+ }
+
+- (void)createTransfer:(CDVInvokedUrlCommand *)command
+{
+    NSArray *args = command.arguments;
+    int idx = 0;
+
+    String masterWalletID = [self cstringWithString:args[idx++]];
+    String targetAddress  = [self cstringWithString:args[idx++]];
+    String amount         = [self cstringWithString:args[idx++]];
+    int amountUnit        = [args[idx++] intValue];
+
+    if (args.count != idx) {
+        return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
+    }
+    IEthSidechainSubWallet* ethscSubWallet = [self getEthSidechainSubWallet:masterWalletID];
+    if (ethscSubWallet == nil) {
+        NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletNameWithString:masterWalletID other:ETHSC]];
+        return [self errorProcess:command code:errCodeInvalidSubWallet msg:msg];
+    }
+
+    try {
+        String ret = ethscSubWallet->CreateTransfer(targetAddress, amount, amountUnit);
+        NSString *jsonString = [self stringWithJson:ret];
+        return [self successAsString:command msg:jsonString];
+    } catch (const std:: exception &e) {
+        return [self exceptionProcess:command string:e.what()];
+    }
+}
+
+- (void)createTransferGeneric:(CDVInvokedUrlCommand *)command
+{
+    NSArray *args = command.arguments;
+    int idx = 0;
+
+    String masterWalletID = [self cstringWithString:args[idx++]];
+    String targetAddress  = [self cstringWithString:args[idx++]];
+    String amount         = [self cstringWithString:args[idx++]];
+    int amountUnit        = [args[idx++] intValue];
+    String gasPrice       = [self cstringWithString:args[idx++]];
+    int gasPriceUnit      = [args[idx++] intValue];
+    String gasLimit       = [self cstringWithString:args[idx++]];
+    String data           = [self cstringWithString:args[idx++]];
+
+    if (args.count != idx) {
+        return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
+    }
+    IEthSidechainSubWallet* ethscSubWallet = [self getEthSidechainSubWallet:masterWalletID];
+    if (ethscSubWallet == nil) {
+        NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletNameWithString:masterWalletID other:ETHSC]];
+        return [self errorProcess:command code:errCodeInvalidSubWallet msg:msg];
+    }
+
+    try {
+        String ret = ethscSubWallet->CreateTransferGeneric(targetAddress, amount, amountUnit, gasPrice, gasPriceUnit, gasLimit, data);
+        NSString *jsonString = [self stringWithJson:ret];
+        return [self successAsString:command msg:jsonString];
+    } catch (const std:: exception &e) {
+        return [self exceptionProcess:command string:e.what()];
+    }
+}
+
+- (void)deleteTransfer:(CDVInvokedUrlCommand *)command
+{
+    NSArray *args = command.arguments;
+    int idx = 0;
+
+    String masterWalletID = [self cstringWithString:args[idx++]];
+    String tx             = [self cstringWithString:args[idx++]];
+
+    if (args.count != idx) {
+        return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
+    }
+    IEthSidechainSubWallet* ethscSubWallet = [self getEthSidechainSubWallet:masterWalletID];
+    if (ethscSubWallet == nil) {
+        NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletNameWithString:masterWalletID other:ETHSC]];
+        return [self errorProcess:command code:errCodeInvalidSubWallet msg:msg];
+    }
+
+    try {
+        ethscSubWallet->DeleteTransfer(tx);
+        return [self successAsString:command msg:@"DeleteTransfer OK"];
     } catch (const std:: exception &e) {
         return [self exceptionProcess:command string:e.what()];
     }

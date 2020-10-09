@@ -27,6 +27,7 @@
 #import "ISidechainSubWallet.h"
 #import "IMainchainSubWallet.h"
 #import "IIDChainSubWallet.h"
+#import "IEthSidechainSubWallet.h"
 #import <string.h>
 #import <map>
 #import "TrinityPlugin.h"
@@ -54,6 +55,9 @@ static MasterWalletManager *mMasterWalletManager = nil;
     NSString *TAG; //= @"Wallet";
 
     NSString *mRootPath;// = null;
+    // for ethsc http request
+    String mEthscjsonrpcUrl;
+    String mEthscapimiscUrl;
 
     NSString *keySuccess;//   = "success";
     NSString *keyError;//     = "error";
@@ -105,26 +109,37 @@ static MasterWalletManager *mMasterWalletManager = nil;
 - (void)getPubKeyInfo:(CDVInvokedUrlCommand *)command;
 - (void)importWalletWithKeystore:(CDVInvokedUrlCommand *)command;
 - (void)importWalletWithMnemonic:(CDVInvokedUrlCommand *)command;
-//- (void)getMultiSignPubKeyWithMnemonic:(CDVInvokedUrlCommand *)command;
 - (void)createMultiSignMasterWalletWithMnemonic:(CDVInvokedUrlCommand *)command;
 - (void)createMultiSignMasterWallet:(CDVInvokedUrlCommand *)command;
 - (void)createMultiSignMasterWalletWithPrivKey:(CDVInvokedUrlCommand *)command;
 - (void)getAllAddress:(CDVInvokedUrlCommand *)command;
 - (void)getAllPublicKeys:(CDVInvokedUrlCommand *)command;
 - (void)isAddressValid:(CDVInvokedUrlCommand *)command;
-- (void)createDepositTransaction:(CDVInvokedUrlCommand *)command;
 - (void)destroyWallet:(CDVInvokedUrlCommand *)command;
 - (void)createTransaction:(CDVInvokedUrlCommand *)command;
 - (void)getAllUTXOs:(CDVInvokedUrlCommand *)command;
 - (void)signTransaction:(CDVInvokedUrlCommand *)command;
 - (void)publishTransaction:(CDVInvokedUrlCommand *)command;
-- (void)getTransactionSignedSigners:(CDVInvokedUrlCommand *)command;
+- (void)GetTransactionSignedInfo:(CDVInvokedUrlCommand *)command;
 - (void)removeWalletListener:(CDVInvokedUrlCommand *)command;
 - (void)createIdTransaction:(CDVInvokedUrlCommand *)command;
 - (void)createWithdrawTransaction:(CDVInvokedUrlCommand *)command;
 - (void)getMasterWallet:(CDVInvokedUrlCommand *)command;
 - (void)destroySubWallet:(CDVInvokedUrlCommand *)command;
 - (void)getVersion:(CDVInvokedUrlCommand *)command;
+
+// MainchainSubwallet
+- (void)createDepositTransaction:(CDVInvokedUrlCommand *)command;
+// Vote
+- (void)createVoteProducerTransaction:(CDVInvokedUrlCommand *)command;
+- (void)createVoteCRTransaction:(CDVInvokedUrlCommand *)command;
+- (void)createVoteCRCProposalTransaction:(CDVInvokedUrlCommand *)command;
+- (void)createImpeachmentCRCTransaction:(CDVInvokedUrlCommand *)command;
+- (void)getVotedProducerList:(CDVInvokedUrlCommand *)command;
+- (void)getVotedCRList:(CDVInvokedUrlCommand *)command;
+- (void)getVoteInfo:(CDVInvokedUrlCommand *)command;
+
+// Producer
 - (void)generateProducerPayload:(CDVInvokedUrlCommand *)command;
 - (void)generateCancelProducerPayload:(CDVInvokedUrlCommand *)command;
 - (void)createRegisterProducerTransaction:(CDVInvokedUrlCommand *)command;
@@ -132,36 +147,51 @@ static MasterWalletManager *mMasterWalletManager = nil;
 - (void)createCancelProducerTransaction:(CDVInvokedUrlCommand *)command;
 - (void)createRetrieveDepositTransaction:(CDVInvokedUrlCommand *)command;
 - (void)getOwnerPublicKey:(CDVInvokedUrlCommand *)command;
-- (void)createVoteProducerTransaction:(CDVInvokedUrlCommand *)command;
-- (void)getVotedProducerList:(CDVInvokedUrlCommand *)command;
 - (void)getRegisteredProducerInfo:(CDVInvokedUrlCommand *)command;
 
-//CR
+// CRC
 - (void)generateCRInfoPayload:(CDVInvokedUrlCommand *)command;
 - (void)generateUnregisterCRPayload:(CDVInvokedUrlCommand *)command;
 - (void)createRegisterCRTransaction:(CDVInvokedUrlCommand *)command;
 - (void)createUpdateCRTransaction:(CDVInvokedUrlCommand *)command;
 - (void)createUnregisterCRTransaction:(CDVInvokedUrlCommand *)command;
 - (void)createRetrieveCRDepositTransaction:(CDVInvokedUrlCommand *)command;
-- (void)createVoteCRTransaction:(CDVInvokedUrlCommand *)command;
-- (void)getVotedCRList:(CDVInvokedUrlCommand *)command;
 - (void)getRegisteredCRInfo:(CDVInvokedUrlCommand *)command;
-- (void)getVoteInfo:(CDVInvokedUrlCommand *)command;
+- (void)CRCouncilMemberClaimNodeDigest:(CDVInvokedUrlCommand *)command;
+- (void)createCRCouncilMemberClaimNodeTransaction:(CDVInvokedUrlCommand *)command;
 
+// Proposal
 - (void)proposalOwnerDigest:(CDVInvokedUrlCommand *)command;
 - (void)proposalCRCouncilMemberDigest:(CDVInvokedUrlCommand *)command;
 - (void)calculateProposalHash:(CDVInvokedUrlCommand *)command;
 - (void)createProposalTransaction:(CDVInvokedUrlCommand *)command;
 - (void)proposalReviewDigest:(CDVInvokedUrlCommand *)command;
 - (void)createProposalReviewTransaction:(CDVInvokedUrlCommand *)command;
+
+// Proposal Tracking
 - (void)proposalTrackingOwnerDigest:(CDVInvokedUrlCommand *)command;
 - (void)proposalTrackingNewOwnerDigest:(CDVInvokedUrlCommand *)command;
 - (void)proposalTrackingSecretaryDigest:(CDVInvokedUrlCommand *)command;
+- (void)createProposalTrackingTransaction:(CDVInvokedUrlCommand *)command;
+
+// TODO
+// Proposal Secretary General Election
+- (void)proposalSecretaryGeneralElectionDigest:(CDVInvokedUrlCommand *)command;
+- (void)proposalSecretaryGeneralElectionCRCouncilMemberDigest:(CDVInvokedUrlCommand *)command;
+- (void)createSecretaryGeneralElectionTransaction:(CDVInvokedUrlCommand *)command;
+// Proposal Change Owner
+- (void)proposalChangeOwnerDigest:(CDVInvokedUrlCommand *)command;
+- (void)proposalChangeOwnerCRCouncilMemberDigest:(CDVInvokedUrlCommand *)command;
+- (void)createProposalChangeOwnerTransaction:(CDVInvokedUrlCommand *)command;
+// Proposal Terminate Proposal
+- (void)terminateProposalOwnerDigest:(CDVInvokedUrlCommand *)command;
+- (void)terminateProposalCRCouncilMemberDigest:(CDVInvokedUrlCommand *)command;
+- (void)createTerminateProposalTransaction:(CDVInvokedUrlCommand *)command;
+
+// Proposal Withdraw
 - (void)proposalWithdrawDigest:(CDVInvokedUrlCommand *)command;
 - (void)createProposalWithdrawTransaction:(CDVInvokedUrlCommand *)command;
-- (void)createVoteCRCProposalTransaction:(CDVInvokedUrlCommand *)command;
-- (void)createImpeachmentCRCTransaction:(CDVInvokedUrlCommand *)command;
-- (void)createProposalTrackingTransaction:(CDVInvokedUrlCommand *)command;
+
 
 - (void)syncStart:(CDVInvokedUrlCommand *)command;
 - (void)syncStop:(CDVInvokedUrlCommand *)command;
@@ -171,6 +201,12 @@ static MasterWalletManager *mMasterWalletManager = nil;
 - (void)didSignDigest:(CDVInvokedUrlCommand *)command;
 - (void)verifySignature:(CDVInvokedUrlCommand *)command;
 - (void)getPublicKeyDID:(CDVInvokedUrlCommand *)command;
+- (void)getPublicKeyCID:(CDVInvokedUrlCommand *)command;
+
+//ETHSidechain
+- (void)createTransfer:(CDVInvokedUrlCommand *)command;
+- (void)createTransferGeneric:(CDVInvokedUrlCommand *)command;
+- (void)deleteTransfer:(CDVInvokedUrlCommand *)command;
 
 
 @end

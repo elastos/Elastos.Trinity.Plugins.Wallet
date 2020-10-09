@@ -432,7 +432,6 @@ declare module WalletPlugin {
          */
         publishTransaction(args, success, error);
 
-
         /**
          * Get all qualified normal transactions sorted by descent (newest first).
          * @param masterWalletID is the unique identification of a master wallet object.
@@ -608,6 +607,17 @@ declare module WalletPlugin {
          */
         deleteTransfer(args, success, error);
 
+        /**
+         *
+         * @param masterWalletID is the unique identification of a master wallet object.
+         * @param start
+         * @param count
+         * @param txid
+         * @param tokenSymbol
+         * @return
+         */
+        getTokenTransactions(args, success, error);
+
         //MainchainSubWallet
 
         /**
@@ -624,48 +634,9 @@ declare module WalletPlugin {
          */
         createDepositTransaction(args, success, error);
 
-        // disposeNative(args, success, error);
-        // getMultiSignPubKeyWithMnemonic(args, success, error);
-        // getMultiSignPubKeyWithPrivKey(args, success, error);
-        // importWalletWithOldKeystore(args, success, error);
-
-        /**
-         * Get vote information of current wallet.
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-         * @return Vote information in JSON format. The key is the public key, and the value is the stake. Such as:
-         * {
-         *      "02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5": "10000000",
-         *      "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D": "200000000",
-         *      "03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA": "5000000000"
-         * }
-         */
-        getVotedProducerList(args, success, error);
-
-        /**
-         * Get information about whether the current wallet has been registered the producer.
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-         * @return Information in JSON format. Such as:
-         * { "Status": "Unregistered", "Info": null }
-         *
-         * {
-         *    "Status": "Registered",
-         *    "Info": {
-         *      "OwnerPublicKey": "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D",
-         *      "NodePublicKey": "02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5",
-         *      "NickName": "hello nickname",
-         *      "URL": "www.google.com",
-         *      "Location": 86,
-         *      "Address": 127.0.0.1,
-         *    }
-         * }
-         *
-         * { "Status": "Canceled", "Info": { "Confirms": 2016 } }
-         *
-         * { "Status": "ReturnDeposit", "Info": null }
-         */
-        getRegisteredProducerInfo(args, success, error);
+        //////////////////////////////////////////////////
+        /*                      Vote                    */
+        //////////////////////////////////////////////////
 
         /**
          * Create vote transaction.
@@ -698,6 +669,178 @@ declare module WalletPlugin {
          * @return             The transaction in JSON format to be signed and published. Note: "DropVotes" means the old vote will be dropped.
          */
         createVoteProducerTransaction(args, success, error);
+
+        /**
+         * Create vote cr transaction.
+         * @param masterWalletID is the unique identification of a master wallet object.
+         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
+         * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
+         *                     Otherwise, pick UTXO from the specific address.
+         * @param votes        Candidate code and votes in JSON format. Such as:
+         *                     {
+         *                          "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7": "100000000",
+         *                          "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP": "200000000"
+         *                     }
+         * @param memo         Remarks string. Can be empty string.
+         * @param invalidCandidates  invalid candidate except current vote candidates. Such as:
+                                  [
+                                      {
+                                        "Type":"CRC",
+                                        "Candidates":[
+                                            "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+                                            "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP",
+                                            "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7"
+                                        ]
+                                    },
+                                    {
+                                        "Type":"Delegate",
+                                        "Candidates":[
+                                            "02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5",
+                                            "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D",
+                                            "03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA"
+                                        ]
+                                    }
+                                ]
+         * @return             The transaction in JSON format to be signed and published. Note: "DropVotes" means the old vote will be dropped.
+         */
+        createVoteCRTransaction(args, success, error);
+
+        /**
+         * Create vote crc proposal transaction.
+         * @param masterWalletID is the unique identification of a master wallet object.
+         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
+         * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
+         *                     Otherwise, pick UTXO from the specific address.
+         * @param votes        Proposal hash and votes in JSON format. Such as:
+         *                     {
+         *                          "109780cf45c7a6178ad674ac647545b47b10c2c3e3b0020266d0707e5ca8af7c": "100000000",
+         *                          "92990788d66bf558052d112f5498111747b3e28c55984d43fed8c8822ad9f1a7": "200000000"
+         *                     }
+         * @param memo         Remarks string. Can be empty string.
+         * @param invalidCandidates  invalid candidate except current vote candidates. Such as:
+                                  [
+                                      {
+                                        "Type":"CRC",
+                                        "Candidates":[
+                                            "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+                                            "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP",
+                                            "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7"
+                                        ]
+                                    },
+                                    {
+                                        "Type":"Delegate",
+                                        "Candidates":[
+                                            "02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5",
+                                            "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D",
+                                            "03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA"
+                                        ]
+                                    }
+                                ]
+         * @return             The transaction in JSON format to be signed and published. Note: "DropVotes" means the old vote will be dropped.
+         */
+        createVoteCRCProposalTransaction(args, success, error);
+
+        /**
+         * Create impeachment crc transaction.
+         * @param masterWalletID is the unique identification of a master wallet object.
+         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
+         * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
+         *                     Otherwise, pick UTXO from the specific address.
+         * @param votes        CRC did and votes in JSON format. Such as:
+         *                     {
+         *                          "innnNZJLqmJ8uKfVHKFxhdqVtvipNHzmZs": "100000000",
+         *                          "iZFrhZLetd6i6qPu2MsYvE2aKrgw7Af4Ww": "200000000"
+         *                     }
+         * @param memo         Remarks string. Can be empty string.
+         * @param invalidCandidates  invalid candidate except current vote candidates. Such as:
+                                  [
+                                      {
+                                        "Type":"CRC",
+                                        "Candidates":[
+                                            "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+                                            "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP",
+                                            "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7"
+                                        ]
+                                    },
+                                    {
+                                        "Type":"Delegate",
+                                        "Candidates":[
+                                            "02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5",
+                                            "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D",
+                                            "03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA"
+                                        ]
+                                    }
+                                ]
+         * @return             The transaction in JSON format to be signed and published. Note: "DropVotes" means the old vote will be dropped.
+         */
+        createImpeachmentCRCTransaction(args, success, error);
+
+        /**
+         * Get vote information of current wallet.
+         * @param masterWalletID is the unique identification of a master wallet object.
+         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
+         * @return Vote information in JSON format. The key is the public key, and the value is the stake. Such as:
+         * {
+         *      "02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5": "10000000",
+         *      "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D": "200000000",
+         *      "03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA": "5000000000"
+         * }
+         */
+        getVotedProducerList(args, success, error);
+
+        /**
+         * Get CR vote information of current wallet.
+         * @param masterWalletID is the unique identification of a master wallet object.
+         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
+         * @return Vote information in JSON format. The key is the public key, and the value is the stake. Such as:
+         * {
+         *      "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7": "10000000",
+         *      "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP": "200000000"
+         * }
+         */
+        getVotedCRList(args, success, error);
+
+        /**
+         * Get summary or details of all types of votes
+         * @param masterWalletID is the unique identification of a master wallet object.
+         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
+         * @type if the type is empty, a summary of all types of votes will return. Otherwise, the details of the specified type will return.
+         * @return vote info in JSON format. Such as:
+         *
+         * summary:
+         *  [
+         *      {"Type": "Delegate", "Amount": "12345", "Timestamp": 1560888482, "Expiry": null},
+         *      {"Type": "CRC", "Amount": "56789", "Timestamp": 1560888482, "Expiry": 1561888000}
+         *  ]
+         *
+         * details:
+         *  [{
+         *      "Type": "Delegate",
+         *      "Amount": "200000000",
+         *      "Timestamp": 1560888482,
+         *      "Expiry": null,
+         *      "Votes": {"02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5": "10000000","02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D": "200000000"}
+         *  },
+         *  {
+         *      ...
+         *  }]
+         * or:
+         *  [{
+         *      "Type": "CRC",
+         *      "Amount": "300000000",
+         *      "Timestamp": 1560888482,
+         *      "Expiry": null,
+         *      "Votes": {"iYMVuGs1FscpgmghSzg243R6PzPiszrgj7": "10000000","iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP": "200000000"}
+         *  },
+         *  {
+         *      ...
+         *  }]
+         */
+        getVoteInfo(args, success, error);
+
+        //////////////////////////////////////////////////
+        /*                    Producer                  */
+        //////////////////////////////////////////////////
 
         /**
          * Generate payload for registering or updating producer.
@@ -785,7 +928,34 @@ declare module WalletPlugin {
          */
         getOwnerPublicKey(args, success, error);
 
-        //CR
+        /**
+         * Get information about whether the current wallet has been registered the producer.
+         * @param masterWalletID is the unique identification of a master wallet object.
+         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
+         * @return Information in JSON format. Such as:
+         * { "Status": "Unregistered", "Info": null }
+         *
+         * {
+         *    "Status": "Registered",
+         *    "Info": {
+         *      "OwnerPublicKey": "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D",
+         *      "NodePublicKey": "02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5",
+         *      "NickName": "hello nickname",
+         *      "URL": "www.google.com",
+         *      "Location": 86,
+         *      "Address": 127.0.0.1,
+         *    }
+         * }
+         *
+         * { "Status": "Canceled", "Info": { "Confirms": 2016 } }
+         *
+         * { "Status": "ReturnDeposit", "Info": null }
+         */
+        getRegisteredProducerInfo(args, success, error);
+
+        //////////////////////////////////////////////////
+        /*                      CRC                     */
+        //////////////////////////////////////////////////
 
         /**
          * Generate cr info payload digest for signature.
@@ -917,162 +1087,9 @@ declare module WalletPlugin {
          */
         createCRCouncilMemberClaimNodeTransaction(args, success, error);
 
-        /**
-         * Create vote cr transaction.
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-         * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
-         *                     Otherwise, pick UTXO from the specific address.
-         * @param votes        Candidate code and votes in JSON format. Such as:
-         *                     {
-         *                          "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7": "100000000",
-         *                          "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP": "200000000"
-         *                     }
-         * @param memo         Remarks string. Can be empty string.
-         * @param invalidCandidates  invalid candidate except current vote candidates. Such as:
-                                  [
-                                      {
-                                        "Type":"CRC",
-                                        "Candidates":[
-                                            "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
-                                            "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP",
-                                            "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7"
-                                        ]
-                                    },
-                                    {
-                                        "Type":"Delegate",
-                                        "Candidates":[
-                                            "02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5",
-                                            "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D",
-                                            "03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA"
-                                        ]
-                                    }
-                                ]
-         * @return             The transaction in JSON format to be signed and published. Note: "DropVotes" means the old vote will be dropped.
-         */
-        createVoteCRTransaction(args, success, error);
-
-        /**
-         * Get CR vote information of current wallet.
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-         * @return Vote information in JSON format. The key is the public key, and the value is the stake. Such as:
-         * {
-         *      "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7": "10000000",
-         *      "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP": "200000000"
-         * }
-         */
-        getVotedCRList(args, success, error);
-
-        /**
-         * Create vote crc proposal transaction.
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-         * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
-         *                     Otherwise, pick UTXO from the specific address.
-         * @param votes        Proposal hash and votes in JSON format. Such as:
-         *                     {
-         *                          "109780cf45c7a6178ad674ac647545b47b10c2c3e3b0020266d0707e5ca8af7c": "100000000",
-         *                          "92990788d66bf558052d112f5498111747b3e28c55984d43fed8c8822ad9f1a7": "200000000"
-         *                     }
-         * @param memo         Remarks string. Can be empty string.
-         * @param invalidCandidates  invalid candidate except current vote candidates. Such as:
-                                  [
-                                      {
-                                        "Type":"CRC",
-                                        "Candidates":[
-                                            "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
-                                            "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP",
-                                            "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7"
-                                        ]
-                                    },
-                                    {
-                                        "Type":"Delegate",
-                                        "Candidates":[
-                                            "02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5",
-                                            "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D",
-                                            "03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA"
-                                        ]
-                                    }
-                                ]
-         * @return             The transaction in JSON format to be signed and published. Note: "DropVotes" means the old vote will be dropped.
-         */
-        createVoteCRCProposalTransaction(args, success, error);
-
-        /**
-         * Create impeachment crc transaction.
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-         * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
-         *                     Otherwise, pick UTXO from the specific address.
-         * @param votes        CRC did and votes in JSON format. Such as:
-         *                     {
-         *                          "innnNZJLqmJ8uKfVHKFxhdqVtvipNHzmZs": "100000000",
-         *                          "iZFrhZLetd6i6qPu2MsYvE2aKrgw7Af4Ww": "200000000"
-         *                     }
-         * @param memo         Remarks string. Can be empty string.
-         * @param invalidCandidates  invalid candidate except current vote candidates. Such as:
-                                  [
-                                      {
-                                        "Type":"CRC",
-                                        "Candidates":[
-                                            "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
-                                            "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP",
-                                            "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7"
-                                        ]
-                                    },
-                                    {
-                                        "Type":"Delegate",
-                                        "Candidates":[
-                                            "02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5",
-                                            "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D",
-                                            "03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA"
-                                        ]
-                                    }
-                                ]
-         * @return             The transaction in JSON format to be signed and published. Note: "DropVotes" means the old vote will be dropped.
-         */
-        createImpeachmentCRCTransaction(args, success, error);
-
-        /**
-         * Get summary or details of all types of votes
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-         * @type if the type is empty, a summary of all types of votes will return. Otherwise, the details of the specified type will return.
-         * @return vote info in JSON format. Such as:
-         *
-         * summary:
-         *  [
-         *      {"Type": "Delegate", "Amount": "12345", "Timestamp": 1560888482, "Expiry": null},
-         *      {"Type": "CRC", "Amount": "56789", "Timestamp": 1560888482, "Expiry": 1561888000}
-         *  ]
-         *
-         * details:
-         *  [{
-         *      "Type": "Delegate",
-         *      "Amount": "200000000",
-         *      "Timestamp": 1560888482,
-         *      "Expiry": null,
-         *      "Votes": {"02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5": "10000000","02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D": "200000000"}
-         *  },
-         *  {
-         *      ...
-         *  }]
-         * or:
-         *  [{
-         *      "Type": "CRC",
-         *      "Amount": "300000000",
-         *      "Timestamp": 1560888482,
-         *      "Expiry": null,
-         *      "Votes": {"iYMVuGs1FscpgmghSzg243R6PzPiszrgj7": "10000000","iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP": "200000000"}
-         *  },
-         *  {
-         *      ...
-         *  }]
-         */
-        getVoteInfo(args, success, error);
-
-        //Proposal
+        //////////////////////////////////////////////////
+        /*                    Proposal                  */
+        //////////////////////////////////////////////////
 
         /**
          * Generate digest of payload.
@@ -1191,6 +1208,10 @@ declare module WalletPlugin {
          */
         createProposalReviewTransaction(args, success, error);
 
+        //////////////////////////////////////////////////
+        /*               Proposal Tracking              */
+        //////////////////////////////////////////////////
+
         /**
          * Generate digest of payload.
          * @param masterWalletID is the unique identification of a master wallet object.
@@ -1260,6 +1281,162 @@ declare module WalletPlugin {
          * @return               The transaction in JSON format to be signed and published.
          */
         createProposalTrackingTransaction(args, success, error);
+
+        //////////////////////////////////////////////////
+        /*      Proposal Secretary General Election     */
+        //////////////////////////////////////////////////
+
+        /**
+         * @param payload Proposal secretary election payload
+         * {
+         *    "CategoryData": "testdata",  // limit: 4096 bytes
+         *    "OwnerPublicKey": "031f7a5a6bf3b2450cd9da4048d00a8ef1cb4912b5057535f65f3cc0e0c36f13b4",
+         *    "DraftHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+         *    "SecretaryGeneralPublicKey": "...",
+         *    "SecretaryGeneralDID": "...",
+         * }
+         * @return
+         */
+        proposalSecretaryGeneralElectionDigest(args, success, error);
+
+        /**
+         * @param payload Proposal secretary election payload
+         * {
+         *    "CategoryData": "testdata",  // limit: 4096 bytes
+         *    "OwnerPublicKey": "031f7a5a6bf3b2450cd9da4048d00a8ef1cb4912b5057535f65f3cc0e0c36f13b4",
+         *    "DraftHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+         *    "SecretaryGeneralPublicKey": "...",
+         *    "SecretaryGeneralDID": "...",
+         *    "Signature": "...",
+         *    "SecretaryGeneralSignature": "...",
+         *    "CRCouncilMemberDID": "...",
+         * }
+         * @return
+         */
+        proposalSecretaryGeneralElectionCRCouncilMemberDigest(args, success, error);
+
+        /**
+         * @param payload Proposal secretary election payload
+         * {
+         *    "CategoryData": "testdata",  // limit: 4096 bytes
+         *    "OwnerPublicKey": "031f7a5a6bf3b2450cd9da4048d00a8ef1cb4912b5057535f65f3cc0e0c36f13b4",
+         *    "DraftHash": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+         *    "SecretaryGeneralPublicKey": "...",
+         *    "SecretaryGeneralDID": "...",
+         *    "Signature": "...",
+         *    "SecretaryGeneralSignature": "...",
+         *    "CRCouncilMemberDID": "...",
+         *    "CRCouncilMemberSignature": "..."
+         * }
+         * @param memo Remarks string.
+         * @return
+         */
+        createSecretaryGeneralElectionTransaction(args, success, error);
+
+        //////////////////////////////////////////////////
+        /*             Proposal Change Owner            */
+        //////////////////////////////////////////////////
+
+        /**
+         * Use for owner & new owner sign
+         * @param payload Proposal change owner payload
+         * {
+         *    "CategoryData": "testdata",  // limit: 4096 bytes
+         *    "OwnerPublicKey": "...",
+         *    "DraftHash": "...",
+         *    "TargetProposalHash": "...",
+         *    "NewRecipient": "...",
+         *    "NewOwnerPublicKey": "...",
+         * }
+         * @return
+         */
+        proposalChangeOwnerDigest(args, success, error);
+
+        /**
+         * @param payload Proposal change owner payload
+         * {
+         *    "CategoryData": "testdata",  // limit: 4096 bytes
+         *    "OwnerPublicKey": "...",
+         *    "DraftHash": "...",
+         *    "TargetProposalHash": "...",
+         *    "NewRecipient": "...",
+         *    "NewOwnerPublicKey": "...",
+         *    "Signature": "...",
+         *    "NewOwnerSignature": "...",
+         *    "CRCouncilMemberDID": "..."
+         * }
+         * @return
+         */
+        proposalChangeOwnerCRCouncilMemberDigest(args, success, error);
+
+        /**
+         * @param payload Proposal change owner payload
+         * {
+         *    "CategoryData": "testdata",  // limit: 4096 bytes
+         *    "OwnerPublicKey": "...",
+         *    "DraftHash": "...",
+         *    "TargetProposalHash": "...",
+         *    "NewRecipient": "...",
+         *    "NewOwnerPublicKey": "...",
+         *    "Signature": "...",
+         *    "NewOwnerSignature": "...",
+         *    "CRCouncilMemberDID": "...",
+         *    "CRCouncilMemberSignature": "...",
+         * }
+         * @param memo Remark string.
+         * @return
+         */
+        createProposalChangeOwnerTransaction(args, success, error);
+
+        //////////////////////////////////////////////////
+        /*           Proposal Terminate Proposal        */
+        //////////////////////////////////////////////////
+        /**
+         * @param payload Terminate proposal payload
+         * {
+         *    "CategoryData": "testdata",  // limit: 4096 bytes
+         *    "OwnerPublicKey": "...",
+         *    "DraftHash": "...",
+         *    "TargetProposalHash": "...",
+         * }
+         * @return
+         */
+        terminateProposalOwnerDigest(args, success, error);
+
+        /**
+         * @param payload Terminate proposal payload
+         * {
+         *    "CategoryData": "testdata",  // limit: 4096 bytes
+         *    "OwnerPublicKey": "...",
+         *    "DraftHash": "...",
+         *    "TargetProposalHash": "...",
+         *    "Signature": "...",
+         *    "CRCouncilMemberDID": "...",
+         * }
+         * @return
+         */
+        terminateProposalCRCouncilMemberDigest(args, success, error);
+
+        /**
+         * @param payload Terminate proposal payload
+         * {
+         *    "CategoryData": "testdata",  // limit: 4096 bytes
+         *    "OwnerPublicKey": "...",
+         *    "DraftHash": "...",
+         *    "TargetProposalHash": "...",
+         *    "Signature": "...",
+         *    "CRCouncilMemberDID": "...",
+         *    "CRCouncilMemberSignature": "...",
+         * }
+         * @param memo Remark string.
+         * @return
+         */
+        createTerminateProposalTransaction(args, success, error);
+
+
+        //////////////////////////////////////////////////
+        /*               Proposal Withdraw              */
+        //////////////////////////////////////////////////
 
         /**
          * Generate digest of payload.
