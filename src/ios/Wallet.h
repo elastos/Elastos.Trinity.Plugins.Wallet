@@ -120,7 +120,7 @@ static MasterWalletManager *mMasterWalletManager = nil;
 - (void)getAllUTXOs:(CDVInvokedUrlCommand *)command;
 - (void)signTransaction:(CDVInvokedUrlCommand *)command;
 - (void)publishTransaction:(CDVInvokedUrlCommand *)command;
-- (void)GetTransactionSignedInfo:(CDVInvokedUrlCommand *)command;
+- (void)getTransactionSignedInfo:(CDVInvokedUrlCommand *)command;
 - (void)removeWalletListener:(CDVInvokedUrlCommand *)command;
 - (void)createIdTransaction:(CDVInvokedUrlCommand *)command;
 - (void)createWithdrawTransaction:(CDVInvokedUrlCommand *)command;

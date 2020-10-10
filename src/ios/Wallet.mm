@@ -224,56 +224,56 @@ void ElISubWalletCallback::OnETHSCEventHandled(const nlohmann::json &event)
 
 nlohmann::json ElISubWalletCallback::GasPrice(int id)
 {
-    NSLog(@" ----GetBlockNumber ----id: %d\n", id);
+//    NSLog(@" ----GetBlockNumber ----id: %d\n", id);
     return mHttprequest->GasPrice(id);
 }
 
 nlohmann::json ElISubWalletCallback::EstimateGas(const std::string &from, const std::string &to, const std::string &amount,
             const std::string &gasPrice, const std::string &data, int id)
 {
-    NSLog(@" ----EstimateGas ----\n");
+//    NSLog(@" ----EstimateGas ----\n");
     return mHttprequest->EstimateGas(from, to, amount, gasPrice, data, id);
 }
 
 nlohmann::json ElISubWalletCallback::GetBalance(const std::string &address, int id)
 {
-    NSLog(@" ----GetBalance ----\n");
+//    NSLog(@" ----GetBalance ----\n");
     return mHttprequest->GetBalance(address, id);
 }
 
 nlohmann::json ElISubWalletCallback::SubmitTransaction(const std::string &tx, int id)
 {
-    NSLog(@" ----SubmitTransaction ----\n");
+//    NSLog(@" ----SubmitTransaction ----\n");
     return mHttprequest->SubmitTransaction(tx, id);
 }
 
 nlohmann::json ElISubWalletCallback::GetTransactions(const std::string &address, uint64_t begBlockNumber, uint64_t endBlockNumber, int id)
 {
-    NSLog(@" ----GetTransactions ----\n");
+//    NSLog(@" ----GetTransactions ----\n");
     return mHttprequest->GetTransactions(address, begBlockNumber, endBlockNumber, id);
 }
 
 nlohmann::json ElISubWalletCallback::GetLogs(const std::string &contract, const std::string &address, const std::string &event, uint64_t begBlockNumber, uint64_t endBlockNumber, int id)
 {
-    NSLog(@" ----GetLogs ----\n");
+//    NSLog(@" ----GetLogs ----\n");
     return mHttprequest->GetLogs(contract, address, event, begBlockNumber, endBlockNumber, id);
 }
 
 nlohmann::json ElISubWalletCallback::GetTokens(int id)
 {
-    NSLog(@" ----GetTokens ----\n");
+//    NSLog(@" ----GetTokens ----\n");
     return mHttprequest->GetTokens(id);
 }
 
 nlohmann::json ElISubWalletCallback::GetBlockNumber(int id)
 {
-    NSLog(@" ----GetBlockNumber ----\n");
+//    NSLog(@" ----GetBlockNumber ----\n");
     return mHttprequest->GetBlockNumber(id);
 }
 
 nlohmann::json ElISubWalletCallback::GetNonce(const std::string &address, int id)
 {
-    NSLog(@" ----GetNonce ----\n");
+//    NSLog(@" ----GetNonce ----\n");
     return mHttprequest->GetNonce(address, id);
 }
 
@@ -3361,7 +3361,7 @@ String const ETHSC = "ETHSC";
     }
 
     try {
-        ethscSubWallet->GetTokenTransactions(start, count, tx, tokenSymbol);
+        ethscSubWallet->GetTokenTransactions(start, count, txid, tokenSymbol);
         return [self successAsString:command msg:@"GetTokenTransactions OK"];
     } catch (const std:: exception &e) {
         return [self exceptionProcess:command string:e.what()];

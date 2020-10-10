@@ -116,13 +116,25 @@ nlohmann::json WalletHttprequest::GetTransactions(const std::string &address, ui
     }
 
     NSString *string = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-    return [string UTF8String];
+    return nlohmann::json::parse([string UTF8String]);
 }
 
 nlohmann::json WalletHttprequest::GetLogs(const std::string &contract, const std::string &address, const std::string &event, uint64_t begBlockNumber, uint64_t endBlockNumber, int id)
 {
     // NSLog(@" ----WalletHttprequest::GetLogs ----\n");
-    NSString *body = [NSString stringWithFormat:@"{  \"method\": \"eth_getLogs\", \"params\": [{\"address\": \"%s\", \"fromBlock\": \"%llx\", \"toBlock\": \"%llx\"}], \"id\":%d}", address.c_str(), begBlockNumber, endBlockNumber, id];
+    // TODO: remove "000000000000000000000000", maybe the spvsdk should remove this?
+    // TODO: to improve
+    String addressNew = address;
+    String findString = "0x000000000000000000000000";
+    unsigned long index = address.find(findString);
+    if (index >= 0) {
+        NSString *addressNSString = [NSString stringWithCString:address.c_str() encoding:NSUTF8StringEncoding];
+        NSString*addressNSStringNew = [addressNSString stringByReplacingOccurrencesOfString:@"000000000000000000000000" withString:@""];
+        addressNew = [addressNSStringNew UTF8String];
+    }
+//    address.replace(address.find("000000000000000000000000"), 24, "");
+
+    NSString *body = [NSString stringWithFormat:@"{  \"method\": \"eth_getLogs\", \"params\": [{\"address\": \"%s\", \"fromBlock\": \"0x%llx\", \"toBlock\": \"0x%llx\"}], \"id\":%d}", addressNew.c_str(), begBlockNumber, endBlockNumber, id];
     return postRequest(body);
 }
 
@@ -142,7 +154,7 @@ nlohmann::json WalletHttprequest::GetTokens(int id)
     }
 
     NSString *string = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-    return [string UTF8String];
+    return nlohmann::json::parse([string UTF8String]);
 }
 
 nlohmann::json WalletHttprequest::GetBlockNumber(int id)
@@ -182,13 +194,13 @@ NSString * WalletHttprequest::getRequest(NSString *urlStr)
 //    NSDictionary *responseHeaders = [httpResponse allHeaderFields];
 //    NSString *cookie = [responseHeaders valueForKey:@"Set-Cookie"];
 
-    NSLog(@" ----WalletHttprequest::getRequest ----%@\n", resultString);
+    NSLog(@" ----WalletHttprequest::getRequest %@\n", resultString);
     return resultString;
 }
 
 nlohmann::json WalletHttprequest::postRequest(NSString *body)
 {
-    NSLog(@" ----WalletHttprequest::postRequest body:%@ ----\n", body);
+    NSLog(@" ----WalletHttprequest::postRequest body:%@\n", body);
 
     NSURL *url = [[NSURL alloc] initWithString:mEthscRPC];
 
@@ -220,8 +232,8 @@ nlohmann::json WalletHttprequest::postRequest(NSString *body)
 //    NSDictionary *responseHeaders = [httpResponse allHeaderFields];
 //    NSString *cookie = [responseHeaders valueForKey:@"Set-Cookie"];
 
-    NSLog(@" ----WalletHttprequest::postrequest ----%@\n", resultString);
-    return [resultString UTF8String];
+    NSLog(@" ----WalletHttprequest::postrequest %@\n", resultString);
+    return nlohmann::json::parse([resultString UTF8String]);
 }
 
 void WalletHttprequest::transformDict(NSMutableDictionary *dictM, NSString *originKey, NSString *newkey) {
