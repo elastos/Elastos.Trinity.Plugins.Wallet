@@ -183,7 +183,7 @@ NSString * WalletHttprequest::getRequest(NSString *urlStr)
 //    NSString *cookie = [responseHeaders valueForKey:@"Set-Cookie"];
 
     NSLog(@" ----WalletHttprequest::getRequest ----%@\n", resultString);
-    return html;
+    return resultString;
 }
 
 nlohmann::json WalletHttprequest::postRequest(NSString *body)
@@ -221,7 +221,7 @@ nlohmann::json WalletHttprequest::postRequest(NSString *body)
 //    NSString *cookie = [responseHeaders valueForKey:@"Set-Cookie"];
 
     NSLog(@" ----WalletHttprequest::postrequest ----%@\n", resultString);
-    return [html UTF8String];
+    return [resultString UTF8String];
 }
 
 void WalletHttprequest::transformDict(NSMutableDictionary *dictM, NSString *originKey, NSString *newkey) {
