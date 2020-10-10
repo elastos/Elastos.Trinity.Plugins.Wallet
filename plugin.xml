@@ -26,7 +26,10 @@
         <header-file src="src/ios/SPVWallet.h" /> -->
         <source-file src="src/ios/Wallet.mm" />
         <header-file src="src/ios/Wallet.h" />
+        <source-file src="src/ios/WalletHttprequest.mm" />
+        <header-file src="src/ios/WalletHttprequest.h" />
         <header-file src="src/ios/libspvsdk/include/IIDChainSubWallet.h" />
+        <header-file src="src/ios/libspvsdk/include/IEthSidechainSubWallet.h" />
         <header-file src="src/ios/libspvsdk/include/IMainchainSubWallet.h" />
         <header-file src="src/ios/libspvsdk/include/IMasterWallet.h" />
         <header-file src="src/ios/libspvsdk/include/IMasterWalletManager.h" />
