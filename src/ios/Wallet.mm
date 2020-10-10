@@ -548,8 +548,8 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
 
     errCodeWalletException            = 20000;
 
-    //  NSString* rootPath = [NSHomeDirectory() stringByAppendingString:@"/Documents/spv"];
-    NSString* rootPath = [[self getDataPath] stringByAppendingString:@"spv"];
+     NSString* rootPath = [NSHomeDirectory() stringByAppendingString:@"/Documents/spv"];
+    // NSString* rootPath = [[self getDataPath] stringByAppendingString:@"spv"];
     NSFileManager *fm = [NSFileManager defaultManager];
     if (![fm fileExistsAtPath:rootPath]) {
         [fm createDirectoryAtPath:rootPath withIntermediateDirectories:true attributes:NULL error:NULL];
@@ -3335,6 +3335,34 @@ String const ETHSC = "ETHSC";
     try {
         ethscSubWallet->DeleteTransfer(tx);
         return [self successAsString:command msg:@"DeleteTransfer OK"];
+    } catch (const std:: exception &e) {
+        return [self exceptionProcess:command string:e.what()];
+    }
+}
+
+- (void)getTokenTransactions:(CDVInvokedUrlCommand *)command
+{
+    NSArray *args = command.arguments;
+    int idx = 0;
+
+    String masterWalletID = [self cstringWithString:args[idx++]];
+    int    start          = [args[idx++] intValue];
+    int    count          = [args[idx++] intValue];
+    String txid           = [self cstringWithString:args[idx++]];
+    String tokenSymbol    = [self cstringWithString:args[idx++]];
+
+    if (args.count != idx) {
+        return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
+    }
+    IEthSidechainSubWallet* ethscSubWallet = [self getEthSidechainSubWallet:masterWalletID];
+    if (ethscSubWallet == nil) {
+        NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletNameWithString:masterWalletID other:ETHSC]];
+        return [self errorProcess:command code:errCodeInvalidSubWallet msg:msg];
+    }
+
+    try {
+        ethscSubWallet->GetTokenTransactions(start, count, tx, tokenSymbol);
+        return [self successAsString:command msg:@"GetTokenTransactions OK"];
     } catch (const std:: exception &e) {
         return [self exceptionProcess:command string:e.what()];
     }

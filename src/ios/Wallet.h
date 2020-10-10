@@ -207,6 +207,7 @@ static MasterWalletManager *mMasterWalletManager = nil;
 - (void)createTransfer:(CDVInvokedUrlCommand *)command;
 - (void)createTransferGeneric:(CDVInvokedUrlCommand *)command;
 - (void)deleteTransfer:(CDVInvokedUrlCommand *)command;
+- (void)getTokenTransactions:(CDVInvokedUrlCommand *)command;
 
 
 @end
