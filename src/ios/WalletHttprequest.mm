@@ -35,8 +35,8 @@ WalletHttprequest::WalletHttprequest(String &ethscRPC,
     mEthscRPC = [NSString stringWithCString:ethscRPC.c_str() encoding:NSUTF8StringEncoding];
     mEthscApiMisc = [NSString stringWithCString:ethscApiMisc.c_str() encoding:NSUTF8StringEncoding];
 
-    mGetTransactionsUrlPrefix = [mEthscApiMisc stringByAppendingString:@"/api/1/eth/history?address="];
-    mGetTokensUrlPrefix = [mEthscApiMisc stringByAppendingString:@"/api/1/eth/erc20/list"];
+    mGetTransactionsUrlPrefix =  [mEthscApiMisc stringByAppendingString:@"/api/1/eth/history?address="];
+    mGetTokensUrlPrefix =  [mEthscApiMisc stringByAppendingString:@"/api/1/eth/erc20/list"];
 }
 
 WalletHttprequest::~WalletHttprequest()
@@ -77,24 +77,24 @@ nlohmann::json WalletHttprequest::GetTransactions(const std::string &address, ui
 //    NSLog(@" ----WalletHttprequest::GetTransactions ----\n");
     NSString *addressNSString = [NSString stringWithCString:address.c_str() encoding:NSUTF8StringEncoding];
     NSString *urlStr = [mGetTransactionsUrlPrefix stringByAppendingString:addressNSString];
-    NSString *jsonString = getRequest(urlStr);
+    NSString* jsonString = getRequest(urlStr);
     if (jsonString == nil) {
         return "{}";
     }
 
-    NSData *jsonData= [jsonString dataUsingEncoding:NSASCIIStringEncoding];
-    NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableLeaves error:nil];
+    NSData *jsonData= [jsonString dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary* dic = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableLeaves error:nil];
 
     NSMutableDictionary *dictMutable = [NSMutableDictionary dictionaryWithDictionary:dic];
     [dictMutable setValue:@(id) forKey:@"id"];
 
     // transform data for spvsdk
     NSMutableArray *arrayNew = [[NSMutableArray alloc] init];
-    NSArray *arrayTmp = [dictMutable objectForKey:@"result"];
+    NSArray * arrayTmp = [dictMutable objectForKey:@"result"];
     if (arrayTmp != nil) {
         unsigned long arrayLen = arrayTmp.count;
         for (int i = 0; i < arrayLen; i++) {
-            NSDictionary *transaction = arrayTmp[i];
+            NSDictionary* transaction = arrayTmp[i];
             NSMutableDictionary *transactionMutable = [NSMutableDictionary dictionaryWithDictionary:transaction];
 
             transformDict(transactionMutable, @"contractAddress", @"contract");
@@ -131,7 +131,7 @@ nlohmann::json WalletHttprequest::GetLogs(const std::string &contract, const std
     unsigned long index = address.find(findString);
     if (index >= 0) {
         NSString *addressNSString = [NSString stringWithCString:address.c_str() encoding:NSUTF8StringEncoding];
-        NSString *addressNSStringNew = [addressNSString stringByReplacingOccurrencesOfString:@"000000000000000000000000" withString:@""];
+        NSString*addressNSStringNew = [addressNSString stringByReplacingOccurrencesOfString:@"000000000000000000000000" withString:@""];
         addressNew = [addressNSStringNew UTF8String];
     }
 
@@ -142,13 +142,13 @@ nlohmann::json WalletHttprequest::GetLogs(const std::string &contract, const std
 nlohmann::json WalletHttprequest::GetTokens(int id)
 {
     NSLog(@" ----WalletHttprequest::GetTokens ----\n");
-    NSString *jsonString = getRequest(mGetTokensUrlPrefix);
+    NSString* jsonString = getRequest(mGetTokensUrlPrefix);
     if (jsonString == nil) {
         return "{}";
     }
 
-    NSData *jsonData= [jsonString dataUsingEncoding:NSASCIIStringEncoding];
-    NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableLeaves error:nil];
+    NSData *jsonData= [jsonString dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary* dic = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableLeaves error:nil];
 
     NSMutableDictionary *dictMutable = [NSMutableDictionary dictionaryWithDictionary:dic];
     [dictMutable setValue:@(id) forKey:@"id"];
