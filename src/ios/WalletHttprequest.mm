@@ -35,8 +35,8 @@ WalletHttprequest::WalletHttprequest(String &ethscRPC,
     mEthscRPC = [NSString stringWithCString:ethscRPC.c_str() encoding:NSUTF8StringEncoding];
     mEthscApiMisc = [NSString stringWithCString:ethscApiMisc.c_str() encoding:NSUTF8StringEncoding];
 
-    mGetTransactionsUrlPrefix =  [mEthscApiMisc stringByAppendingString:@"/api/1/eth/history?address="];
-    mGetTokensUrlPrefix =  [mEthscApiMisc stringByAppendingString:@"/api/1/eth/erc20/list"];
+    mGetTransactionsUrlPrefix = [mEthscApiMisc stringByAppendingString:@"/api/1/eth/history?address="];
+    mGetTokensUrlPrefix = [mEthscApiMisc stringByAppendingString:@"/api/1/eth/erc20/list"];
 }
 
 WalletHttprequest::~WalletHttprequest()
@@ -60,38 +60,41 @@ nlohmann::json WalletHttprequest::EstimateGas(const std::string &from, const std
 
 nlohmann::json WalletHttprequest::GetBalance(const std::string &address, int id)
 {
-    NSLog(@" ----WalletHttprequest::GetBalance ----\n");
+//    NSLog(@" ----WalletHttprequest::GetBalance ----\n");
     NSString *body = [NSString stringWithFormat:@"{  \"method\": \"eth_getBalance\", \"params\": [\"%s\", \"latest\"], \"id\":%d}", address.c_str(), id];
     return postRequest(body);
 }
 
 nlohmann::json WalletHttprequest::SubmitTransaction(const std::string &tx, int id)
 {
-    NSLog(@" ----WalletHttprequest::SubmitTransaction ----\n");
+//    NSLog(@" ----WalletHttprequest::SubmitTransaction ----\n");
     NSString *body = [NSString stringWithFormat:@"{  \"method\": \"eth_sendRawTransaction\", \"params\": [\"%s\"], \"id\":%d}", tx.c_str(), id];
     return postRequest(body);
 }
 
 nlohmann::json WalletHttprequest::GetTransactions(const std::string &address, uint64_t begBlockNumber, uint64_t endBlockNumber, int id)
 {
-    NSLog(@" ----WalletHttprequest::GetTransactions ----\n");
+//    NSLog(@" ----WalletHttprequest::GetTransactions ----\n");
     NSString *addressNSString = [NSString stringWithCString:address.c_str() encoding:NSUTF8StringEncoding];
     NSString *urlStr = [mGetTransactionsUrlPrefix stringByAppendingString:addressNSString];
-    NSString* jsonString = getRequest(urlStr);
+    NSString *jsonString = getRequest(urlStr);
+    if (jsonString == nil) {
+        return "{}";
+    }
 
     NSData *jsonData= [jsonString dataUsingEncoding:NSASCIIStringEncoding];
-    NSDictionary* dic = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableLeaves error:nil];
+    NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableLeaves error:nil];
 
     NSMutableDictionary *dictMutable = [NSMutableDictionary dictionaryWithDictionary:dic];
     [dictMutable setValue:@(id) forKey:@"id"];
 
     // transform data for spvsdk
     NSMutableArray *arrayNew = [[NSMutableArray alloc] init];
-    NSArray * arrayTmp = [dictMutable objectForKey:@"result"];
+    NSArray *arrayTmp = [dictMutable objectForKey:@"result"];
     if (arrayTmp != nil) {
         unsigned long arrayLen = arrayTmp.count;
         for (int i = 0; i < arrayLen; i++) {
-            NSDictionary* transaction = arrayTmp[i];
+            NSDictionary *transaction = arrayTmp[i];
             NSMutableDictionary *transactionMutable = [NSMutableDictionary dictionaryWithDictionary:transaction];
 
             transformDict(transactionMutable, @"contractAddress", @"contract");
@@ -122,17 +125,15 @@ nlohmann::json WalletHttprequest::GetTransactions(const std::string &address, ui
 nlohmann::json WalletHttprequest::GetLogs(const std::string &contract, const std::string &address, const std::string &event, uint64_t begBlockNumber, uint64_t endBlockNumber, int id)
 {
     // NSLog(@" ----WalletHttprequest::GetLogs ----\n");
-    // TODO: remove "000000000000000000000000", maybe the spvsdk should remove this?
-    // TODO: to improve
+    // Maybe the spvsdk should remove "00000000000000000000000"?
     String addressNew = address;
     String findString = "0x000000000000000000000000";
     unsigned long index = address.find(findString);
     if (index >= 0) {
         NSString *addressNSString = [NSString stringWithCString:address.c_str() encoding:NSUTF8StringEncoding];
-        NSString*addressNSStringNew = [addressNSString stringByReplacingOccurrencesOfString:@"000000000000000000000000" withString:@""];
+        NSString *addressNSStringNew = [addressNSString stringByReplacingOccurrencesOfString:@"000000000000000000000000" withString:@""];
         addressNew = [addressNSStringNew UTF8String];
     }
-//    address.replace(address.find("000000000000000000000000"), 24, "");
 
     NSString *body = [NSString stringWithFormat:@"{  \"method\": \"eth_getLogs\", \"params\": [{\"address\": \"%s\", \"fromBlock\": \"0x%llx\", \"toBlock\": \"0x%llx\"}], \"id\":%d}", addressNew.c_str(), begBlockNumber, endBlockNumber, id];
     return postRequest(body);
@@ -141,9 +142,13 @@ nlohmann::json WalletHttprequest::GetLogs(const std::string &contract, const std
 nlohmann::json WalletHttprequest::GetTokens(int id)
 {
     NSLog(@" ----WalletHttprequest::GetTokens ----\n");
-    NSString* jsonString = getRequest(mGetTokensUrlPrefix);
+    NSString *jsonString = getRequest(mGetTokensUrlPrefix);
+    if (jsonString == nil) {
+        return "{}";
+    }
+
     NSData *jsonData= [jsonString dataUsingEncoding:NSASCIIStringEncoding];
-    NSDictionary* dic = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableLeaves error:nil];
+    NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableLeaves error:nil];
 
     NSMutableDictionary *dictMutable = [NSMutableDictionary dictionaryWithDictionary:dic];
     [dictMutable setValue:@(id) forKey:@"id"];
@@ -183,18 +188,19 @@ NSString * WalletHttprequest::getRequest(NSString *urlStr)
 
     NSURLResponse *response;
     NSError *error;
+    NSString *resultString = nil;
     NSData *result = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
 
-    NSString *resultString = [[NSString alloc] initWithData:result encoding:NSUTF8StringEncoding];
+    NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
+    NSInteger statusCode = [httpResponse statusCode];
+    if (statusCode == 200) {
+        resultString = [[NSString alloc] initWithData:result encoding:NSUTF8StringEncoding];
+//        NSLog(@" ----WalletHttprequest::getRequest result :%@\n", resultString);
+    } else {
+        NSString *errorDesc = [error localizedDescription];
+        NSLog(@" ----WalletHttprequest::getRequest error : %@\n", errorDesc);
+    }
 
-    // TODO: check the status code
-//    NSString *errorDesc = [error localizedDescription];
-//    NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-//    NSInteger statusCode = [httpResponse statusCode];
-//    NSDictionary *responseHeaders = [httpResponse allHeaderFields];
-//    NSString *cookie = [responseHeaders valueForKey:@"Set-Cookie"];
-
-    NSLog(@" ----WalletHttprequest::getRequest %@\n", resultString);
     return resultString;
 }
 
@@ -221,18 +227,20 @@ nlohmann::json WalletHttprequest::postRequest(NSString *body)
 
     NSURLResponse *response;
     NSError *error;
+    NSString *resultString = @"{}";
     NSData *result = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
 
-    NSString *resultString = [[NSString alloc] initWithData:result encoding:NSUTF8StringEncoding];
+    NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
+    NSInteger statusCode = [httpResponse statusCode];
 
-    // TODO: check the status code
-//    NSString *errorDesc = [error localizedDescription];
-//    NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-//    NSInteger statusCode = [httpResponse statusCode];
-//    NSDictionary *responseHeaders = [httpResponse allHeaderFields];
-//    NSString *cookie = [responseHeaders valueForKey:@"Set-Cookie"];
+    if (statusCode == 200) {
+        resultString = [[NSString alloc] initWithData:result encoding:NSUTF8StringEncoding];
+//        NSLog(@" ----WalletHttprequest::postrequest result :%@\n", resultString);
+    } else {
+        NSString *errorDesc = [error localizedDescription];
+        NSLog(@" ----WalletHttprequest::postrequest error : %@\n", errorDesc);
+    }
 
-    NSLog(@" ----WalletHttprequest::postrequest %@\n", resultString);
     return nlohmann::json::parse([resultString UTF8String]);
 }
 
