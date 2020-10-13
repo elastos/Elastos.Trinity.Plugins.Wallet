@@ -54,7 +54,6 @@ static MasterWalletManager *mMasterWalletManager = nil;
 @interface Wallet : TrinityPlugin {
     NSString *TAG; //= @"Wallet";
 
-    NSString *mRootPath;// = null;
     // for ethsc http request
     String mEthscjsonrpcUrl;
     String mEthscapimiscUrl;

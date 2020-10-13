@@ -522,10 +522,6 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
 
     walletRefCount++;//delete mMasterWalletManager in dispose?
 
-    if (nil != mMasterWalletManager) return;
-
-    mRootPath = NULL;
-
     keySuccess   = @"success";
     keyError     = @"error";
     keyCode      = @"code";
@@ -548,8 +544,10 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
 
     errCodeWalletException            = 20000;
 
-     NSString* rootPath = [NSHomeDirectory() stringByAppendingString:@"/Documents/spv"];
-    // NSString* rootPath = [[self getDataPath] stringByAppendingString:@"spv"];
+    if (nil != mMasterWalletManager) return;
+
+    //  NSString* rootPath = [NSHomeDirectory() stringByAppendingString:@"/Documents/spv"];
+    NSString* rootPath = [[self getDataPath] stringByAppendingString:@"spv"];
     NSFileManager *fm = [NSFileManager defaultManager];
     if (![fm fileExistsAtPath:rootPath]) {
         [fm createDirectoryAtPath:rootPath withIntermediateDirectories:true attributes:NULL error:NULL];

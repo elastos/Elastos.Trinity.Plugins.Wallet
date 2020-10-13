@@ -189,16 +189,22 @@ NSString * WalletHttprequest::getRequest(NSString *urlStr)
     NSURLResponse *response;
     NSError *error;
     NSString *resultString = nil;
-    NSData *result = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
 
-    NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-    NSInteger statusCode = [httpResponse statusCode];
-    if (statusCode == 200) {
-        resultString = [[NSString alloc] initWithData:result encoding:NSUTF8StringEncoding];
-//        NSLog(@" ----WalletHttprequest::getRequest result :%@\n", resultString);
-    } else {
-        NSString *errorDesc = [error localizedDescription];
-        NSLog(@" ----WalletHttprequest::getRequest error : %@\n", errorDesc);
+    try {
+        NSData *result = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
+
+        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
+        NSInteger statusCode = [httpResponse statusCode];
+        if (statusCode == 200) {
+            resultString = [[NSString alloc] initWithData:result encoding:NSUTF8StringEncoding];
+            // NSLog(@" ----WalletHttprequest::getRequest result :%@\n", resultString);
+        } else {
+            NSString *errorDesc = [error localizedDescription];
+            NSLog(@" ----WalletHttprequest::getRequest error : %@\n", errorDesc);
+        }
+    } catch (const std:: exception & e ) {
+        NSString *errString = [NSString stringWithCString:e.what() encoding:NSUTF8StringEncoding];
+        NSLog(@"WalletHttprequest::getRequest error: %@", errString);
     }
 
     return resultString;
@@ -228,24 +234,35 @@ nlohmann::json WalletHttprequest::postRequest(NSString *body)
     NSURLResponse *response;
     NSError *error;
     NSString *resultString = @"{}";
-    NSData *result = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
 
-    NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-    NSInteger statusCode = [httpResponse statusCode];
+    try {
+        NSData *result = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
 
-    if (statusCode == 200) {
-        resultString = [[NSString alloc] initWithData:result encoding:NSUTF8StringEncoding];
-//        NSLog(@" ----WalletHttprequest::postrequest result :%@\n", resultString);
-    } else {
-        NSString *errorDesc = [error localizedDescription];
-        NSLog(@" ----WalletHttprequest::postrequest error : %@\n", errorDesc);
+        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
+        NSInteger statusCode = [httpResponse statusCode];
+
+        if (statusCode == 200) {
+            resultString = [[NSString alloc] initWithData:result encoding:NSUTF8StringEncoding];
+            // NSLog(@" ----WalletHttprequest::postrequest result :%@\n", resultString);
+        } else {
+            NSString *errorDesc = [error localizedDescription];
+            NSLog(@" ----WalletHttprequest::postrequest error : %@\n", errorDesc);
+        }
+    } catch (const std:: exception & e ) {
+        NSString *errString = [NSString stringWithCString:e.what() encoding:NSUTF8StringEncoding];
+        NSLog(@"WalletHttprequest::postRequest error: %@", errString);
     }
 
     return nlohmann::json::parse([resultString UTF8String]);
 }
 
 void WalletHttprequest::transformDict(NSMutableDictionary *dictM, NSString *originKey, NSString *newkey) {
-    NSString *text = [dictM objectForKey:originKey];
-    [dictM setValue:text forKey:newkey];
-    [dictM removeObjectForKey:originKey];
+    try {
+        NSString *text = [dictM objectForKey:originKey];
+        [dictM setValue:text forKey:newkey];
+        [dictM removeObjectForKey:originKey];
+    } catch (const std:: exception & e ) {
+        NSString *errString = [NSString stringWithCString:e.what() encoding:NSUTF8StringEncoding];
+        NSLog(@"WalletHttprequest::transformDict originKey: %@, error: %@", originKey, errString);
+    }
 }
