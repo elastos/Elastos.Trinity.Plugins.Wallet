@@ -213,6 +213,7 @@ void ElISubWalletCallback::OnConnectStatusChanged(const std::string &status)
 
 void ElISubWalletCallback::OnETHSCEventHandled(const nlohmann::json &event)
 {
+    NSError *err;
     NSString *eventInfoString = [NSString stringWithCString:event.dump().c_str() encoding:NSUTF8StringEncoding];
     NSMutableDictionary *eventDict = [NSJSONSerialization JSONObjectWithData:[eventInfoString dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingMutableContainers error:&err];
 
