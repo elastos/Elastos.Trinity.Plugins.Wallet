@@ -545,7 +545,14 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
 
     errCodeWalletException            = 20000;
 
-    if (nil != mMasterWalletManager) return;
+    if (nil != mMasterWalletManager) {
+        if (currentDid == [self did]) {
+            return;
+        } else {
+            // TODO plugin can not be destroyed, so check the did
+            [self destroyMasterWalletManager];
+        }
+    }
 
     //  NSString* rootPath = [NSHomeDirectory() stringByAppendingString:@"/Documents/spv"];
     NSString* rootPath = [[self getDataPath] stringByAppendingString:@"spv"];
@@ -565,6 +572,7 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     mEthscapimiscUrl = [self cstringWithString:[WrapSwift getPreferenceStringValue:@"sidechain.eth.apimisc" :@""]];
 
     try {
+        NSLog(@"WALLETTEST new MasterWalletManager rootPath: %@,  dataPath:%@", rootPath, dataPath);
         mMasterWalletManager = new MasterWalletManager([rootPath UTF8String], [netType UTF8String],
                 [config UTF8String], [dataPath UTF8String]);
     } catch (const std:: exception & e ) {
@@ -572,9 +580,46 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
         NSLog(@"new MasterWalletManager error: %@", errString);
     }
 
+    currentDid = [self did];
+
     [self addWalletListener];
 
     [super pluginInitialize];
+}
+
+//
+- (void)destroyMasterWalletManager
+{
+    try {
+        IMasterWalletVector masterWallets = mMasterWalletManager->GetAllMasterWallets();
+
+        for (int i = 0; i < masterWallets.size(); i++) {
+            IMasterWallet *masterWallet = masterWallets[i];
+            String masterWalletID = masterWallet->GetID();
+
+            ISubWalletVector subWallets = masterWallet->GetAllSubWallets();
+            for (int j = 0; j < subWallets.size(); j++) {
+                String chainID = subWallets[j]->GetChainID();
+                ISubWallet *subWallet = [self getSubWallet:masterWalletID :chainID];
+                if (subWallet != nil) {
+                    try {
+                        subWallet->SyncStop();
+                        subWallet->RemoveCallback();
+                    } catch (const std:: exception &e) {
+                        NSLog(@"subWallet SyncStop error: %s", e.what());
+                    }
+                }
+                [self addSubWalletListener:masterWalletID chainID:chainID];
+            }
+        }
+
+        [subwalletListenerMDict removeAllObjects];
+
+        delete mMasterWalletManager;
+        mMasterWalletManager = nil;
+    } catch (const std:: exception &e) {
+        NSLog(@"destroyMasterWalletManager error: %s", e.what());
+    }
 }
 
 - (void)coolMethod:(CDVInvokedUrlCommand *)command

@@ -50,6 +50,7 @@ typedef Elastos::ElaWallet::IIDChainSubWallet IIDChainSubWallet;
 static int walletRefCount = 0;
 static NSMutableDictionary *subwalletListenerMDict = [[NSMutableDictionary alloc] init];
 static MasterWalletManager *mMasterWalletManager = nil;
+static NSString *currentDid = nil;
 
 @interface Wallet : TrinityPlugin {
     NSString *TAG; //= @"Wallet";
