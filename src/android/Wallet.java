@@ -44,10 +44,18 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import android.util.Base64;
 import android.util.Log;
 
 /**
@@ -58,6 +66,10 @@ public class Wallet extends TrinityPlugin {
     private static final String TAG = "Wallet";
 
     private static HashMap<String, CallbackContext> subwalletListenerMap = new HashMap<>();
+    private HashMap<String, InputStream> backupFileReaderMap = new HashMap<>();
+    private HashMap<String, Integer> backupFileReaderOffsetsMap = new HashMap<>(); // Current read offset byte position for each active reader
+    private HashMap<String, OutputStream> backupFileWriterMap = new HashMap<>();
+
     private static int walletRefCount = 0;
     // only wallet dapp can use this plugin
     private static MasterWalletManager mMasterWalletManager = null;
@@ -664,6 +676,29 @@ public class Wallet extends TrinityPlugin {
                     break;
                 case "getGenesisAddress":
                     this.getGenesisAddress(args, cc);
+                    break;
+
+                    // Backup and restore
+                case "getBackupInfo":
+                    this.getBackupInfo(args, cc);
+                    break;
+                case "getBackupFile":
+                    this.getBackupFile(args, cc);
+                    break;
+                case "restoreBackupFile":
+                    this.restoreBackupFile(args, cc);
+                    break;
+                case "backupFileReader_read":
+                    this.backupFileReader_read(args, cc);
+                    break;
+                case "backupFileReader_close":
+                    this.backupFileReader_close(args, cc);
+                    break;
+                case "backupFileWriter_write":
+                    this.backupFileWriter_write(args, cc);
+                    break;
+                case "backupFileWriter_close":
+                    this.backupFileWriter_close(args, cc);
                     break;
 
                 default:
@@ -3749,27 +3784,212 @@ public class Wallet extends TrinityPlugin {
         }
     }
 
-    // private JSONObject parseOneParam(String key, Object value) throws JSONException {
-    //     JSONObject jsonObject = new JSONObject();
-    //     jsonObject.put(key, value);
-    //     return jsonObject;
-    // }
+    public void getBackupInfo(JSONArray args, CallbackContext cc) throws JSONException {
+        String masterWalletID = args.getString(0);
 
-    // private void coolMethod(String message, CallbackContext cc) {
-    //     if (message != null && message.length() > 0) {
-    //         cc.success(message);
-    //     } else {
-    //         cc.error("Expected one non-empty string argument.");
-    //     }
-    // }
+        try {
+            MasterWallet masterWallet = getIMasterWallet(masterWalletID);
+            if (masterWallet == null) {
+                errorProcess(cc, errCodeInvalidMasterWallet, "Master wallet "+masterWalletID+" not found");
+                return;
+            }
 
-    // public void print(String text, CallbackContext cc) throws JSONException {
-    //     if (text == null) {
-    //         cc.error("Text not can be null");
-    //     } else {
-    //         // LogUtil.i(TAG, text);
-    //         cc.success(parseOneParam("text", text));
-    //     }
-    // }
+            String spvSyncStateFilesPath = getSPVSyncStateFolderPath(masterWalletID);
+            JSONObject backupInfo = new JSONObject();
 
+            // ELA mainchain info
+            JSONObject elaDatabaseInfo = new JSONObject();
+            File elaDBFile = new File(spvSyncStateFilesPath + "/ELA.db");
+            if (elaDBFile.exists()) {
+                elaDatabaseInfo.put("fileName", "ELA.db");
+                elaDatabaseInfo.put("fileSize", elaDBFile.length());
+                elaDatabaseInfo.put("lastModified", elaDBFile.lastModified()); // Timestamp MS
+                backupInfo.put("ELADatabase", elaDatabaseInfo);
+            }
+
+            // ID sidechain info
+            JSONObject idChainDatabaseInfo = new JSONObject();
+            File idChainDBFile = new File(spvSyncStateFilesPath + "/IDChain.db");
+            if (idChainDBFile.exists()) {
+                idChainDatabaseInfo.put("fileName", "IDChain.db");
+                idChainDatabaseInfo.put("fileSize", idChainDBFile.length());
+                idChainDatabaseInfo.put("lastModified", idChainDBFile.lastModified()); // Timestamp MS
+                backupInfo.put("IDChainDatabase", idChainDatabaseInfo);
+            }
+
+            // ETH sidechain info
+            JSONObject ethChainDatabaseInfo = new JSONObject();
+            File ethChainDBFile = new File(spvSyncStateFilesPath + "/eth-mainnet-entities.db");
+            if (ethChainDBFile.exists()) {
+                ethChainDatabaseInfo.put("fileName", "eth-mainnet-entities.db");
+                ethChainDatabaseInfo.put("fileSize", ethChainDBFile.length());
+                ethChainDatabaseInfo.put("lastModified", ethChainDBFile.lastModified()); // Timestamp MS
+                backupInfo.put("IDChainDatabase", ethChainDatabaseInfo);
+            }
+
+            cc.success(backupInfo);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, e.GetErrorInfo());
+        }
+    }
+
+    public void getBackupFile(JSONArray args, CallbackContext cc) throws JSONException {
+        String masterWalletID = args.getString(0);
+        String fileName = args.getString(1);
+
+        try {
+            MasterWallet masterWallet = getIMasterWallet(masterWalletID);
+            if (masterWallet == null) {
+                errorProcess(cc, errCodeInvalidMasterWallet, "Master wallet "+masterWalletID+" not found");
+                return;
+            }
+
+            if (!ensureBackupFile(fileName)) {
+                errorProcess(cc, errCodeInvalidMasterWallet, "Invalid backup file name "+fileName);
+                return;
+            }
+
+            try {
+                // Open an input stream to read the file
+                String spvSyncStateFilesPath = getSPVSyncStateFolderPath(masterWalletID);
+                File backupFile = new File(spvSyncStateFilesPath + "/" + fileName);
+
+                BufferedInputStream reader = new BufferedInputStream(new FileInputStream(backupFile));
+
+                String objectId = "" + System.identityHashCode(reader);
+                backupFileReaderMap.put(objectId, reader);
+                backupFileReaderOffsetsMap.put(objectId, 0); // Current read offset is 0
+
+                JSONObject ret = new JSONObject();
+                ret.put("objectId", objectId);
+                cc.success(ret);
+            } catch (Exception e) {
+                errorProcess(cc, errCodeInvalidArg, e.getMessage());
+            }
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, e.GetErrorInfo());
+        }
+    }
+
+    private void backupFileReader_read(JSONArray args, CallbackContext callbackContext) throws JSONException {
+        String readerObjectId = args.getString(0);
+        int bytesCount = args.getInt(1);
+
+        try {
+            byte[] buffer = new byte[bytesCount];
+            InputStream reader = backupFileReaderMap.get(readerObjectId);
+
+            // Resume reading at the previous read offset
+            int currentReadOffset = backupFileReaderOffsetsMap.get(readerObjectId);
+            reader.skip(currentReadOffset);
+            int readBytes = reader.read(buffer, 0, bytesCount);
+
+            if (readBytes != -1) {
+                // Move read offset to the next position
+                backupFileReaderOffsetsMap.put(readerObjectId, currentReadOffset + readBytes);
+                callbackContext.success(Base64.encodeToString(buffer, 0, readBytes, 0));
+            }
+            else {
+                callbackContext.success((String)null);
+            }
+        }
+        catch (IOException e) {
+            callbackContext.error(e.getMessage());
+        }
+    }
+
+    private void backupFileReader_close(JSONArray args, CallbackContext callbackContext) throws JSONException {
+        String readerObjectId = args.getString(0);
+
+        try {
+            InputStream reader = backupFileReaderMap.get(readerObjectId);
+            reader.close();
+            backupFileReaderMap.remove(readerObjectId);
+            backupFileReaderOffsetsMap.remove(readerObjectId);
+            callbackContext.success();
+        }
+        catch (IOException e) {
+            callbackContext.error(e.getMessage());
+        }
+    }
+
+    public void restoreBackupFile(JSONArray args, CallbackContext cc) throws JSONException {
+        String masterWalletID = args.getString(0);
+        String fileName = args.getString(1);
+
+        try {
+            MasterWallet masterWallet = getIMasterWallet(masterWalletID);
+            if (masterWallet == null) {
+                errorProcess(cc, errCodeInvalidMasterWallet, "Master wallet "+masterWalletID+" not found");
+                return;
+            }
+
+            if (!ensureBackupFile(fileName)) {
+                errorProcess(cc, errCodeInvalidMasterWallet, "Invalid backup file name "+fileName);
+                return;
+            }
+
+            try {
+                // Open an output stream to write the file
+                String spvSyncStateFilesPath = getSPVSyncStateFolderPath(masterWalletID);
+                File backupFile = new File(spvSyncStateFilesPath + "/" + fileName);
+
+                BufferedOutputStream writer = new BufferedOutputStream(new FileOutputStream(backupFile));
+
+                String objectId = "" + System.identityHashCode(writer);
+                backupFileWriterMap.put(objectId, writer);
+
+                JSONObject ret = new JSONObject();
+                ret.put("objectId", objectId);
+                cc.success(ret);
+            } catch (Exception e) {
+                errorProcess(cc, errCodeInvalidArg, e.getMessage());
+            }
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, e.GetErrorInfo());
+        }
+    }
+
+    private void backupFileWriter_write(JSONArray args, CallbackContext callbackContext) throws JSONException {
+        String writerObjectId = args.getString(0);
+        String base64encodedFromUint8Array = args.getString(1);
+
+        try {
+            OutputStream writer = backupFileWriterMap.get(writerObjectId);
+
+            // Cordova encodes UInt8Array in TS to base64 encoded in java.
+            byte[] data = Base64.decode(base64encodedFromUint8Array, Base64.DEFAULT);
+            writer.write(data);
+
+            callbackContext.success();
+        }
+        catch (IOException e) {
+            callbackContext.error(e.getMessage());
+        }
+    }
+
+    private void backupFileWriter_close(JSONArray args, CallbackContext callbackContext) throws JSONException {
+        String writerObjectId = args.getString(0);
+
+        try {
+            OutputStream writer = backupFileWriterMap.get(writerObjectId);
+            writer.flush();
+            writer.close();
+            backupFileWriterMap.remove(writerObjectId);
+            callbackContext.success();
+        }
+        catch (IOException e) {
+            callbackContext.error(e.getMessage());
+        }
+    }
+
+    private String getSPVSyncStateFolderPath(String masterWalletID) {
+        return getDataPath()+"/spv/data/"+masterWalletID;
+    }
+
+    // Returns true if the given filename is a valid wallet file for backup (to make sure we the caller is not
+    // trying to access and unauthorized file), false otherwise.
+    private boolean ensureBackupFile(String fileName) {
+        return fileName.equals("ELA.db") || fileName.equals("IDChain.db");
+    }
 }

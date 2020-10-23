@@ -1472,5 +1472,61 @@ declare module WalletPlugin {
          * @return Transaction in JSON format.
          */
         createProposalWithdrawTransaction(args, success, error);
+
+        //////////////////////////////////////////////////
+        /*               Backup and restore             */
+        //////////////////////////////////////////////////
+
+        /**
+         * Returns the list of files (info only) to backup for the wallet, and for each of them,
+         * its current size and last modified date.
+         *
+         * Backup files contain only information about the SPV synchronization state. They do not contain any
+         * private information.
+         */
+        getBackupInfo(masterWalletID: string): Promise<BackupInfo>;
+
+        /**
+         * Returns a Reader instance that can be used to read the target backup file content in order to save
+         * it somewhere else.
+         */
+        getBackupFile(masterWalletID: string, fileName: string): Promise<BackupFileReader>;
+
+        /**
+         * Returns a Writer instance that can be used to overwrite one of the SPV synchronization files in order
+         * to restore a more recent state of the wallet.
+         */
+        restoreBackupFile(masterWalletID: string, fileName: string): Promise<BackupFileWriter>;
+    }
+
+    /**
+     * Reader allowing to read backup files content in chunks.
+     */
+    class BackupFileReader {
+        read(bytesCount: number): Promise<Uint8Array>;
+        close();
+    }
+
+    /**
+     * Writer allowing to write backup files content in chunks.
+     */
+    class BackupFileWriter {
+        write(bytes: Uint8Array): Promise<void>;
+        close();
+    }
+
+    /**
+     * Information about
+     */
+    type BackupFile = {
+        fileName: string; // File name in device storage
+        fileSize: number; // Size in bytes
+        lastModified: Date;
+    }
+
+    class BackupInfo {
+        ELADatabase: BackupFile; // .db file for the ELA subwallet sync state
+        IDChainDatabase: BackupFile; // .db file for the ID sidechain subwallet sync state
+        ETHChainDatabase: BackupFile; // .db file for the ETH sidechain subwallet sync state
     }
 }
