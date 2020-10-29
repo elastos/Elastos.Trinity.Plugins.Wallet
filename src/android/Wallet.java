@@ -3881,13 +3881,13 @@ public class Wallet extends TrinityPlugin {
 
             // Resume reading at the previous read offset
             int currentReadOffset = backupFileReaderOffsetsMap.get(readerObjectId);
-            reader.skip(currentReadOffset);
+            //reader.skip(currentReadOffset);
             int readBytes = reader.read(buffer, 0, bytesCount);
 
             if (readBytes != -1) {
                 // Move read offset to the next position
                 backupFileReaderOffsetsMap.put(readerObjectId, currentReadOffset + readBytes);
-                callbackContext.success(Base64.encodeToString(buffer, 0, readBytes, 0));
+                callbackContext.success(Base64.encodeToString(buffer, 0, readBytes, Base64.NO_WRAP));
             }
             else {
                 callbackContext.success((String)null);
