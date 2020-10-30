@@ -192,7 +192,7 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
     };
 
     createConsolidateTransaction(args, success, error) {
-        _exec(success, error, "Wallet", "createConsolidateTransaction", args);
+        exec(success, error, "Wallet", "createConsolidateTransaction", args);
     };
 
     signTransaction(args, success, error) {
