@@ -209,5 +209,13 @@ static NSString *currentDid = nil;
 - (void)deleteTransfer:(CDVInvokedUrlCommand *)command;
 - (void)getTokenTransactions:(CDVInvokedUrlCommand *)command;
 
+// Backup Restore
+- (void)getBackupInfo:(CDVInvokedUrlCommand *)command;
+- (void)getBackupFile:(CDVInvokedUrlCommand *)command;
+- (void)backupFileReader_read:(CDVInvokedUrlCommand *)command;
+- (void)backupFileReader_close:(CDVInvokedUrlCommand *)command;
+- (void)restoreBackupFile:(CDVInvokedUrlCommand *)command;
+- (void)backupFileWriter_write:(CDVInvokedUrlCommand *)command;
+- (void)backupFileWriter_close:(CDVInvokedUrlCommand *)command;
 
 @end

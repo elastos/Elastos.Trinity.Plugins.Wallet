@@ -3413,4 +3413,220 @@ String const ETHSC = "ETHSC";
     }
 }
 
+- (void)getBackupInfo:(CDVInvokedUrlCommand *)command
+{
+    NSArray *args = command.arguments;
+    String masterWalletID = [self cstringWithString:args[0]];
+
+        try {
+            IMasterWallet *masterWallet = [self getIMasterWallet:masterWalletID];
+            if (masterWallet == nil) {
+                NSString *msg = [NSString stringWithFormat:@"Master wallet %@ not found", [self formatWalletNameWithString:masterWalletID other:IDChain]];
+                return [self errorProcess:command code:errCodeInvalidMasterWallet msg:msg];
+            }
+
+            String spvSyncStateFilesPath = [self getSPVSyncStateFolderPath:masterWalletID];
+            NSDictionary *backupInfo = [[NSDictionary alloc] init];
+            //[backupInfo setValue:@"hey" forKey:@"test"];
+
+            // TODO - NOT IMPLEMENTED YET
+
+            // ELA mainchain info
+            /*JSONObject elaDatabaseInfo = new JSONObject();
+            File elaDBFile = new File(spvSyncStateFilesPath + "/ELA.db");
+            if (elaDBFile.exists()) {
+                elaDatabaseInfo.put("fileName", "ELA.db");
+                elaDatabaseInfo.put("fileSize", elaDBFile.length());
+                elaDatabaseInfo.put("lastModified", elaDBFile.lastModified()); // Timestamp MS
+                backupInfo.put("ELADatabase", elaDatabaseInfo);
+            }
+
+            // ID sidechain info
+            JSONObject idChainDatabaseInfo = new JSONObject();
+            File idChainDBFile = new File(spvSyncStateFilesPath + "/IDChain.db");
+            if (idChainDBFile.exists()) {
+                idChainDatabaseInfo.put("fileName", "IDChain.db");
+                idChainDatabaseInfo.put("fileSize", idChainDBFile.length());
+                idChainDatabaseInfo.put("lastModified", idChainDBFile.lastModified()); // Timestamp MS
+                backupInfo.put("IDChainDatabase", idChainDatabaseInfo);
+            }
+
+            // ETH sidechain info
+            JSONObject ethChainDatabaseInfo = new JSONObject();
+            File ethChainDBFile = new File(spvSyncStateFilesPath + "/eth-mainnet-entities.db");
+            if (ethChainDBFile.exists()) {
+                ethChainDatabaseInfo.put("fileName", "eth-mainnet-entities.db");
+                ethChainDatabaseInfo.put("fileSize", ethChainDBFile.length());
+                ethChainDatabaseInfo.put("lastModified", ethChainDBFile.lastModified()); // Timestamp MS
+                backupInfo.put("IDChainDatabase", ethChainDatabaseInfo);
+            }
+*/
+            //return [self successAsDict:command msg:backupInfo];
+            return [self exceptionProcess:command string:"NOT IMPLEMENTED"]; // TMP
+        } catch (const std:: exception &e) {
+            return [self exceptionProcess:command string:e.what()];
+        }
+    }
+
+-(void)getBackupFile:(CDVInvokedUrlCommand *)command
+{
+    NSArray *args = command.arguments;
+    String masterWalletID = [self cstringWithString:args[0]];
+    String fileName = [self cstringWithString:args[1]];
+
+        try {
+            IMasterWallet *masterWallet = [self getIMasterWallet:masterWalletID];
+            if (masterWallet == nil) {
+                NSString *msg = [NSString stringWithFormat:@"Master wallet %@ not found", [self formatWalletNameWithString:masterWalletID other:IDChain]];
+                return [self errorProcess:command code:errCodeInvalidMasterWallet msg:msg];
+            }
+
+            if (![self ensureBackupFile:fileName]) {
+                NSString *msg = [NSString stringWithFormat:@"Invalid backup file name %s", fileName.c_str()];
+                return [self errorProcess:command code:errCodeInvalidMasterWallet msg:msg];
+            }
+
+            try {
+                // Open an input stream to read the file
+                String spvSyncStateFilesPath = [self getSPVSyncStateFolderPath:masterWalletID];
+
+                NSString *backupFilePath =  [NSString stringWithFormat:@"%s/%s", spvSyncStateFilesPath.c_str(), fileName.c_str()];
+                NSFileHandle * backupFile = [NSFileHandle fileHandleForReadingAtPath:backupFilePath];
+
+                NSString *objectId = [NSString stringWithFormat:@"%lu", (unsigned long)backupFile.hash];
+                backupFileReaderMap[objectId] = backupFile;
+
+                NSMutableDictionary *ret = [[NSMutableDictionary alloc] init];
+                ret[@"objectID"] = objectId;
+                return [self successAsDict:command msg:ret];
+            } catch (const std:: exception &e) {
+                return [self exceptionProcess:command string:e.what()];
+            }
+        } catch (const std:: exception &e) {
+            return [self exceptionProcess:command string:e.what()];
+        }
+    }
+
+-(void)backupFileReader_read:(CDVInvokedUrlCommand *)command
+{
+    NSArray *args = command.arguments;
+    String readerObjectId = [self cstringWithString:args[0]];
+    int bytesCount = [args[1] intValue];
+
+    try {
+        NSFileHandle *reader = (NSFileHandle*)backupFileReaderMap[[self stringWithCString:readerObjectId.c_str()]];
+
+        NSData *buffer = [reader readDataOfLength:bytesCount];
+
+        if (buffer != nil) {
+            [self successAsString:command msg:[buffer base64EncodedStringWithOptions: kNilOptions]];
+        }
+        else {
+            [self successAsString:command msg:nil];
+        }
+    }
+    catch (const std:: exception &e) {
+        return [self exceptionProcess:command string:e.what()];
+    }
+}
+
+- (void)backupFileReader_close:(CDVInvokedUrlCommand *)command
+{
+    NSArray *args = command.arguments;
+    NSString *readerObjectId = args[0];
+
+    try {
+        NSFileHandle *reader = (NSFileHandle*)backupFileReaderMap[readerObjectId];
+        [reader closeFile];
+        [backupFileReaderMap removeObjectForKey:readerObjectId];
+        [self successAsString:command msg:nil];
+    }
+    catch (const std:: exception &e) {
+        return [self exceptionProcess:command string:e.what()];
+    }
+}
+
+-(void)restoreBackupFile:(CDVInvokedUrlCommand *)command
+{
+    NSArray *args = command.arguments;
+    String masterWalletID = [self cstringWithString:args[0]];
+    String fileName = [self cstringWithString:args[1]];
+
+    try {
+        IMasterWallet *masterWallet = [self getIMasterWallet:masterWalletID];
+        if (masterWallet == nil) {
+            NSString *msg = [NSString stringWithFormat:@"Master wallet %@ not found", [self formatWalletNameWithString:masterWalletID other:IDChain]];
+            return [self errorProcess:command code:errCodeInvalidMasterWallet msg:msg];
+        }
+
+        if (![self ensureBackupFile:fileName]) {
+            NSString *msg = [NSString stringWithFormat:@"Invalid backup file name %s", fileName.c_str()];
+            return [self errorProcess:command code:errCodeInvalidMasterWallet msg:msg];
+        }
+
+        try {
+            // Open an output stream to write the file
+            String spvSyncStateFilesPath = [self getSPVSyncStateFolderPath:masterWalletID];
+            NSString *backupFilePath =  [NSString stringWithFormat:@"%s/%s", spvSyncStateFilesPath.c_str(), fileName.c_str()];
+            NSFileHandle * backupFile = [NSFileHandle fileHandleForReadingAtPath:backupFilePath];
+
+            NSString *objectId = [NSString stringWithFormat:@"%lu", (unsigned long)backupFile.hash];
+            backupFileWriterMap[objectId] = backupFile;
+
+            NSMutableDictionary *ret = [[NSMutableDictionary alloc] init];
+            ret[@"objectID"] = objectId;
+            return [self successAsDict:command msg:ret];
+        } catch (const std:: exception &e) {
+            return [self exceptionProcess:command string:e.what()];
+        }
+    } catch (const std:: exception &e) {
+        return [self exceptionProcess:command string:e.what()];
+    }
+}
+
+-(void)backupFileWriter_write:(CDVInvokedUrlCommand *)command
+{
+    NSArray *args = command.arguments;
+    NSString *writerObjectId = args[0];
+    NSString *base64encodedFromUint8Array = args[1];
+
+    try {
+        NSFileHandle *writer = (NSFileHandle*)backupFileWriterMap[writerObjectId];
+
+        NSData *data = [[NSData alloc] initWithBase64EncodedString:base64encodedFromUint8Array options:kNilOptions];
+        [writer writeData: data];
+        [self successAsString:command msg:nil];
+    }
+    catch (const std:: exception &e) {
+        return [self exceptionProcess:command string:e.what()];
+    }
+}
+
+- (void)backupFileWriter_close:(CDVInvokedUrlCommand *)command
+{
+    NSArray *args = command.arguments;
+    NSString *writerObjectId = args[0];
+
+    try {
+        NSFileHandle *writer = (NSFileHandle*)backupFileWriterMap[writerObjectId];
+        [writer closeFile];
+        [backupFileWriterMap removeObjectForKey:writerObjectId];
+        [self successAsString:command msg:nil];
+    }
+    catch (const std:: exception &e) {
+        return [self exceptionProcess:command string:e.what()];
+    }
+}
+
+-(String)getSPVSyncStateFolderPath:(String)masterWalletID
+{
+    return  [[NSString stringWithFormat:@"%@/spv/data/%@", [self getDataPath], [self stringWithCString:masterWalletID]] UTF8String];
+}
+
+// Returns true if the given filename is a valid wallet file for backup (to make sure we the caller is not
+// trying to access and unauthorized file), false otherwise.
+-(bool)ensureBackupFile:(String)fileName {
+    return fileName == "ELA.db" || fileName == "IDChain.db";
+}
+
 @end
