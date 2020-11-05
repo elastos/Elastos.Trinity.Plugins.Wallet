@@ -49,6 +49,8 @@ typedef Elastos::ElaWallet::IIDChainSubWallet IIDChainSubWallet;
 
 static int walletRefCount = 0;
 static NSMutableDictionary *subwalletListenerMDict = [[NSMutableDictionary alloc] init];
+static NSMutableDictionary *backupFileReaderMap = [[NSMutableDictionary alloc] init];
+static NSMutableDictionary *backupFileWriterMap = [[NSMutableDictionary alloc] init];
 static MasterWalletManager *mMasterWalletManager = nil;
 static NSString *currentDid = nil;
 
