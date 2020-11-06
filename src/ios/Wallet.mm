@@ -387,7 +387,12 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
 {
     NSString *errString=[self stringWithCString:exceptionString];
     NSDictionary *dic=  [self dictionaryWithJsonString:errString];
-    [self errorProcess:command code:[dic[@"Code"] intValue] msg:dic[@"Message"]];
+    if (dic != nil) {
+        [self errorProcess:command code:[dic[@"Code"] intValue] msg:dic[@"Message"]];
+    } else {
+        // if the exceptionString isn't json string
+        [self errorProcess:command code:errCodeWalletException msg:errString];
+    }
 }
 
 - (NSDictionary *)parseOneParam:(NSString *)key value:(NSString *)value
@@ -439,6 +444,13 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     String std = [self cstringWithString:string];
     Json json = Json::parse(std);
     return json;
+}
+
+- (String)stringWithDict:(NSDictionary *)dict
+{
+    NSString *string = [self dictToJSONString:dict];
+    String std = [self cstringWithString:string];
+    return std;
 }
 
 - (NSString *)stringWithJson:(Json)json
@@ -555,7 +567,7 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
         }
     }
 
-    //  NSString* rootPath = [NSHomeDirectory() stringByAppendingString:@"/Documents/spv"];
+    // NSString* rootPath = [NSHomeDirectory() stringByAppendingString:@"/Documents/spv"];
     NSString* rootPath = [[self getDataPath] stringByAppendingString:@"spv"];
     NSFileManager *fm = [NSFileManager defaultManager];
     if (![fm fileExistsAtPath:rootPath]) {
@@ -3295,7 +3307,7 @@ String const IDChain = "IDChain";
 String const ETHSC = "ETHSC";
 
 - (IEthSidechainSubWallet*) getEthSidechainSubWallet:(String)masterWalletID {
-     ISubWallet* subWallet = [self getSubWallet:masterWalletID :IDChain];
+     ISubWallet* subWallet = [self getSubWallet:masterWalletID :ETHSC];
 
     return dynamic_cast<IEthSidechainSubWallet *>(subWallet);
  }
@@ -3320,9 +3332,9 @@ String const ETHSC = "ETHSC";
     }
 
     try {
-        String ret = ethscSubWallet->CreateTransfer(targetAddress, amount, amountUnit);
-        NSString *jsonString = [self stringWithJson:ret];
-        return [self successAsString:command msg:jsonString];
+        Json json = ethscSubWallet->CreateTransfer(targetAddress, amount, amountUnit);
+        NSString *msg = [self stringWithJson:json];
+        return [self successAsString:command msg:msg];
     } catch (const std:: exception &e) {
         return [self exceptionProcess:command string:e.what()];
     }
@@ -3352,9 +3364,9 @@ String const ETHSC = "ETHSC";
     }
 
     try {
-        String ret = ethscSubWallet->CreateTransferGeneric(targetAddress, amount, amountUnit, gasPrice, gasPriceUnit, gasLimit, data);
-        NSString *jsonString = [self stringWithJson:ret];
-        return [self successAsString:command msg:jsonString];
+        Json json = ethscSubWallet->CreateTransferGeneric(targetAddress, amount, amountUnit, gasPrice, gasPriceUnit, gasLimit, data);
+        NSString *msg = [self stringWithJson:json];
+        return [self successAsString:command msg:msg];
     } catch (const std:: exception &e) {
         return [self exceptionProcess:command string:e.what()];
     }
@@ -3366,7 +3378,7 @@ String const ETHSC = "ETHSC";
     int idx = 0;
 
     String masterWalletID = [self cstringWithString:args[idx++]];
-    String tx             = [self cstringWithString:args[idx++]];
+    String tx             = [self stringWithDict:args[idx++]];
 
     if (args.count != idx) {
         return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
@@ -3378,7 +3390,7 @@ String const ETHSC = "ETHSC";
     }
 
     try {
-        ethscSubWallet->DeleteTransfer(tx);
+        ethscSubWallet->DeleteTransfer(nlohmann::json::parse(tx));
         return [self successAsString:command msg:@"DeleteTransfer OK"];
     } catch (const std:: exception &e) {
         return [self exceptionProcess:command string:e.what()];
