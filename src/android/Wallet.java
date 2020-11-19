@@ -85,6 +85,8 @@ public class Wallet extends TrinityPlugin {
     private String ethscjsonrpcUrl = "";
     private String ethscapimiscUrl = "";
 
+    private String netType = "MainNet";
+
     private int errCodeParseJsonInAction = 10000;
     private int errCodeInvalidArg = 10001;
     private int errCodeInvalidMasterWallet = 10002;
@@ -196,7 +198,7 @@ public class Wallet extends TrinityPlugin {
         if (!destDir.exists()) {
             destDir.mkdirs();
         }
-        String netType = PreferenceManager.getShareInstance().getWalletNetworkType();
+        netType = PreferenceManager.getShareInstance().getWalletNetworkType();
         String config = PreferenceManager.getShareInstance().getWalletNetworkConfig();
         mMasterWalletManager = new MasterWalletManager(rootPath, netType, config, dataPath);
         // mMasterWalletManager.SetLogLevel("warning");
@@ -4006,7 +4008,11 @@ public class Wallet extends TrinityPlugin {
     }
 
     private String getSPVSyncStateFolderPath(String masterWalletID) {
-        return getDataPath()+"/spv/data/"+masterWalletID;
+        if ("TestNet".equals(netType)) {
+            return getDataPath()+"/spv/data/TestNet/"+masterWalletID;
+        } else {
+            return getDataPath()+"/spv/data/"+masterWalletID;
+        }
     }
 
     // Returns true if the given filename is a valid wallet file for backup (to make sure we the caller is not

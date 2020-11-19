@@ -560,7 +560,7 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     if (![fm fileExistsAtPath:dataPath]) {
         [fm createDirectoryAtPath:dataPath withIntermediateDirectories:true attributes:NULL error:NULL];
     }
-    NSString* netType = [WrapSwift getWalletNetworkType];
+    netType = [WrapSwift getWalletNetworkType];
     NSString* config = [WrapSwift getWalletNetworkConfig];
 
     mEthscjsonrpcUrl = [self cstringWithString:[WrapSwift getPreferenceStringValue:@"sidechain.eth.rpcapi" :@""]];
@@ -3631,7 +3631,11 @@ String const ETHSC = "ETHSC";
 
 -(String)getSPVSyncStateFolderPath:(String)masterWalletID
 {
-    return  [[NSString stringWithFormat:@"%@/spv/data/%@", [self getDataPath], [self stringWithCString:masterWalletID]] UTF8String];
+    if ([netType isEqual: @"TestNet"]) {
+        return [[NSString stringWithFormat:@"%@/spv/data/TestNet/%@", [self getDataPath], [self stringWithCString:masterWalletID]] UTF8String];
+    } else {
+        return [[NSString stringWithFormat:@"%@/spv/data/%@", [self getDataPath], [self stringWithCString:masterWalletID]] UTF8String];
+    }
 }
 
 // Returns true if the given filename is a valid wallet file for backup (to make sure we the caller is not

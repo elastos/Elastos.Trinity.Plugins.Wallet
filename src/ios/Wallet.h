@@ -53,6 +53,7 @@ static NSMutableDictionary *backupFileReaderMap = [[NSMutableDictionary alloc] i
 static NSMutableDictionary *backupFileWriterMap = [[NSMutableDictionary alloc] init];
 static MasterWalletManager *mMasterWalletManager = nil;
 static NSString *currentDid = nil;
+static NSString *netType = @"MainNet";
 
 @interface Wallet : TrinityPlugin {
     NSString *TAG; //= @"Wallet";
