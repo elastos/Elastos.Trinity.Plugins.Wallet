@@ -91,6 +91,10 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         exec(success, error, "Wallet", "getVersion", args);
     };
 
+    setLogLevel(args, success, error) {
+        exec(success, error, "Wallet", "setLogLevel", args);
+    };
+
     //MasterWallet
 
     getMasterWalletBasicInfo(args, success, error) {

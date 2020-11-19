@@ -128,7 +128,6 @@ CDVPluginResult *ElISubWalletCallback::errorProcess(int code, id msg)
 void ElISubWalletCallback::OnTransactionStatusChanged(const std::string &txid,
                         const std::string &status, const nlohmann::json &desc, uint32_t confirms)
 {
-    NSLog(@" ----OnTransactionStatusChanged ----\n");
     NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
     NSString *txIdStr = [NSString stringWithCString:txid.c_str() encoding:NSUTF8StringEncoding];
     NSString *statusStr = [NSString stringWithCString:status.c_str() encoding:NSUTF8StringEncoding];
@@ -146,8 +145,6 @@ void ElISubWalletCallback::OnTransactionStatusChanged(const std::string &txid,
 
 void ElISubWalletCallback::OnBlockSyncProgress(const nlohmann::json &progressInfo)
 {
-//    NSLog(@" ----OnBlockSyncProgress ----\n");
-
     NSString *progressInfoString = [NSString stringWithCString:progressInfo.dump().c_str() encoding:NSUTF8StringEncoding];
 
     NSError *err;
@@ -159,7 +156,6 @@ void ElISubWalletCallback::OnBlockSyncProgress(const nlohmann::json &progressInf
 
 void ElISubWalletCallback::OnBalanceChanged(const std::string &asset, const std::string &balance)
 {
-    NSLog(@" ----OnBalanceChanged ----\n");
     NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
 
     NSString *assetString = [NSString stringWithCString:asset.c_str() encoding:NSUTF8StringEncoding];
@@ -226,56 +222,47 @@ void ElISubWalletCallback::OnETHSCEventHandled(const nlohmann::json &event)
 
 nlohmann::json ElISubWalletCallback::GasPrice(int id)
 {
-//    NSLog(@" ----GetBlockNumber ----id: %d\n", id);
     return mHttprequest->GasPrice(id);
 }
 
 nlohmann::json ElISubWalletCallback::EstimateGas(const std::string &from, const std::string &to, const std::string &amount,
             const std::string &gasPrice, const std::string &data, int id)
 {
-//    NSLog(@" ----EstimateGas ----\n");
     return mHttprequest->EstimateGas(from, to, amount, gasPrice, data, id);
 }
 
 nlohmann::json ElISubWalletCallback::GetBalance(const std::string &address, int id)
 {
-//    NSLog(@" ----GetBalance ----\n");
     return mHttprequest->GetBalance(address, id);
 }
 
 nlohmann::json ElISubWalletCallback::SubmitTransaction(const std::string &tx, int id)
 {
-//    NSLog(@" ----SubmitTransaction ----\n");
     return mHttprequest->SubmitTransaction(tx, id);
 }
 
 nlohmann::json ElISubWalletCallback::GetTransactions(const std::string &address, uint64_t begBlockNumber, uint64_t endBlockNumber, int id)
 {
-//    NSLog(@" ----GetTransactions ----\n");
     return mHttprequest->GetTransactions(address, begBlockNumber, endBlockNumber, id);
 }
 
 nlohmann::json ElISubWalletCallback::GetLogs(const std::string &contract, const std::string &address, const std::string &event, uint64_t begBlockNumber, uint64_t endBlockNumber, int id)
 {
-//    NSLog(@" ----GetLogs ----\n");
     return mHttprequest->GetLogs(contract, address, event, begBlockNumber, endBlockNumber, id);
 }
 
 nlohmann::json ElISubWalletCallback::GetTokens(int id)
 {
-//    NSLog(@" ----GetTokens ----\n");
     return mHttprequest->GetTokens(id);
 }
 
 nlohmann::json ElISubWalletCallback::GetBlockNumber(int id)
 {
-//    NSLog(@" ----GetBlockNumber ----\n");
     return mHttprequest->GetBlockNumber(id);
 }
 
 nlohmann::json ElISubWalletCallback::GetNonce(const std::string &address, int id)
 {
-//    NSLog(@" ----GetNonce ----\n");
     return mHttprequest->GetNonce(address, id);
 }
 
@@ -296,7 +283,6 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
 
 @interface Wallet ()
 {
-    //    ELIIdManagerCallback *iidCallback;
 }
 
 @end
@@ -507,13 +493,9 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
 
 - (void)applicationEnterBackground
 {
-    // if (mMasterWalletManager != nil) {
-    //     mMasterWalletManager->SaveConfigs();
-    // }
 }
 - (void)applicationBecomeActive
 {
-
 }
 
 - (void)pluginInitialize
@@ -588,6 +570,7 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
         NSLog(@"WALLETTEST new MasterWalletManager rootPath: %@,  dataPath:%@", rootPath, dataPath);
         mMasterWalletManager = new MasterWalletManager([rootPath UTF8String], [netType UTF8String],
                 [config UTF8String], [dataPath UTF8String]);
+        mMasterWalletManager->SetLogLevel("warning");
     } catch (const std:: exception & e ) {
         NSString *errString=[self stringWithCString:e.what()];
         NSLog(@"new MasterWalletManager error: %@", errString);
@@ -1835,6 +1818,22 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     String version = mMasterWalletManager->GetVersion();
     NSString *msg = [self stringWithCString:version];
     return [self successAsString:command msg:msg];
+}
+
+- (void)setLogLevel:(CDVInvokedUrlCommand *)command
+{
+    int idx = 0;
+    NSArray *args = command.arguments;
+    String loglevel = [self cstringWithString:args[idx++]];
+    if (args.count != idx) {
+        return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
+    }
+    if (mMasterWalletManager == nil) {
+        NSString *msg = [NSString stringWithFormat:@"%@", @"Master wallet manager has not initialize"];
+        return [self errorProcess:command code:errCodeInvalidMasterWalletManager msg:msg];
+    }
+    mMasterWalletManager->SetLogLevel(loglevel);
+    return [self successAsString:command msg:@"SetLogLevel OK"];
 }
 
 - (void)generateProducerPayload:(CDVInvokedUrlCommand *)command

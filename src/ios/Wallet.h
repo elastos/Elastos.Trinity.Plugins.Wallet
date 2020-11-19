@@ -129,6 +129,7 @@ static NSString *currentDid = nil;
 - (void)getMasterWallet:(CDVInvokedUrlCommand *)command;
 - (void)destroySubWallet:(CDVInvokedUrlCommand *)command;
 - (void)getVersion:(CDVInvokedUrlCommand *)command;
+- (void)setLogLevel:(CDVInvokedUrlCommand *)command;
 
 // MainchainSubwallet
 - (void)createDepositTransaction:(CDVInvokedUrlCommand *)command;

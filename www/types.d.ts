@@ -76,6 +76,16 @@ declare module WalletPlugin {
         ETHER_ETHER = 6,
     }
 
+    const enum LogType {
+        TRACE = "trace",
+        DEBUG = 'debug',
+        INFO = 'info',
+        WARNING = 'warning',
+        ERROR = 'error',
+        CRITICAL = 'critical',
+        OFF = 'off',
+    }
+
     interface WalletManager {
         //MasterWalletManager
 
@@ -178,6 +188,12 @@ declare module WalletPlugin {
          * @return SPV SDK version
          */
         getVersion(args, success, error);
+
+        /**
+         * Set log level
+         *  @param level can be value of: "trace", "debug", "info", "warning", "error", "critical", "off"
+         */
+        setLogLevel(args, success, error);
 
         //MasterWallet
 

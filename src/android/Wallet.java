@@ -149,14 +149,13 @@ public class Wallet extends TrinityPlugin {
      */
     @Override
     public void onDestroy() {
-        Log.i(TAG, "onDestroy");
-
         walletRefCount--;
 
         if (mMasterWalletManager != null) {
             subwalletListenerMap.remove(did + modeId);
 
             if (walletRefCount == 0) {
+                Log.i(TAG, "onDestroy");
                 ArrayList<MasterWallet> masterWalletList = mMasterWalletManager.GetAllMasterWallets();
                 for (int i = 0; i < masterWalletList.size(); i++) {
                     MasterWallet masterWallet = masterWalletList.get(i);
@@ -168,6 +167,7 @@ public class Wallet extends TrinityPlugin {
                 }
                 mMasterWalletManager.Dispose();
                 mMasterWalletManager = null;
+                Log.i(TAG, "onDestroy end");
             }
         }
 
@@ -199,7 +199,7 @@ public class Wallet extends TrinityPlugin {
         String netType = PreferenceManager.getShareInstance().getWalletNetworkType();
         String config = PreferenceManager.getShareInstance().getWalletNetworkConfig();
         mMasterWalletManager = new MasterWalletManager(rootPath, netType, config, dataPath);
-
+        // mMasterWalletManager.SetLogLevel("warning");
         ethscjsonrpcUrl = PreferenceManager.getShareInstance().getStringValue("sidechain.eth.rpcapi", "");
         ethscapimiscUrl = PreferenceManager.getShareInstance().getStringValue("sidechain.eth.apimisc", "");
         addWalletListener();
@@ -372,6 +372,9 @@ public class Wallet extends TrinityPlugin {
                 // Master wallet manager
                 case "getVersion":
                     this.getVersion(args, cc);
+                    break;
+                case "setLogLevel":
+                    this.setLogLevel(args, cc);
                     break;
                 case "generateMnemonic":
                     this.generateMnemonic(args, cc);
@@ -1021,6 +1024,25 @@ public class Wallet extends TrinityPlugin {
 
         String version = mMasterWalletManager.GetVersion();
         cc.success(version);
+    }
+
+    public void setLogLevel(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+
+        String loglevel = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        if (mMasterWalletManager == null) {
+            errorProcess(cc, errCodeInvalidMasterWalletManager, "Master wallet manager has not initialize");
+            return;
+        }
+
+        mMasterWalletManager.SetLogLevel(loglevel);
+        cc.success("SetLogLevel OK");
     }
 
     // args[0]: String masterWalletID
