@@ -277,6 +277,15 @@ declare module WalletPlugin {
         isAddressValid(args, success, error);
 
         /**
+         * Verify an address which can be normal, multi-sign, cross chain, id address or ETHSC.
+         * @param masterWalletID is the unique identification of a master wallet object.
+         * @param chainID chain id of subwallet
+         * @param address address of subwallet
+         * @return True if valid, otherwise return false.
+         */
+        isSubWalletAddressValid(args, success, error);
+
+        /**
          * Get all chain ids of supported chains.
          * @param masterWalletID is the unique identification of a master wallet object.
          * @return a list of chain id.

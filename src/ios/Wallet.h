@@ -118,6 +118,7 @@ static NSString *netType = @"MainNet";
 - (void)getAllAddress:(CDVInvokedUrlCommand *)command;
 - (void)getAllPublicKeys:(CDVInvokedUrlCommand *)command;
 - (void)isAddressValid:(CDVInvokedUrlCommand *)command;
+- (void)isSubWalletAddressValid:(CDVInvokedUrlCommand *)command;
 - (void)destroyWallet:(CDVInvokedUrlCommand *)command;
 - (void)createTransaction:(CDVInvokedUrlCommand *)command;
 - (void)getAllUTXOs:(CDVInvokedUrlCommand *)command;

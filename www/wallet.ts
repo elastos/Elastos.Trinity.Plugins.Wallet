@@ -134,7 +134,17 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
     };
 
     isAddressValid(args, success, error) {
-        exec(success, error, "Wallet", "isAddressValid", args);
+        var _onSuccess = function(ret : string) {
+            success(ret == "true");
+        }
+        exec(_onSuccess, error, "Wallet", "isAddressValid", args);
+    };
+
+    isSubWalletAddressValid(args, success, error) {
+        var _onSuccess = function(ret : string) {
+            success(ret == "true");
+        }
+        exec(_onSuccess, error, "Wallet", "isSubWalletAddressValid", args);
     };
 
     getSupportedChains(args, success, error) {

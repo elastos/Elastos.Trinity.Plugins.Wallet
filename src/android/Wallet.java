@@ -440,6 +440,9 @@ public class Wallet extends TrinityPlugin {
                 case "isAddressValid":
                     this.isAddressValid(args, cc);
                     break;
+                case "isSubWalletAddressValid":
+                    this.isSubWalletAddressValid(args, cc);
+                    break;
                 case "getSupportedChains":
                     this.getSupportedChains(args, cc);
                     break;
@@ -1336,6 +1339,35 @@ public class Wallet extends TrinityPlugin {
             cc.success(valid.toString());
         } catch (WalletException e) {
             exceptionProcess(e, cc, "Check address valid of " + formatWalletName(masterWalletID));
+        }
+    }
+
+    // args[0]: String masterWalletID
+    // args[1]: String chainID
+    // args[2]: String address
+    public void isSubWalletAddressValid(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+
+        String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
+        String address = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            MasterWallet masterWallet = getIMasterWallet(masterWalletID);
+            if (masterWallet == null) {
+                errorProcess(cc, errCodeInvalidMasterWallet, "Get " + formatWalletName(masterWalletID));
+                return;
+            }
+
+            Boolean valid = masterWallet.IsSubWalletAddressValid(chainID, address);
+            cc.success(valid.toString());
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, "Check address valid of " + formatWalletName(masterWalletID, chainID));
         }
     }
 
