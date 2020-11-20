@@ -296,7 +296,7 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
     };
 
     getTokenTransactions(args, success, error) {
-        exec(success, error, "Wallet", "getTokenTransactions", args);
+        _exec(success, error, "Wallet", "getTokenTransactions", args);
     };
 
     //MainchainSubWallet
