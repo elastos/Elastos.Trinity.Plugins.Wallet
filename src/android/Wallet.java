@@ -201,7 +201,7 @@ public class Wallet extends TrinityPlugin {
         netType = PreferenceManager.getShareInstance().getWalletNetworkType();
         String config = PreferenceManager.getShareInstance().getWalletNetworkConfig();
         mMasterWalletManager = new MasterWalletManager(rootPath, netType, config, dataPath);
-        // mMasterWalletManager.SetLogLevel("warning");
+        mMasterWalletManager.SetLogLevel("warning");
         ethscjsonrpcUrl = PreferenceManager.getShareInstance().getStringValue("sidechain.eth.rpcapi", "");
         ethscapimiscUrl = PreferenceManager.getShareInstance().getStringValue("sidechain.eth.apimisc", "");
         addWalletListener();
