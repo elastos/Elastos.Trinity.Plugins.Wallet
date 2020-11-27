@@ -3531,7 +3531,7 @@ String const ETHSC = "ETHSC";
                 backupFileReaderMap[objectId] = backupFile;
 
                 NSMutableDictionary *ret = [[NSMutableDictionary alloc] init];
-                ret[@"objectID"] = objectId;
+                ret[@"objectId"] = objectId;
                 return [self successAsDict:command msg:ret];
             } catch (const std:: exception &e) {
                 return [self exceptionProcess:command string:e.what()];
