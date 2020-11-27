@@ -560,8 +560,8 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     if (![fm fileExistsAtPath:dataPath]) {
         [fm createDirectoryAtPath:dataPath withIntermediateDirectories:true attributes:NULL error:NULL];
     }
-    netType = [WrapSwift getWalletNetworkType];
-    NSString* config = [WrapSwift getWalletNetworkConfig];
+    netType = [WrapSwift getNetworkType];
+    NSString* config = [WrapSwift getNetworkConfig];
 
     mEthscjsonrpcUrl = [self cstringWithString:[WrapSwift getPreferenceStringValue:@"sidechain.eth.rpcapi" :@""]];
     mEthscapimiscUrl = [self cstringWithString:[WrapSwift getPreferenceStringValue:@"sidechain.eth.apimisc" :@""]];

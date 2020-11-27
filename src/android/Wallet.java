@@ -198,8 +198,8 @@ public class Wallet extends TrinityPlugin {
         if (!destDir.exists()) {
             destDir.mkdirs();
         }
-        netType = PreferenceManager.getShareInstance().getWalletNetworkType();
-        String config = PreferenceManager.getShareInstance().getWalletNetworkConfig();
+        netType = PreferenceManager.getShareInstance().getNetworkType();
+        String config = PreferenceManager.getShareInstance().getNetworkConfig();
         mMasterWalletManager = new MasterWalletManager(rootPath, netType, config, dataPath);
         mMasterWalletManager.SetLogLevel("warning");
         ethscjsonrpcUrl = PreferenceManager.getShareInstance().getStringValue("sidechain.eth.rpcapi", "");

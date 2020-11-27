@@ -63,7 +63,7 @@ public:
     void OnAssetRegistered(const std::string &asset, const nlohmann::json &info);
     void OnConnectStatusChanged(const std::string &status);
 
-private:    
+private:
     id <ElISubWalletDelegate> commandDelegate;
     NSString * mMasterWalletID;
     NSString * mSubWalletID;
@@ -230,8 +230,8 @@ static SPVWallet * _instance;
     if (![fm fileExistsAtPath:dataPath]) {
         [fm createDirectoryAtPath:dataPath withIntermediateDirectories:true attributes:NULL error:NULL];
     }
-    NSString* netType = [WrapSwift getWalletNetworkType];
-    NSString* config = [WrapSwift getWalletNetworkConfig];
+    NSString* netType = [WrapSwift getNetworkType];
+    NSString* config = [WrapSwift getNetworkConfig];
     mMasterWalletManager = new MasterWalletManager([rootPath UTF8String], [netType UTF8String]
                                                    , [config UTF8String], [dataPath UTF8String]);
 }
