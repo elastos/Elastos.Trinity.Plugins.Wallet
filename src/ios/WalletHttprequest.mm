@@ -77,20 +77,16 @@ nlohmann::json WalletHttprequest::GetTransactions(const std::string &address, ui
         return "{}";
     }
 
-    NSData *jsonData= [jsonString dataUsingEncoding:NSUTF8StringEncoding];
-    NSDictionary* dic = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableLeaves error:nil];
-
-    NSMutableDictionary *dictMutable = [NSMutableDictionary dictionaryWithDictionary:dic];
+    NSError *err;
+    NSMutableDictionary *dictMutable = [NSJSONSerialization JSONObjectWithData:[jsonString dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingMutableContainers error:&err];
     [dictMutable setValue:@(id) forKey:@"id"];
 
     // transform data for spvsdk
-    NSMutableArray *arrayNew = [[NSMutableArray alloc] init];
     NSArray * arrayTmp = [dictMutable objectForKey:@"result"];
     if (arrayTmp != nil) {
         unsigned long arrayLen = arrayTmp.count;
         for (int i = 0; i < arrayLen; i++) {
-            NSDictionary* transaction = arrayTmp[i];
-            NSMutableDictionary *transactionMutable = [NSMutableDictionary dictionaryWithDictionary:transaction];
+            NSMutableDictionary* transactionMutable = arrayTmp[i];
 
             transformDict(transactionMutable, @"contractAddress", @"contract");
             transformDict(transactionMutable, @"value", @"amount");
@@ -99,13 +95,7 @@ nlohmann::json WalletHttprequest::GetTransactions(const std::string &address, ui
             transformDict(transactionMutable, @"transactionIndex", @"blockTransactionIndex");
             transformDict(transactionMutable, @"timeStamp", @"blockTimestamp");
             [transactionMutable setValue:@"5012644" forKey:@"gasLimit"];
-
-            [arrayNew addObject:transactionMutable];
         }
-
-        // replace result with new array
-        [dictMutable removeObjectForKey:@"result"];
-        [dictMutable setValue:arrayNew forKey:@"result"];
     }
 
     NSData *data = [NSJSONSerialization dataWithJSONObject:dictMutable options:kNilOptions error:nil];
@@ -140,11 +130,30 @@ nlohmann::json WalletHttprequest::GetTokens(int id)
         return "{}";
     }
 
-    NSData *jsonData= [jsonString dataUsingEncoding:NSUTF8StringEncoding];
-    NSDictionary* dic = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableLeaves error:nil];
-
-    NSMutableDictionary *dictMutable = [NSMutableDictionary dictionaryWithDictionary:dic];
+    NSError *err;
+    NSMutableDictionary *dictMutable = [NSJSONSerialization JSONObjectWithData:[jsonString dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingMutableContainers error:&err];
+    if (dictMutable == nil) {
+        return "{}";
+    }
     [dictMutable setValue:@(id) forKey:@"id"];
+
+    // TODO: if the spvsdk use string for decimals, then remove this code.
+    NSArray * arrayTmp = [dictMutable objectForKey:@"result"];
+    if (arrayTmp != nil) {
+        unsigned long arrayLen = arrayTmp.count;
+        for (int i = 0; i < arrayLen; i++) {
+            NSMutableDictionary* transactionMutable = arrayTmp[i];
+
+            try {
+                NSString *text = [transactionMutable objectForKey:@"decimals"];
+                int intString = [text intValue];
+                [transactionMutable setValue:@(intString) forKey:@"decimals"];
+            } catch (const std:: exception & e ) {
+                NSString *errString = [NSString stringWithCString:e.what() encoding:NSUTF8StringEncoding];
+                NSLog(@"WalletHttprequest::transformDict error: %@", errString);
+            }
+        }
+    }
 
     NSData *data = [NSJSONSerialization dataWithJSONObject:dictMutable options:kNilOptions error:nil];
     if (data == nil) {
