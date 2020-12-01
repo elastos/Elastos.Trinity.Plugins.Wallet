@@ -3440,8 +3440,9 @@ String const ETHSC = "ETHSC";
     }
 
     try {
-        ethscSubWallet->GetTokenTransactions(start, count, txid, tokenSymbol);
-        return [self successAsString:command msg:@"GetTokenTransactions OK"];
+        Json json = ethscSubWallet->GetTokenTransactions(start, count, txid, tokenSymbol);
+        NSString *jsonString = [self stringWithCString:json.dump()];
+        return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
         return [self exceptionProcess:command string:e.what()];
     }
