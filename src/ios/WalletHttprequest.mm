@@ -109,17 +109,7 @@ nlohmann::json WalletHttprequest::GetTransactions(const std::string &address, ui
 
 nlohmann::json WalletHttprequest::GetLogs(const std::string &contract, const std::string &address, const std::string &event, uint64_t begBlockNumber, uint64_t endBlockNumber, int id)
 {
-    // Maybe the spvsdk should remove "00000000000000000000000"?
-    String addressNew = address;
-    String findString = "0x000000000000000000000000";
-    unsigned long index = address.find(findString);
-    if (index >= 0) {
-        NSString *addressNSString = [NSString stringWithCString:address.c_str() encoding:NSUTF8StringEncoding];
-        NSString*addressNSStringNew = [addressNSString stringByReplacingOccurrencesOfString:@"000000000000000000000000" withString:@""];
-        addressNew = [addressNSStringNew UTF8String];
-    }
-
-    NSString *body = [NSString stringWithFormat:@"{  \"method\": \"eth_getLogs\", \"params\": [{\"address\": \"%s\", \"fromBlock\": \"0x%llx\", \"toBlock\": \"0x%llx\"}], \"id\":%d}", addressNew.c_str(), begBlockNumber, endBlockNumber, id];
+    NSString *body = [NSString stringWithFormat:@"{  \"method\": \"eth_getLogs\", \"params\": [{\"topics\": [\"%s\", null, \"%s\"], \"fromBlock\": \"0x%llx\", \"toBlock\": \"0x%llx\"}], \"id\":%d}", event.c_str(), address.c_str(), begBlockNumber, endBlockNumber, id];
     return postRequest(body);
 }
 
