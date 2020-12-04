@@ -1467,7 +1467,11 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     }
 
     Boolean valid = masterWallet->IsSubWalletAddressValid(chainID, address);
-    CDVPluginResult*  pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:valid];
+
+    NSMutableDictionary *ret = [[NSMutableDictionary alloc] init];
+    ret[@"isValid"] = (valid? @YES : @NO);
+
+    CDVPluginResult*  pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:ret];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 

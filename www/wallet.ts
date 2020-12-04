@@ -141,8 +141,8 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
     };
 
     isSubWalletAddressValid(args, success, error) {
-        var _onSuccess = function(ret : string) {
-            success(ret == "true");
+        var _onSuccess = function(ret: { isValid: boolean }) {
+            success(ret.isValid);
         }
         exec(_onSuccess, error, "Wallet", "isSubWalletAddressValid", args);
     };
