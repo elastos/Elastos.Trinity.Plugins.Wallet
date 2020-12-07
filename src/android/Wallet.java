@@ -1336,7 +1336,10 @@ public class Wallet extends TrinityPlugin {
             }
 
             Boolean valid = masterWallet.IsAddressValid(addr);
-            cc.success(valid.toString());
+            JSONObject result = new JSONObject();
+            result.put("isValid", valid);
+
+            cc.success(result);
         } catch (WalletException e) {
             exceptionProcess(e, cc, "Check address valid of " + formatWalletName(masterWalletID));
         }
