@@ -1535,31 +1535,34 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     if (args.count != idx) {
         return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
     }
-    IMasterWallet *masterWallet = [self getIMasterWallet:masterWalletID];
-    if (masterWallet == nil) {
-        NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletName:masterWalletID]];
-        return [self errorProcess:command code:errCodeInvalidMasterWallet msg:msg];
-    }
 
-    ISubWalletVector subWallets = masterWallet->GetAllSubWallets();
-    for (int i = 0; i < subWallets.size(); i++) {
-        subWallets[i]->SyncStop();
-        subWallets[i]->RemoveCallback();
-        masterWallet->DestroyWallet(subWallets[i]->GetChainID());
-    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        IMasterWallet *masterWallet = [self getIMasterWallet:masterWalletID];
+        if (masterWallet == nil) {
+            NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletName:masterWalletID]];
+            return [self errorProcess:command code:self->errCodeInvalidMasterWallet msg:msg];
+        }
 
-    if (mMasterWalletManager == nil) {
-        NSString *msg = [NSString stringWithFormat:@"%@", @"Master wallet manager has not initialize"];
-        return [self errorProcess:command code:errCodeInvalidMasterWalletManager msg:msg];
-    }
+        ISubWalletVector subWallets = masterWallet->GetAllSubWallets();
+        for (int i = 0; i < subWallets.size(); i++) {
+            subWallets[i]->SyncStop();
+            subWallets[i]->RemoveCallback();
+            masterWallet->DestroyWallet(subWallets[i]->GetChainID());
+        }
 
-    try {
-        mMasterWalletManager->DestroyWallet(masterWalletID);
-        NSString *msg = [NSString stringWithFormat:@"Destroy %@ OK", [self formatWalletName:masterWalletID]];
-        return [self successAsString:command msg:msg];
-    } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
-    }
+        if (mMasterWalletManager == nil) {
+            NSString *msg = [NSString stringWithFormat:@"%@", @"Master wallet manager has not initialize"];
+            return [self errorProcess:command code:self->errCodeInvalidMasterWalletManager msg:msg];
+        }
+
+        try {
+            mMasterWalletManager->DestroyWallet(masterWalletID);
+            NSString *msg = [NSString stringWithFormat:@"Destroy %@ OK", [self formatWalletName:masterWalletID]];
+            return [self successAsString:command msg:msg];
+        } catch (const std:: exception &e) {
+            return [self exceptionProcess:command string:e.what()];
+        }
+    });
 }
 
 - (void)createTransaction:(CDVInvokedUrlCommand *)command
@@ -3121,14 +3124,17 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     if (args.count != idx) {
         return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
     }
-    ISubWallet *subWallet = [self getSubWallet:masterWalletID :chainID];
-    if (subWallet == nil) {
-        NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletNameWithString:masterWalletID other:chainID]];
-        return [self errorProcess:command code:errCodeInvalidSubWallet msg:msg];
-    }
 
-    subWallet->SyncStart();
-    return [self successAsString:command msg:@"SyncStart OK"];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        ISubWallet *subWallet = [self getSubWallet:masterWalletID :chainID];
+        if (subWallet == nil) {
+            NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletNameWithString:masterWalletID other:chainID]];
+            return [self errorProcess:command code:self->errCodeInvalidSubWallet msg:msg];
+        }
+
+        subWallet->SyncStart();
+        return [self successAsString:command msg:@"SyncStart OK"];
+    });
 }
 
 - (void)syncStop:(CDVInvokedUrlCommand *)command
@@ -3142,14 +3148,17 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     if (args.count != idx) {
         return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
     }
-    ISubWallet *subWallet = [self getSubWallet:masterWalletID :chainID];
-    if (subWallet == nil) {
-        NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletNameWithString:masterWalletID other:chainID]];
-        return [self errorProcess:command code:errCodeInvalidSubWallet msg:msg];
-    }
 
-    subWallet->SyncStop();
-    return [self successAsString:command msg:@"SyncStop OK"];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        ISubWallet *subWallet = [self getSubWallet:masterWalletID :chainID];
+        if (subWallet == nil) {
+            NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletNameWithString:masterWalletID other:chainID]];
+            return [self errorProcess:command code:self->errCodeInvalidSubWallet msg:msg];
+        }
+
+        subWallet->SyncStop();
+        return [self successAsString:command msg:@"SyncStop OK"];
+     });
 }
 
 - (void)reSync:(CDVInvokedUrlCommand *)command
@@ -3477,15 +3486,17 @@ String const ETHSC = "ETHSC";
         return [self errorProcess:command code:errCodeInvalidSubWallet msg:msg];
     }
 
-    try {
-        NSString *jsonString = walletHttprequest->GetTokenListByAddress(address);
-        NSDictionary *dic = [self dictionaryWithJsonString:jsonString];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        try {
+            NSString *jsonString = walletHttprequest->GetTokenListByAddress(address);
+            NSDictionary *dic = [self dictionaryWithJsonString:jsonString];
 
-        NSArray * tokenList = [dic objectForKey:@"result"];
-        return [self successAsArray:command msg:tokenList];
-    } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
-    }
+            NSArray * tokenList = [dic objectForKey:@"result"];
+            return [self successAsArray:command msg:tokenList];
+        } catch (const std:: exception &e) {
+            return [self exceptionProcess:command string:e.what()];
+        }
+    });
 }
 
 - (void)getBackupInfo:(CDVInvokedUrlCommand *)command

@@ -202,7 +202,7 @@ public class Wallet extends TrinityPlugin {
         netType = PreferenceManager.getShareInstance().getNetworkType();
         String config = PreferenceManager.getShareInstance().getNetworkConfig();
         mMasterWalletManager = new MasterWalletManager(rootPath, netType, config, dataPath);
-       mMasterWalletManager.SetLogLevel("warning");
+        mMasterWalletManager.SetLogLevel("warning");
         ethscjsonrpcUrl = PreferenceManager.getShareInstance().getStringValue("sidechain.eth.rpcapi", "");
         ethscapimiscUrl = PreferenceManager.getShareInstance().getStringValue("sidechain.eth.apimisc", "");
         if ("TestNet".equals(netType)) {
@@ -278,6 +278,11 @@ public class Wallet extends TrinityPlugin {
         }
 
         return true;
+    }
+
+    private void exceptionProcess(Exception e, CallbackContext cc, String msg) {
+        e.printStackTrace();
+        cc.error(e.toString());
     }
 
     private void exceptionProcess(WalletException e, CallbackContext cc, String msg) throws JSONException {
@@ -558,7 +563,7 @@ public class Wallet extends TrinityPlugin {
                     this.getTokenTransactions(args, cc);
                     break;
 
-                    // Main chain subwallet
+                // Main chain subwallet
                 case "createDepositTransaction":
                     this.createDepositTransaction(args, cc);
                     break;
@@ -1010,26 +1015,28 @@ public class Wallet extends TrinityPlugin {
             return;
         }
 
-        try {
-            MasterWallet masterWallet = getIMasterWallet(masterWalletID);
-            if (masterWallet == null) {
-                errorProcess(cc, errCodeInvalidMasterWallet, "Get " + formatWalletName(masterWalletID));
-                return;
+        new Thread(() -> {
+            try {
+                MasterWallet masterWallet = getIMasterWallet(masterWalletID);
+                if (masterWallet == null) {
+                    errorProcess(cc, errCodeInvalidMasterWallet, "Get " + formatWalletName(masterWalletID));
+                    return;
+                }
+
+                ArrayList<SubWallet> subWalletList = masterWallet.GetAllSubWallets();
+                for (int i = 0; subWalletList != null && i < subWalletList.size(); i++) {
+                    subWalletList.get(i).SyncStop();
+                    subWalletList.get(i).RemoveCallback();
+                    masterWallet.DestroyWallet(subWalletList.get(i));
+                }
+
+                mMasterWalletManager.DestroyWallet(masterWalletID);
+
+                cc.success("Destroy " + formatWalletName(masterWalletID) + " OK");
+            } catch (Exception e) {
+                exceptionProcess(e, cc, "Destroy " + formatWalletName(masterWalletID));
             }
-
-            ArrayList<SubWallet> subWalletList = masterWallet.GetAllSubWallets();
-            for (int i = 0; subWalletList != null && i < subWalletList.size(); i++) {
-                subWalletList.get(i).SyncStop();
-                subWalletList.get(i).RemoveCallback();
-                masterWallet.DestroyWallet(subWalletList.get(i));
-            }
-
-            mMasterWalletManager.DestroyWallet(masterWalletID);
-
-            cc.success("Destroy " + formatWalletName(masterWalletID) + " OK");
-        } catch (WalletException e) {
-            exceptionProcess(e, cc, "Destroy " + formatWalletName(masterWalletID));
-        }
+        }).start();
     }
 
     public void getVersion(JSONArray args, CallbackContext cc) throws JSONException {
@@ -1239,8 +1246,8 @@ public class Wallet extends TrinityPlugin {
         }
     }
 
-      // args[0]: String masterWalletID
-      // args[1]: String payPassword
+    // args[0]: String masterWalletID
+    // args[1]: String payPassword
     public void verifyPayPassword(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
 
@@ -1491,20 +1498,48 @@ public class Wallet extends TrinityPlugin {
             return;
         }
 
-        try {
-;            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
-            if (subWallet == null) {
-                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
-                return;
+        new Thread(() -> {
+            try {
+                SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+                if (subWallet == null) {
+                    errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+                    return;
+                }
+                subWallet.SyncStart();
+                cc.success("SyncStart OK");
+            } catch (Exception e) {
+                exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " sync start");
             }
-            subWallet.SyncStart();
-            cc.success("SyncStart OK");
-        } catch (WalletException e) {
-            exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " sync start");
-        }
+        }).start();
     }
 
     public void syncStop(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+
+        String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        new Thread(() -> {
+            try {
+                SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+                if (subWallet == null) {
+                    errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+                    return;
+                }
+                subWallet.SyncStop();
+                cc.success("SyncStop OK");
+            } catch (Exception e) {
+                exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " sync stop");
+            }
+        }).start();
+    }
+
+    public void reSync(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
 
         String masterWalletID = args.getString(idx++);
@@ -1521,36 +1556,12 @@ public class Wallet extends TrinityPlugin {
                 errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
                 return;
             }
-            subWallet.SyncStop();
-            cc.success("SyncStop OK");
+            subWallet.Resync();
+            cc.success("Resync OK");
         } catch (WalletException e) {
-            exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " sync stop");
+            exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " resync");
         }
     }
-
-    public void reSync(JSONArray args, CallbackContext cc) throws JSONException {
-      int idx = 0;
-
-      String masterWalletID = args.getString(idx++);
-      String chainID = args.getString(idx++);
-
-      if (args.length() != idx) {
-          errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-          return;
-      }
-
-      try {
-          SubWallet subWallet = getSubWallet(masterWalletID, chainID);
-          if (subWallet == null) {
-              errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
-              return;
-          }
-          subWallet.Resync();
-          cc.success("Resync OK");
-      } catch (WalletException e) {
-          exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " resync");
-      }
-  }
 
     // args[0]: String masterWalletID
     // args[1]: String chainID
@@ -3860,15 +3871,17 @@ public class Wallet extends TrinityPlugin {
     public void getERC20TokenList(JSONArray args, CallbackContext cc) throws JSONException {
         String address = args.getString(0);
 
-        try {
-            WalletHttprequest walletHttp = new WalletHttprequest(ethscGetTokenListUrl);
-            String result = walletHttp.getTokenListByAddress(address);
-            JSONObject resultObj = new JSONObject(result);
-            JSONArray tokenList = resultObj.getJSONArray("result");
-            cc.success(tokenList);
-        } catch (WalletException e) {
-            exceptionProcess(e, cc,  " getERC20TokenList");
-        }
+        new Thread(() -> {
+            try {
+                WalletHttprequest walletHttp = new WalletHttprequest(ethscGetTokenListUrl);
+                String result = walletHttp.getTokenListByAddress(address);
+                JSONObject resultObj = new JSONObject(result);
+                JSONArray tokenList = resultObj.getJSONArray("result");
+                cc.success(tokenList);
+            } catch (Exception e) {
+                exceptionProcess(e, cc,  " getERC20TokenList");
+            }
+        }).start();
     }
 
     public void getBackupInfo(JSONArray args, CallbackContext cc) throws JSONException {
