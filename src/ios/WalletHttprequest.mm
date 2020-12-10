@@ -35,8 +35,15 @@ WalletHttprequest::WalletHttprequest(String &ethscRPC,
     mEthscRPC = [NSString stringWithCString:ethscRPC.c_str() encoding:NSUTF8StringEncoding];
     mEthscApiMisc = [NSString stringWithCString:ethscApiMisc.c_str() encoding:NSUTF8StringEncoding];
 
-    mGetTransactionsUrlPrefix =  [mEthscApiMisc stringByAppendingString:@"/api/1/eth/history?address="];
-    mGetTokensUrlPrefix =  [mEthscApiMisc stringByAppendingString:@"/api/1/eth/erc20/list"];
+    mGetTransactionsUrlPrefix = [mEthscApiMisc stringByAppendingString:@"/api/1/eth/history?address="];
+    mGetTokensUrlPrefix = [mEthscApiMisc stringByAppendingString:@"/api/1/eth/erc20/list"];
+}
+
+WalletHttprequest::WalletHttprequest(String &ethscGetTokenList)
+{
+    mEthscGetTokenList = [NSString stringWithCString:ethscGetTokenList.c_str() encoding:NSUTF8StringEncoding];
+
+    mGetTokenListUrlPrefix = [mEthscGetTokenList stringByAppendingString:@"/api/?module=account&action=tokenlist&address="];
 }
 
 WalletHttprequest::~WalletHttprequest()
@@ -164,6 +171,18 @@ nlohmann::json WalletHttprequest::GetNonce(const std::string &address, int id)
 {
     NSString *body = [NSString stringWithFormat:@"{  \"method\": \"eth_getTransactionCount\", \"params\": [\"%s\", \"latest\"], \"id\":%d}", address.c_str(), id];
     return postRequest(body);
+}
+
+NSString* WalletHttprequest::GetTokenListByAddress(const std::string &address)
+{
+    NSString *addressNSString = [NSString stringWithCString:address.c_str() encoding:NSUTF8StringEncoding];
+    NSString *urlStr = [mGetTokenListUrlPrefix stringByAppendingString:addressNSString];
+    NSString* jsonString = getRequest(urlStr);
+    if (jsonString == nil) {
+        return @"{}";
+    }
+
+    return jsonString;
 }
 
 NSString * WalletHttprequest::getRequest(NSString *urlStr)

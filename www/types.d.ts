@@ -1498,6 +1498,14 @@ declare module WalletPlugin {
          */
         createProposalWithdrawTransaction(args, success, error);
 
+        /**
+         * Get the erc20 token list
+         * @param address ethsc address.
+         *
+         * @return
+         */
+        getERC20TokenList(address: string) : Promise<ERC20TokenInfo[]>;
+
         //////////////////////////////////////////////////
         /*               Backup and restore             */
         //////////////////////////////////////////////////
@@ -1522,6 +1530,18 @@ declare module WalletPlugin {
          * to restore a more recent state of the wallet.
          */
         restoreBackupFile(masterWalletID: string, fileName: string): Promise<BackupFileWriter>;
+    }
+
+    /**
+     * Information about ERC20 Token
+     */
+    type ERC20TokenInfo = {
+        type: string;
+        symbol: string;
+        name: string;
+        decimals: string;
+        contractAddress: string;
+        balance: string;
     }
 
     /**

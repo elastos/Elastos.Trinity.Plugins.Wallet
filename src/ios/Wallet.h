@@ -54,13 +54,13 @@ static NSMutableDictionary *backupFileWriterMap = [[NSMutableDictionary alloc] i
 static MasterWalletManager *mMasterWalletManager = nil;
 static NSString *currentDid = nil;
 static NSString *netType = @"MainNet";
+// for ethsc http request
+String mEthscjsonrpcUrl;
+String mEthscapimiscUrl;
+String mEthscGetTokenListUrl;
 
 @interface Wallet : TrinityPlugin {
     NSString *TAG; //= @"Wallet";
-
-    // for ethsc http request
-    String mEthscjsonrpcUrl;
-    String mEthscapimiscUrl;
 
     NSString *keySuccess;//   = "success";
     NSString *keyError;//     = "error";
@@ -213,6 +213,7 @@ static NSString *netType = @"MainNet";
 - (void)createTransferGeneric:(CDVInvokedUrlCommand *)command;
 - (void)deleteTransfer:(CDVInvokedUrlCommand *)command;
 - (void)getTokenTransactions:(CDVInvokedUrlCommand *)command;
+- (void)getERC20TokenList:(CDVInvokedUrlCommand *)command;
 
 // Backup Restore
 - (void)getBackupInfo:(CDVInvokedUrlCommand *)command;

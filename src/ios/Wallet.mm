@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Elastos Foundation
+ * Copyright (c) 2020 Elastos Foundation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -353,6 +353,12 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
+- (void)successAsArray:(CDVInvokedUrlCommand *)command  msg:(NSArray*) array
+{
+    CDVPluginResult*  pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:array];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
 - (void)successAsString:(CDVInvokedUrlCommand *)command  msg:(NSString*) msg
 {
     CDVPluginResult*  pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:msg];
@@ -446,22 +452,17 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
 //String 转 NSString
 - (NSString *)stringWithCString:(String)string
 {
-    //    NSString *str = [NSString stringWithCString:string.c_str() encoding:[NSString defaultCStringEncoding]];
     NSString *str = [NSString stringWithCString:string.c_str() encoding:NSUTF8StringEncoding];
-    //    str = [str stringByReplacingOccurrencesOfString:@"\"" withString:@""];
-    //    str = [str stringByTrimmingCharactersInSet:[NSCharacterSet controlCharacterSet]];
     NSString *beginStr = [str substringWithRange:NSMakeRange(0, 1)];
 
     NSString *result = str;
     if([beginStr isEqualToString:@"\""])
     {
         result = [str substringWithRange:NSMakeRange(1, str.length - 1)];
-        //        result = [str stringByReplacingCharactersInRange:NSMakeRange(0, 1) withString:@""];
     }
     NSString *endStr = [result substringWithRange:NSMakeRange(result.length - 1, 1)];
     if([endStr isEqualToString:@"\""])
     {
-        //        [str stringByReplacingCharactersInRange:NSMakeRange(str.length - 1, 1) withString:@""];
         result = [result substringWithRange:NSMakeRange(0, result.length - 1)];
     }
     return result;
@@ -516,7 +517,7 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     //
     TAG = @"Wallet";
 
-    walletRefCount++;//delete mMasterWalletManager in dispose?
+    walletRefCount++;
 
     keySuccess   = @"success";
     keyError     = @"error";
@@ -541,12 +542,7 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     errCodeWalletException            = 20000;
 
     if (nil != mMasterWalletManager) {
-        if (currentDid == [self did]) {
-            return;
-        } else {
-            // TODO plugin can not be destroyed, so check the did
-            [self destroyMasterWalletManager];
-        }
+        return;
     }
 
     // NSString* rootPath = [NSHomeDirectory() stringByAppendingString:@"/Documents/spv"];
@@ -565,12 +561,17 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
 
     mEthscjsonrpcUrl = [self cstringWithString:[WrapSwift getPreferenceStringValue:@"sidechain.eth.rpcapi" :@""]];
     mEthscapimiscUrl = [self cstringWithString:[WrapSwift getPreferenceStringValue:@"sidechain.eth.apimisc" :@""]];
+    if ([netType isEqual: @"TestNet"]) {
+        mEthscGetTokenListUrl = "https://eth-testnet.elastos.io";
+    } else {
+        mEthscGetTokenListUrl = "https://eth.elastos.io";
+    }
 
     try {
         NSLog(@"WALLETTEST new MasterWalletManager rootPath: %@,  dataPath:%@", rootPath, dataPath);
         mMasterWalletManager = new MasterWalletManager([rootPath UTF8String], [netType UTF8String],
                 [config UTF8String], [dataPath UTF8String]);
-        mMasterWalletManager->SetLogLevel("warning");
+       mMasterWalletManager->SetLogLevel("warning");
     } catch (const std:: exception & e ) {
         NSString *errString=[self stringWithCString:e.what()];
         NSLog(@"new MasterWalletManager error: %@", errString);
@@ -583,39 +584,49 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     [super pluginInitialize];
 }
 
-//
-- (void)destroyMasterWalletManager
+
+- (void)dispose
 {
-    try {
-        IMasterWalletVector masterWallets = mMasterWalletManager->GetAllMasterWallets();
+    walletRefCount--;
 
-        for (int i = 0; i < masterWallets.size(); i++) {
-            IMasterWallet *masterWallet = masterWallets[i];
-            String masterWalletID = masterWallet->GetID();
+    if (mMasterWalletManager != nil) {
+        NSString *key = [NSString stringWithFormat:@"(%@:%@)", [self did], [self getModeId]];
+        [subwalletListenerMDict removeObjectForKey:key];
 
-            ISubWalletVector subWallets = masterWallet->GetAllSubWallets();
-            for (int j = 0; j < subWallets.size(); j++) {
-                String chainID = subWallets[j]->GetChainID();
-                ISubWallet *subWallet = [self getSubWallet:masterWalletID :chainID];
-                if (subWallet != nil) {
-                    try {
-                        subWallet->SyncStop();
-                        subWallet->RemoveCallback();
-                    } catch (const std:: exception &e) {
-                        NSLog(@"subWallet SyncStop error: %s", e.what());
+        if (0 == walletRefCount) {
+            try {
+                IMasterWalletVector masterWallets = mMasterWalletManager->GetAllMasterWallets();
+
+                for (int i = 0; i < masterWallets.size(); i++) {
+                    IMasterWallet *masterWallet = masterWallets[i];
+                    String masterWalletID = masterWallet->GetID();
+
+                    ISubWalletVector subWallets = masterWallet->GetAllSubWallets();
+                    for (int j = 0; j < subWallets.size(); j++) {
+                        String chainID = subWallets[j]->GetChainID();
+                        ISubWallet *subWallet = [self getSubWallet:masterWalletID :chainID];
+                        if (subWallet != nil) {
+                            try {
+                                subWallet->SyncStop();
+                                subWallet->RemoveCallback();
+                            } catch (const std:: exception &e) {
+                                NSLog(@"subWallet SyncStop error: %s", e.what());
+                            }
+                        }
                     }
                 }
-                [self addSubWalletListener:masterWalletID chainID:chainID];
+
+                [subwalletListenerMDict removeAllObjects];
+                // TODO: crash in spvsdk sometimes
+//                delete mMasterWalletManager;
+                mMasterWalletManager = nil;
+            } catch (const std:: exception &e) {
+                NSLog(@"wallet plugin dispose error: %s", e.what());
             }
         }
-
-        [subwalletListenerMDict removeAllObjects];
-
-        delete mMasterWalletManager;
-        mMasterWalletManager = nil;
-    } catch (const std:: exception &e) {
-        NSLog(@"destroyMasterWalletManager error: %s", e.what());
     }
+
+    [super dispose];
 }
 
 - (void)coolMethod:(CDVInvokedUrlCommand *)command
@@ -3450,6 +3461,28 @@ String const ETHSC = "ETHSC";
         Json json = ethscSubWallet->GetTokenTransactions(start, count, txid, tokenSymbol);
         NSString *jsonString = [self stringWithCString:json.dump()];
         return [self successAsString:command msg:jsonString];
+    } catch (const std:: exception &e) {
+        return [self exceptionProcess:command string:e.what()];
+    }
+}
+
+- (void)getERC20TokenList:(CDVInvokedUrlCommand *)command
+{
+    NSArray *args = command.arguments;
+    String address = [self cstringWithString:args[0]];
+
+    WalletHttprequest* walletHttprequest = new WalletHttprequest(mEthscGetTokenListUrl);
+    if (walletHttprequest == nil) {
+        NSString *msg = @"getERC20TokenList: fail to new WalletHttprequest.";
+        return [self errorProcess:command code:errCodeInvalidSubWallet msg:msg];
+    }
+
+    try {
+        NSString *jsonString = walletHttprequest->GetTokenListByAddress(address);
+        NSDictionary *dic = [self dictionaryWithJsonString:jsonString];
+
+        NSArray * tokenList = [dic objectForKey:@"result"];
+        return [self successAsArray:command msg:tokenList];
     } catch (const std:: exception &e) {
         return [self exceptionProcess:command string:e.what()];
     }

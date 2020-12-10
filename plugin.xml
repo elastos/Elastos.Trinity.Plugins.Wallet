@@ -12,6 +12,7 @@
 			</feature>
 		</config-file>
         <source-file src="src/android/Wallet.java" target-dir="src/org/elastos/trinity/plugins/wallet" />
+        <source-file src="src/android/WalletHttprequest.java" target-dir="src/org/elastos/trinity/plugins/wallet" />
         <framework src="src/android/wallet.gradle" custom="true" type="gradleReference"/>
         <!-- <resource-file src="src/android/libs/org.elastos.spvcore-debug.aar" target="libs/org.elastos.spvcore-debug.aar"/> -->
 	</platform>

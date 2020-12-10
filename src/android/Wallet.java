@@ -82,10 +82,11 @@ public class Wallet extends TrinityPlugin {
     public static final String IDChain = "IDChain";
     public static final String ETHSC = "ETHSC";
 
-    private String ethscjsonrpcUrl = "";
-    private String ethscapimiscUrl = "";
+    private static String ethscjsonrpcUrl = "";
+    private static String ethscapimiscUrl = "";
+    private static String ethscGetTokenListUrl = "";
 
-    private String netType = "MainNet";
+    private static String netType = "MainNet";
 
     private int errCodeParseJsonInAction = 10000;
     private int errCodeInvalidArg = 10001;
@@ -201,9 +202,14 @@ public class Wallet extends TrinityPlugin {
         netType = PreferenceManager.getShareInstance().getNetworkType();
         String config = PreferenceManager.getShareInstance().getNetworkConfig();
         mMasterWalletManager = new MasterWalletManager(rootPath, netType, config, dataPath);
-        mMasterWalletManager.SetLogLevel("warning");
+       mMasterWalletManager.SetLogLevel("warning");
         ethscjsonrpcUrl = PreferenceManager.getShareInstance().getStringValue("sidechain.eth.rpcapi", "");
         ethscapimiscUrl = PreferenceManager.getShareInstance().getStringValue("sidechain.eth.apimisc", "");
+        if ("TestNet".equals(netType)) {
+            ethscGetTokenListUrl = "https://eth-testnet.elastos.io";
+        } else {
+            ethscGetTokenListUrl = "https://eth.elastos.io";
+        }
         addWalletListener();
     }
 
@@ -686,7 +692,12 @@ public class Wallet extends TrinityPlugin {
                     this.getGenesisAddress(args, cc);
                     break;
 
-                    // Backup and restore
+                // ERC20 Token list
+                case "getERC20TokenList":
+                    this.getERC20TokenList(args, cc);
+                    break;
+
+                // Backup and restore
                 case "getBackupInfo":
                     this.getBackupInfo(args, cc);
                     break;
@@ -3843,6 +3854,20 @@ public class Wallet extends TrinityPlugin {
             cc.success(address);
         } catch (WalletException e) {
             exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " get genesis address");
+        }
+    }
+
+    public void getERC20TokenList(JSONArray args, CallbackContext cc) throws JSONException {
+        String address = args.getString(0);
+
+        try {
+            WalletHttprequest walletHttp = new WalletHttprequest(ethscGetTokenListUrl);
+            String result = walletHttp.getTokenListByAddress(address);
+            JSONObject resultObj = new JSONObject(result);
+            JSONArray tokenList = resultObj.getJSONArray("result");
+            cc.success(tokenList);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc,  " getERC20TokenList");
         }
     }
 

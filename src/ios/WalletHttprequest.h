@@ -33,7 +33,8 @@ typedef nlohmann::json Json;
 class WalletHttprequest
 {
 public:
-    WalletHttprequest(String &masterWalletID, String &chainID);
+    WalletHttprequest(String &ethscRPC, String &ethscApiMisc);
+    WalletHttprequest(String &ethscGetTokenList);
     ~WalletHttprequest();
 
     NSString * getRequest(NSString *urlStr);
@@ -50,11 +51,15 @@ public:
     nlohmann::json GetBlockNumber(int id);
     nlohmann::json GetNonce(const std::string &address, int id);
 
+    NSString* GetTokenListByAddress(const std::string &address);
+
 private:
     void transformDict(NSMutableDictionary *dictM, NSString *originKey, NSString *newkey);
 
     NSString * mEthscRPC;
     NSString * mEthscApiMisc;
+    NSString * mEthscGetTokenList;
     NSString * mGetTransactionsUrlPrefix;
     NSString * mGetTokensUrlPrefix;
+    NSString * mGetTokenListUrlPrefix;
 };

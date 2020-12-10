@@ -478,6 +478,12 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         exec(success, error, "Wallet", "createProposalWithdrawTransaction", args);
     };
 
+
+    async getERC20TokenList(address: string): Promise<WalletPlugin.ERC20TokenInfo[]> {
+        let rawInfo = await execAsPromise<WalletPlugin.ERC20TokenInfo[]>("getERC20TokenList", [address]);
+        return rawInfo;
+    }
+
     //////////////////////////////////////////////////
     /*               Backup and restore             */
     //////////////////////////////////////////////////
