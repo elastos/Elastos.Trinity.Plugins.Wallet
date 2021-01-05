@@ -3654,13 +3654,16 @@ String const ETHSC = "ETHSC";
             // Open an output stream to write the file
             String spvSyncStateFilesPath = [self getSPVSyncStateFolderPath:masterWalletID];
             NSString *backupFilePath =  [NSString stringWithFormat:@"%s/%s", spvSyncStateFilesPath.c_str(), fileName.c_str()];
-            NSFileHandle * backupFile = [NSFileHandle fileHandleForReadingAtPath:backupFilePath];
+            NSLog(@"Wallet writer - Using SPV file path: %@", backupFilePath);
+            tmpDebug = backupFilePath;
+
+            NSFileHandle * backupFile = [NSFileHandle fileHandleForWritingAtPath:backupFilePath];
 
             NSString *objectId = [NSString stringWithFormat:@"%lu", (unsigned long)backupFile.hash];
             backupFileWriterMap[objectId] = backupFile;
 
             NSMutableDictionary *ret = [[NSMutableDictionary alloc] init];
-            ret[@"objectID"] = objectId;
+            ret[@"objectId"] = objectId;
             return [self successAsDict:command msg:ret];
         } catch (const std:: exception &e) {
             return [self exceptionProcess:command string:e.what()];
@@ -3674,13 +3677,19 @@ String const ETHSC = "ETHSC";
 {
     NSArray *args = command.arguments;
     NSString *writerObjectId = args[0];
-    NSString *base64encodedFromUint8Array = args[1];
+    NSData *data = args[1];
 
     try {
         NSFileHandle *writer = (NSFileHandle*)backupFileWriterMap[writerObjectId];
+        if (writer == nil) {
+            return [self exceptionProcess:command string:"Nil writer object in backupFileWriter_write()"];
+        }
 
-        NSData *data = [[NSData alloc] initWithBase64EncodedString:base64encodedFromUint8Array options:kNilOptions];
-        [writer writeData: data];
+        if (data == nil) {
+            return [self exceptionProcess:command string:"Nil data received in backupFileWriter_write()"];
+        }
+
+        [writer writeData:data];
         [self successAsString:command msg:nil];
     }
     catch (const std:: exception &e) {
@@ -3688,6 +3697,7 @@ String const ETHSC = "ETHSC";
     }
 }
 
+NSString *tmpDebug;
 - (void)backupFileWriter_close:(CDVInvokedUrlCommand *)command
 {
     NSArray *args = command.arguments;
@@ -3696,6 +3706,19 @@ String const ETHSC = "ETHSC";
     try {
         NSFileHandle *writer = (NSFileHandle*)backupFileWriterMap[writerObjectId];
         [writer closeFile];
+        NSLog(@"Wallet writer - Closed file");
+
+        /*{
+            // DEBUG
+            NSString *backupFilePath = tmpDebug;
+            NSLog(@"Wallet writer - DEBUGGING SPV file path: %@", backupFilePath);
+
+            NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:backupFilePath error:nil];
+
+            NSLog(@"Wallet writer - FILE SIZE: %llu", [attributes fileSize]);
+            NSLog(@"Wallet writer - MODIF DATE: %@", [attributes fileModificationDate]);
+        }*/
+
         [backupFileWriterMap removeObjectForKey:writerObjectId];
         [self successAsString:command msg:nil];
     }
