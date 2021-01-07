@@ -86,6 +86,10 @@ nlohmann::json WalletHttprequest::GetTransactions(const std::string &address, ui
 
     NSError *err;
     NSMutableDictionary *dictMutable = [NSJSONSerialization JSONObjectWithData:[jsonString dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingMutableContainers error:&err];
+    if (dictMutable == nil) {
+        return "{}";
+    }
+
     [dictMutable setValue:@(id) forKey:@"id"];
 
     // transform data for spvsdk
