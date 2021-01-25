@@ -52,6 +52,7 @@ static NSMutableDictionary *subwalletListenerMDict = [[NSMutableDictionary alloc
 static NSMutableDictionary *backupFileReaderMap = [[NSMutableDictionary alloc] init];
 static NSMutableDictionary *backupFileWriterMap = [[NSMutableDictionary alloc] init];
 static MasterWalletManager *mMasterWalletManager = nil;
+static dispatch_semaphore_t walletSemaphore;
 static NSString *currentDid = nil;
 static NSString *netType = @"MainNet";
 // for ethsc http request

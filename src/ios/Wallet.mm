@@ -581,6 +581,8 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
 
     [self addWalletListener];
 
+    walletSemaphore = dispatch_semaphore_create(1);
+
     [super pluginInitialize];
 }
 
@@ -595,6 +597,8 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
 
         if (0 == walletRefCount) {
             try {
+                dispatch_semaphore_wait(walletSemaphore, DISPATCH_TIME_FOREVER);
+
                 IMasterWalletVector masterWallets = mMasterWalletManager->GetAllMasterWallets();
 
                 for (int i = 0; i < masterWallets.size(); i++) {
@@ -623,6 +627,8 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
             } catch (const std:: exception &e) {
                 NSLog(@"wallet plugin dispose error: %s", e.what());
             }
+
+            dispatch_semaphore_signal(walletSemaphore);
         }
     }
 
@@ -1537,6 +1543,8 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     }
 
     dispatch_async(dispatch_get_main_queue(), ^{
+        dispatch_semaphore_wait(walletSemaphore, DISPATCH_TIME_FOREVER);
+
         IMasterWallet *masterWallet = [self getIMasterWallet:masterWalletID];
         if (masterWallet == nil) {
             NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletName:masterWalletID]];
@@ -1557,9 +1565,11 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
 
         try {
             mMasterWalletManager->DestroyWallet(masterWalletID);
+            dispatch_semaphore_signal(walletSemaphore);
             NSString *msg = [NSString stringWithFormat:@"Destroy %@ OK", [self formatWalletName:masterWalletID]];
             return [self successAsString:command msg:msg];
         } catch (const std:: exception &e) {
+            dispatch_semaphore_signal(walletSemaphore);
             return [self exceptionProcess:command string:e.what()];
         }
     });

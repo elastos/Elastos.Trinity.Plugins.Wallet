@@ -54,6 +54,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.Semaphore;
 
 import android.util.Base64;
 import android.util.Log;
@@ -69,6 +70,8 @@ public class Wallet extends TrinityPlugin {
     private HashMap<String, InputStream> backupFileReaderMap = new HashMap<>();
     private HashMap<String, Integer> backupFileReaderOffsetsMap = new HashMap<>(); // Current read offset byte position for each active reader
     private HashMap<String, OutputStream> backupFileWriterMap = new HashMap<>();
+
+    private static Semaphore walletSemaphore;
 
     private static int walletRefCount = 0;
     // only wallet dapp can use this plugin
@@ -159,18 +162,27 @@ public class Wallet extends TrinityPlugin {
 
             if (walletRefCount == 0) {
                 Log.i(TAG, "onDestroy");
-                ArrayList<MasterWallet> masterWalletList = mMasterWalletManager.GetAllMasterWallets();
-                for (int i = 0; i < masterWalletList.size(); i++) {
-                    MasterWallet masterWallet = masterWalletList.get(i);
-                    ArrayList<SubWallet> subWallets = masterWallet.GetAllSubWallets();
-                    for (int j = 0; j < subWallets.size(); ++j) {
-                        subWallets.get(j).SyncStop();
-                        subWallets.get(j).RemoveCallback();
+
+                try {
+                    walletSemaphore.acquire();
+
+                    ArrayList<MasterWallet> masterWalletList = mMasterWalletManager.GetAllMasterWallets();
+                    for (int i = 0; i < masterWalletList.size(); i++) {
+                        MasterWallet masterWallet = masterWalletList.get(i);
+                        ArrayList<SubWallet> subWallets = masterWallet.GetAllSubWallets();
+                        for (int j = 0; j < subWallets.size(); ++j) {
+                            subWallets.get(j).SyncStop();
+                            subWallets.get(j).RemoveCallback();
+                        }
                     }
+                    mMasterWalletManager.Dispose();
+                    mMasterWalletManager = null;
+                    Log.i(TAG, "onDestroy end");
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
-                mMasterWalletManager.Dispose();
-                mMasterWalletManager = null;
-                Log.i(TAG, "onDestroy end");
+
+                walletSemaphore.release();
             }
         }
 
@@ -211,6 +223,8 @@ public class Wallet extends TrinityPlugin {
             ethscGetTokenListUrl = "https://eth.elastos.io";
         }
         addWalletListener();
+
+        walletSemaphore = new Semaphore(1);
     }
 
     private void addWalletListener() {
@@ -1017,6 +1031,8 @@ public class Wallet extends TrinityPlugin {
 
         new Thread(() -> {
             try {
+                walletSemaphore.acquire();
+
                 MasterWallet masterWallet = getIMasterWallet(masterWalletID);
                 if (masterWallet == null) {
                     errorProcess(cc, errCodeInvalidMasterWallet, "Get " + formatWalletName(masterWalletID));
@@ -1036,6 +1052,7 @@ public class Wallet extends TrinityPlugin {
             } catch (Exception e) {
                 exceptionProcess(e, cc, "Destroy " + formatWalletName(masterWalletID));
             }
+            walletSemaphore.release();
         }).start();
     }
 
