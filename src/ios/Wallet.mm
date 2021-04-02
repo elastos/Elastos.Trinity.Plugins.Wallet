@@ -1743,6 +1743,7 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     String chainID        = [self cstringWithString:args[idx++]];
     Json payloadJson      = [self jsonWithDict:args[idx++]];
     String memo           = [self cstringWithString:args[idx++]];
+    String fee            = args.count == idx ? "10000" : [self cstringWithString:args[idx]];
 
     if (args.count != idx) {
         return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
@@ -1759,7 +1760,7 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     }
 
     try {
-        Json json = idchainSubWallet->CreateIDTransaction(payloadJson, memo);
+        Json json = idchainSubWallet->CreateIDTransaction(payloadJson, memo, fee);
         NSString *msg = [self stringWithJson:json];
         return [self successAsString:command msg:msg];
     } catch (const std:: exception &e) {
