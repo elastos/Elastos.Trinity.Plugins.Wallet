@@ -25,10 +25,12 @@ repositories {
     flatDir{
         dirs 'src/main/libs'
     }
-    maven{ url 'https://dl.bintray.com/trinity-tech/Elastos.ELA.SPV.Java'}
+    mavenCentral()
+    // maven{ url 'https://dl.bintray.com/trinity-tech/Elastos.ELA.SPV.Java'}
 }
 
 dependencies {
     // implementation(name: 'org.elastos.spvcore-debug', ext: 'aar')
-    implementation 'org.elastos:spvcore:0.5.7.9'
+    // implementation 'org.elastos:spvcore:0.5.7.9'
+    implementation 'org.elastos:spvcore:0.6.0'
 }

@@ -2024,6 +2024,7 @@ public class Wallet extends TrinityPlugin {
         String chainID = args.getString(idx++);
         String payloadJson = args.getString(idx++);
         String memo = args.getString(idx++);
+        String fee = "10000";
 
         if (args.length() != idx) {
             errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
@@ -2045,7 +2046,7 @@ public class Wallet extends TrinityPlugin {
 
             IDChainSubWallet idchainSubWallet = (IDChainSubWallet) subWallet;
 
-            cc.success(idchainSubWallet.CreateIDTransaction(payloadJson, memo));
+            cc.success(idchainSubWallet.CreateIDTransaction(payloadJson, memo, fee));
         } catch (WalletException e) {
             exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " create ID transaction");
         }
